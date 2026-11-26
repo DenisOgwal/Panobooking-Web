@@ -51,36 +51,36 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Car Name</label>
               @error('carname') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter Car Name/ Brand or Registration number" name="carname" wire:model="carname">
+            <input type="text" class="form-control" placeholder="Enter Car Name/ Brand or Registration number" name="carname" wire:model.live="carname">
           </div>
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">Car Category</label>
               @error('carcategory') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Please Enter Car Category" name="carcategory" wire:model="carcategory">
+            <input type="text" class="form-control" placeholder="Please Enter Car Category" name="carcategory" wire:model.live="carcategory">
           </div>
         </div>
         <div class="row">
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Car Specifications</label>
               @error('CarSpecs') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Please Enter Car Specifications E.g Car Model" name="CarSpecs" wire:model="CarSpecs">
+            <input type="text" class="form-control" placeholder="Please Enter Car Specifications E.g Car Model" name="CarSpecs" wire:model.live="CarSpecs">
           </div>
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">Ratings</label>
               @error('carratings') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="number" class="form-control" placeholder="What is your Car Ratings from ascale of 3-5?" name="carratings" wire:model="carratings">
+            <input type="number" class="form-control" placeholder="What is your Car Ratings from ascale of 3-5?" name="carratings" wire:model.live="carratings">
           </div>
         </div>
         <div class="row">
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Company/ Driver</label>
               @error('Carcompany') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="text" class="form-control" placeholder="What is your car hiring company, else fill with your name" name="Carcompany" wire:model="Carcompany">
+              <input type="text" class="form-control" placeholder="What is your car hiring company, else fill with your name" name="Carcompany" wire:model.live="Carcompany">
           </div>
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">Driver Age</label>
               @error('driversage') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="number" class="form-control" placeholder="What is the drivers Age" name="driversage" wire:model="driversage">
+            <input type="number" class="form-control" placeholder="What is the drivers Age" name="driversage" wire:model.live="driversage">
           </div>
         </div>
   
@@ -88,24 +88,24 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Rental Price per day/ Kampala Drive</label>
               @error('kampaladrive') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="number" class="form-control" placeholder="What is the least price for renting the car for a drive around Kampala?" name="kampaladrive" wire:model="kampaladrive">
+              <input type="number" class="form-control" placeholder="What is the least price for renting the car for a drive around Kampala?" name="kampaladrive" wire:model.live="kampaladrive">
           </div>
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">Rental Price per day/ Upcountry Drive</label>
               @error('upcountrydrive') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="number" class="form-control" placeholder="What is the least price for renting the car for a drive outside Kampala?" name="upcountrydrive" wire:model="upcountrydrive">
+              <input type="number" class="form-control" placeholder="What is the least price for renting the car for a drive outside Kampala?" name="upcountrydrive" wire:model.live="upcountrydrive">
           </div>
         </div>
         <div class="row">
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label" >No. of Passengers</label>
               @error('noofpassengers') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="How many passengers can your car carry Maximumly?" name="noofpassengers" wire:model="noofpassengers">
+            <input type="text" class="form-control" placeholder="How many passengers can your car carry Maximumly?" name="noofpassengers" wire:model.live="noofpassengers">
           </div>
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">No. of Doors</label>
               @error('noofdoors') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="How many doors does your car have?" name="noofdoors" wire:model="noofdoors">
+            <input type="text" class="form-control" placeholder="How many doors does your car have?" name="noofdoors" wire:model.live="noofdoors">
           </div>
         </div>
   
@@ -113,7 +113,7 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Automatic</label>
               @error('automaticoption') <span class="text-danger">{{ $message }}</span> @enderror
-              <select class="form-select" name="automaticoption" id="optionals" wire:model="automaticoption">
+              <select class="form-select" name="automaticoption" id="optionals" wire:model.live="automaticoption">
                   <option> Select Automatic Options</option>
                   <option Value="Yes">Yes</option>
                   <option Value="No">No</option>
@@ -122,7 +122,7 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">Laggages</label>
               @error('laggagesoption') <span class="text-danger">{{ $message }}</span> @enderror
-              <select class="form-select" name="laggagesoption" id="optionals" wire:model="laggagesoption">
+              <select class="form-select" name="laggagesoption" id="optionals" wire:model.live="laggagesoption">
                 <option> Select Laggages Options</option>
                 <option Value="Yes">Yes</option>
                 <option Value="No">No</option>
@@ -134,12 +134,12 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Address</label>
               @error('Carlocation') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter Full address of car parking" name="Carlocation" wire:model="Carlocation">
+            <input type="text" class="form-control" placeholder="Enter Full address of car parking" name="Carlocation" wire:model.live="Carlocation">
           </div>
           <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Car Main Image</label>
             @error('formFile') <span class="text-danger">{{ $message }}</span> @enderror
-            <input class="form-control" type="file" id="formFile" wire:model="formFile">
+            <input class="form-control" type="file" id="formFile" wire:model.live="formFile">
         </div>
         </div>
   
@@ -147,7 +147,7 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">Payment Options</label>
               @error('paymentoption') <span class="text-danger">{{ $message }}</span> @enderror
-              <select class="form-select" name="paymentoption" id="optionals" wire:model="paymentoption">
+              <select class="form-select" name="paymentoption" id="optionals" wire:model.live="paymentoption">
                   <option> Select Payment Options</option>
                   <option Value="Pay At Facility">Pay Cash</option>
                   <option Value="E-Payment">E-Payment</option>
@@ -157,7 +157,7 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Telephone No.</label>
               @error('telphonenumber') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="number" class="form-control" placeholder="What is the contact no. for the facility e.g +2567XXXXXXXX" name="telphonenumber" wire:model="telphonenumber">
+              <input type="number" class="form-control" placeholder="What is the contact no. for the facility e.g +2567XXXXXXXX" name="telphonenumber" wire:model.live="telphonenumber">
           </div>
         </div>
   
@@ -165,20 +165,20 @@
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputEmail1" id="labels" class="form-label">Email address</label>
               @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter email" name="email" wire:model="email">
+            <input type="text" class="form-control" placeholder="Enter email" name="email" wire:model.live="email">
             <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
           </div>
           <div class="col-xxs-12 col-xs-6 mt alternate">
               <label for="exampleInputPassword1" id="labels" class="form-label">Password</label>
               @error('pswd') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="password" class="form-control" placeholder="Enter password" name="pswd" wire:model="pswd">
+            <input type="password" class="form-control" placeholder="Enter password" name="pswd" wire:model.live="pswd">
           </div>
         </div>
         <div class="row">    
             <div class="col-xxs-12 col-xs-6 mt alternate">
                 <label for="exampleInputPassword1" id="labels" class="form-label">Description</label>
                 @error('description') <span class="text-danger">{{ $message }}</span> @enderror
-                <textarea class="form-control" placeholder="Please describe the car" name="description" wire:model="description"></textarea>
+                <textarea class="form-control" placeholder="Please describe the car" name="description" wire:model.live="description"></textarea>
             </div>
             
         

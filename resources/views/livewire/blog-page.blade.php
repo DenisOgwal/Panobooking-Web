@@ -11,7 +11,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -140,22 +140,22 @@
                             @csrf
                                 <div class="form-group">
                                     @error('clientname') <span class="text-danger">{{ $message }}</span> @enderror
-                                     <input type="text" class="form-control" wire:model.lazy="clientname" id="clientname" placeholder="Add your name here" name="clientname" required>
+                                     <input type="text" class="form-control" wire:model.blur="clientname" id="clientname" placeholder="Add your name here" name="clientname" required>
                                 </div>
 
                                 <div class="form-group">
                                     @error('clientemail') <span class="text-danger">{{ $message }}</span> @enderror
-                                    <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model.lazy="clientemail"  required>
+                                    <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model.blur="clientemail"  required>
                                </div>
 
                                 <div class="form-group">
                                     @error('clientcompany') <span class="text-danger">{{ $message }}</span> @enderror
-                                    <input type="text" class="form-control" id="clientcompany" placeholder="Add your country here.." name="clientcompany" wire:model.lazy="clientcompany" required>
+                                    <input type="text" class="form-control" id="clientcompany" placeholder="Add your country here.." name="clientcompany" wire:model.blur="clientcompany" required>
                                 </div>
 
                                 <div class="form-group">
                                     @error('clientfeedback') <span class="text-danger">{{ $message }}</span> @enderror
-                                    <textarea  class="form-control" cols="30" rows="2" placeholder="Your Feedback..." id="clientfeedback"  name="clientfeedback"  required="required" wire:model.lazy="clientfeedback" ></textarea>
+                                    <textarea  class="form-control" cols="30" rows="2" placeholder="Your Feedback..." id="clientfeedback"  name="clientfeedback"  required="required" wire:model.blur="clientfeedback" ></textarea>
                                 </div>
 
                                 <div class="form-group">        

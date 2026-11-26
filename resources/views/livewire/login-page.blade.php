@@ -22,13 +22,13 @@
   
                     <div class="form-outline mb-2">
                       @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                      <input type="email" name="email" wire:model="email" class="form-control form-control-lg" />
+                      <input type="email" name="email" wire:model.live="email" class="form-control form-control-lg" />
                       <label class="form-label" for="form2Example17">Email address</label>
                     </div>
   
                     <div class="form-outline mb-2">
                       @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                      <input type="password" name="password"  wire:model="password" class="form-control form-control-lg" />
+                      <input type="password" name="password"  wire:model.live="password" class="form-control form-control-lg" />
                       <label class="form-label" for="form2Example27">Password</label>
                     </div>
   

@@ -1,3 +1,4 @@
+<div><div><div>{{-- TEMP (phase 0): extra wrappers absorb stray closing divs rendered further down; removed when this view is rebuilt --}}
 <div id="fh5co-page">
     
     <header id="fh5co-header-section" class="sticky-banner"> 
@@ -235,11 +236,11 @@
                         <div class="col-xxs-12 col-xs-12 mt alternate">
                             <div class="input-field">
                                 <label for="date-end">Check-in</label>
-                                <input type="date" class="form-control" name="checkindate"  wire:model="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
+                                <input type="date" class="form-control" name="checkindate"  wire:model.live="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
                             </div>
                         </div>
                         <script>
-                            document.addEventListener('livewire:load', function () {
+                            document.addEventListener('livewire:init', function () {
                                 
                                     $('#date-start').on('dp.change', function (e) {
                                 
@@ -250,29 +251,29 @@
                         <div class="col-xxs-12 col-xs-12 mt alternate">
                             <div wire:ignore class="input-field">
                                 <label for="date-end">Check-out</label>
-                                <input type="date" class="form-control" name="checkoutdate"  wire:model="checkoutdate" id="checkoutdate" placeholder="mm/dd/yyyy"/>
+                                <input type="date" class="form-control" name="checkoutdate"  wire:model.live="checkoutdate" id="checkoutdate" placeholder="mm/dd/yyyy"/>
                             </div>
                         </div>
                         <div class='col-xxs-12 col-xs-12 mt alternate'>
                             @error('Childrenno') <span class="text-danger">{{ $message }}</span> @enderror
                             <label for="Childrenno">No. of Children</label>
-                            <input type="nummber" class="form-control" name="Childrenno" id="Childrenno" wire:model="Childrenno" />    
+                            <input type="nummber" class="form-control" name="Childrenno" id="Childrenno" wire:model.live="Childrenno" />    
                             </div>
                         <div wire:ignore class='col-xxs-12 col-xs-12 mt alternate'>
                             @error('Destinationquantity') <span class="text-danger">{{ $message }}</span> @enderror
                             <label  wire:ignore for="Destinationquantity">No. Of Rooms ( @foreach ($rooms as $room) {{$room->NoOfRooms}}@endforeach Rooms Of this type Left)</label>
-                            <input type="number" class="form-control" name="Destinationquantity" id="Destinationquantity" wire:model="Destinationquantity" placeholder="Please Choose less or equal to No. available"/>    
+                            <input type="number" class="form-control" name="Destinationquantity" id="Destinationquantity" wire:model.live="Destinationquantity" placeholder="Please Choose less or equal to No. available"/>    
                         </div>
                         <div class='col-xxs-12 col-xs-12 mt alternate'>
                         @error('DestinationPrice') <span class="text-danger">{{ $message }}</span> @enderror
                         <label for="DestinationPrice">Total Payable</label>
-                        <input type="number" class="form-control" name="DestinationPrice" id="DestinationPrice" wire:model="DestinationPrice" readonly placeholder="Total Price for this"/>    
+                        <input type="number" class="form-control" name="DestinationPrice" id="DestinationPrice" wire:model.live="DestinationPrice" readonly placeholder="Total Price for this"/>    
                         </div>
-                        <!--<div class='col-xxs-12 col-xs-12 mt alternate'>
+                        {{--<div class='col-xxs-12 col-xs-12 mt alternate'>
                             @error('BookingDescription') <span class="text-danger">{{ $message }}</span> @enderror
                             <label for="DestinationPrice">Notes</label>
-                            <textarea type="hidden" class="form-control" name="BookingDescription" id="BookingDescription" wire:model="BookingDescription" placeholder="Please add Your Booking Notes here..."> </textarea>   
-                            </div>-->
+                            <textarea type="hidden" class="form-control" name="BookingDescription" id="BookingDescription" wire:model.live="BookingDescription" placeholder="Please add Your Booking Notes here..."> </textarea>   
+                            </div>--}}
                         <div class='col-xxs-12 col-xs-12 mt alternate'>
                             <label for="from">Note: You will be contacted shortly after, Your Booking is Received. Thank you.</label>
                         </div>
@@ -379,3 +380,6 @@
     </div>
 </footer>
 
+
+</div>
+</div></div>

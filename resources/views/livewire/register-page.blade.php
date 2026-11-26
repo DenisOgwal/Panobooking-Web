@@ -20,7 +20,7 @@
                       <i class="fas fa-user fa-lg me-3 fa-fw"></i>
                       <div class="form-outline flex-fill mb-0">
                         @error('name') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="text" class="form-control" name="name" wire:model="name"/>
+                        <input type="text" class="form-control" name="name" wire:model.live="name"/>
                        
                         <label class="form-label" for="form3Example1c">Your Name</label>
                       </div>
@@ -30,7 +30,7 @@
                       <i class="fas fa-envelope fa-lg me-3 fa-fw"></i>
                       <div class="form-outline flex-fill mb-0">
                         @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="email"  class="form-control" name="email" wire:model="email"/>
+                        <input type="email"  class="form-control" name="email" wire:model.live="email"/>
                         <label class="form-label" for="form3Example3c">Your Email</label>
                       </div>
                     </div>
@@ -39,13 +39,13 @@
                         <i class="fas fa-phone fa-lg me-3 fa-fw"></i>
                           <div class="form-outline align-items-center col-md-3 mb-2">
                             @error('code') <span class="text-danger">{{ $message }}</span> @enderror
-                            <input type="text" class="form-control form-control-lg" name="code" wire:model="code" />
+                            <input type="text" class="form-control form-control-lg" name="code" wire:model.live="code" />
                             <label class="form-label" for="form3Examplea4">Code +</label>
                         </div>
                       
                           <div class="form-outline align-items-center col-md-8 mb-2">
                             @error('phonenum') <span class="text-danger">{{ $message }}</span> @enderror
-                            <input type="number" class="form-control form-control-lg" name="phonenum" wire:model="phonenum" />
+                            <input type="number" class="form-control form-control-lg" name="phonenum" wire:model.live="phonenum" />
                             <label class="form-label" for="form3Examplea8">Phone Number</label>
                         </div>
                       </div>
@@ -55,7 +55,7 @@
                       <i class="fas fa-lock fa-lg me-3 fa-fw"></i>
                       <div class="form-outline flex-fill mb-0">
                         @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="password" class="form-control" name="password"  wire:model="password"/>
+                        <input type="password" class="form-control" name="password"  wire:model.live="password"/>
                         <label class="form-label" for="form3Example4c">Password</label>
                       </div>
                     </div>
@@ -64,7 +64,7 @@
                       <i class="fas fa-key fa-lg me-3 fa-fw"></i>
                       <div class="form-outline flex-fill mb-0">
                         @error('confirmpassword') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="password"  class="form-control" name="confirmpassword" wire:model="confirmpassword"/>
+                        <input type="password"  class="form-control" name="confirmpassword" wire:model.live="confirmpassword"/>
                         <label class="form-label" for="form3Example4cd">Repeat your password</label>
                       </div>
                     </div>

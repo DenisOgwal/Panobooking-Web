@@ -11,7 +11,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>

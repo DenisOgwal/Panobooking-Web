@@ -11,7 +11,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -435,12 +435,12 @@
                     
                     <div class="form-group">
                         @error('clientemail') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model.defer="clientemail"  required>
+                        <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model="clientemail"  required>
                    </div>
 
                     <div class="form-group">
                         @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="password" class="form-control" id="password" placeholder="Add your password here" wire:model.defer="password" required>
+                        <input type="password" class="form-control" id="password" placeholder="Add your password here" wire:model="password" required>
                     </div>
 
                 

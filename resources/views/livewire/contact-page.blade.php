@@ -12,7 +12,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -90,19 +90,19 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 @error('inputname') <span class="text-danger">{{ $message }}</span> @enderror
-                                <input type="text" class="form-control" name="inputname" wire:model.lazy="inputname" placeholder="Name">
+                                <input type="text" class="form-control" name="inputname" wire:model.blur="inputname" placeholder="Name">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                                <input type="text" class="form-control" name="email" wire:model.lazy="email" placeholder="Email">
+                                <input type="text" class="form-control" name="email" wire:model.blur="email" placeholder="Email">
                             </div>
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
                                 @error('contactinfo') <span class="text-danger">{{ $message }}</span> @enderror
-                                <textarea  class="form-control" name="contactinfo" wire:model.lazy="contactinfo" cols="30" rows="7" placeholder="Message"></textarea>
+                                <textarea  class="form-control" name="contactinfo" wire:model.blur="contactinfo" cols="30" rows="7" placeholder="Message"></textarea>
                             </div>
                         </div>
                         <div class="col-md-12">

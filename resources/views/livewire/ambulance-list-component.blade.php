@@ -11,7 +11,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -173,7 +173,7 @@
                                         <li class="product-size-deatils">
                                             <div class="show-label">
                                                 <label><i class="fa fa-sort-amount-asc"></i>Sort by : </label>
-                                                <select name="orderby" wire:model="sorting">
+                                                <select name="orderby" wire:model.live="sorting">
                                                     <option value="default">Default</option>
                                                     <option value="Name">Name</option>
                                                     <option value="Price">Price</option>

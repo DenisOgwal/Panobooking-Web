@@ -11,7 +11,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -117,7 +117,7 @@
                                             <div class="col-xxs-12 col-xs-6 mt alternate">
                                                 <section>
                                                     <label for="class">Adult:</label>
-                                                    <select class="cs-select cs-skin-border" name="no_of_adults" id="no_of_adults" {{--wire:model="no_of_adults"--}}>
+                                                    <select class="cs-select cs-skin-border" name="no_of_adults" id="no_of_adults" {{--wire:model.live="no_of_adults"--}}>
                                                         <option value="1" disabled selected>1 Adult</option>
                                                         <option value="1">1 Adult</option>
                                                         <option value="2">2 Adults</option>
@@ -141,7 +141,7 @@
                                             <div class="col-xxs-12 col-xs-6 mt alternate">
                                                 <section>
                                                     <label for="class">Children:</label>
-                                                    <select class="cs-select cs-skin-border" name="no_of_children" id="no_of_children" {{--wire:model="no_of_children"--}}>
+                                                    <select class="cs-select cs-skin-border" name="no_of_children" id="no_of_children" {{--wire:model.live="no_of_children"--}}>
                                                         <option value="0" disabled selected>0</option>
                                                         <option value="0">0 Children</option>
                                                         <option value="1">1 Child</option>
@@ -470,22 +470,22 @@
                         @csrf
                             <div class="form-group">
                                 @error('clientname') <span class="text-danger">{{ $message }}</span> @enderror
-                                 <input type="text" class="form-control"  id="clientname" placeholder="Add your name here" name="clientname" wire:model.lazy="clientname" required>
+                                 <input type="text" class="form-control"  id="clientname" placeholder="Add your name here" name="clientname" wire:model.blur="clientname" required>
                             </div>
 
                             <div class="form-group">
                                 @error('clientemail') <span class="text-danger">{{ $message }}</span> @enderror
-                                <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model.lazy="clientemail"  required>
+                                <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model.blur="clientemail"  required>
                            </div>
 
                             <div class="form-group">
                                 @error('clientcompany') <span class="text-danger">{{ $message }}</span> @enderror
-                                <input type="text" class="form-control" id="clientcompany" placeholder="Add your Country here" name="clientcompany" wire:model.lazy="clientcompany" required>
+                                <input type="text" class="form-control" id="clientcompany" placeholder="Add your Country here" name="clientcompany" wire:model.blur="clientcompany" required>
                             </div>
 
                             <div class="form-group">
                                 @error('clientfeedback') <span class="text-danger">{{ $message }}</span> @enderror
-                                <textarea  class="form-control" cols="30" rows="2" placeholder="Your Feedback..." id="clientfeedback"  name="clientfeedback"  required="required" wire:model.lazy="clientfeedback" ></textarea>
+                                <textarea  class="form-control" cols="30" rows="2" placeholder="Your Feedback..." id="clientfeedback"  name="clientfeedback"  required="required" wire:model.blur="clientfeedback" ></textarea>
                             </div>
 
                             <div class="form-group">        

@@ -1,29 +1,20 @@
 {
-    "name": "laravel/laravel",
+    "name": "panobooking/web",
     "type": "project",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "description": "Panobooking: stays, car rental, airport taxis, ambulances and tours.",
     "license": "MIT",
     "require": {
-        "php": "^7.3|^8.0",
-        "fruitcake/laravel-cors": "^2.0",
-        "guzzlehttp/guzzle": "^7.0.1",
-        "inertiajs/inertia-laravel": "^0.4.3",
-        "laravel/framework": "^8.75",
-        "laravel/jetstream": "^2.5",
-        "laravel/sanctum": "^2.11",
-        "laravel/tinker": "^2.5",
-        "livewire/livewire": "^2.10",
-        "symfony/mailer": "^5.4",
-        "tightenco/ziggy": "^1.0"
+        "php": "^8.3",
+        "guzzlehttp/guzzle": "^7.9",
+        "laravel/framework": "^13.0",
+        "laravel/tinker": "^3.2",
+        "livewire/livewire": "^4.4"
     },
     "require-dev": {
-        "facade/ignition": "^2.5",
-        "fakerphp/faker": "^1.9.1",
-        "laravel/sail": "^1.0.1",
-        "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^5.10",
-        "phpunit/phpunit": "^9.5.10"
+        "fakerphp/faker": "^1.24",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.9",
+        "phpunit/phpunit": "^12.5"
     },
     "autoload": {
         "psr-4": {
@@ -40,9 +31,7 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi", 
-            "@php artisan vendor:publish --force --tag=livewire:assets --ansi"
-
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
@@ -62,8 +51,11 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "8.4.0"
+        }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

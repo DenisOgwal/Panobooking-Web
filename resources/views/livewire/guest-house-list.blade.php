@@ -145,7 +145,7 @@
                                         <li class="product-size-deatils">
                                             <div class="show-label">
                                                 <label><i class="fa fa-sort-amount-asc"></i>Sort by : </label>
-                                                <select name="orderby" wire:model="sorting">
+                                                <select name="orderby" wire:model.live="sorting">
                                                     <option value="default">Default</option>
                                                     <option value="Name">Name</option>
                                                     <option value="Price">Price</option>

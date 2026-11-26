@@ -51,12 +51,12 @@
                     
                             <div class="col-xxs-12 col-xs-6 mt alternate">
                              <label for="from">Pickup Location:</label>
-                             <input type="text" wire:model="pickuppoint" class="form-control" name="pickuppoint" id="pickuppoint" placeholder="Place To pick Car or be picked from?"/>    
+                             <input type="text" wire:model.live="pickuppoint" class="form-control" name="pickuppoint" id="pickuppoint" placeholder="Place To pick Car or be picked from?"/>    
                              @error('pickuppoint') <span class="text-danger">{{ $message }}</span> @enderror
                              </div>
                              <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <label for="class">Drive</label>
-                                <select class="form-control" name="driveloc" id="driveloc" wire:model.defer="driveloc">
+                                <select class="form-control" name="driveloc" id="driveloc" wire:model="driveloc">
                                     <option value="Kampala Drive">Kampala Drive</option>
                                     <option value="Upcountry Drive">Upcountry Drive</option>
                                 </select>
@@ -64,24 +64,24 @@
                               </div>
                             <div class="col-xxs-12 col-xs-6 mt alternate">
                              <label for="class">No of cars:</label>
-                             <input type="number" class="form-control" name="Carsquantity" id="Carsquantity" wire:model="Carsquantity" placeholder="No.Of Cars"/>    
+                             <input type="number" class="form-control" name="Carsquantity" id="Carsquantity" wire:model.live="Carsquantity" placeholder="No.Of Cars"/>    
                            </div>
                            <div class="col-xxs-12 col-xs-6 mt alternate">
                              <label for="from">Duration</label>
-                             <input type="number" class="form-control" name="Duration" id="Duration" wire:model="Duration" placeholder="Duration in Days e.g 1"/>    
+                             <input type="number" class="form-control" name="Duration" id="Duration" wire:model.live="Duration" placeholder="Duration in Days e.g 1"/>    
                          </div>
                         
                            <div class="col-xxs-12 col-xs-6 mt alternate">
                              <label for="from">Price</label>
-                             <input type="number" class="form-control" name="driveprice" id="driveprice" wire:model="driveprice" readonly placeholder="Price for this"/>    
+                             <input type="number" class="form-control" name="driveprice" id="driveprice" wire:model.live="driveprice" readonly placeholder="Price for this"/>    
                              </div>
                          <div class="col-xxs-12 col-xs-6 mt alternate">
                              <label for="from">Pickup Date:</label>
-                             <input type="date" class="form-control" name="checkindate"  wire:model="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
+                             <input type="date" class="form-control" name="checkindate"  wire:model.live="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
                              </div>
                            
                            <div class="col-xxs-12 col-xs-6 mt alternate">
-                             <textarea class="form-control" placeholder="Add Other Instruction notes for this Booking" rows="3" name="bookingnotes" wire:model="bookingnotes"></textarea>
+                             <textarea class="form-control" placeholder="Add Other Instruction notes for this Booking" rows="3" name="bookingnotes" wire:model.live="bookingnotes"></textarea>
                          </div>
                          
                          <div class="col-xxs-12 col-xs-6 mt alternate" >

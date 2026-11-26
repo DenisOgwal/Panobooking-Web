@@ -47,33 +47,33 @@
                         <form wire:submit.prevent="submitaxirequest">
                             <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <label for="from">Enter Area:</label>
-                                <input type="text" class="form-control" id="Area" name="Area" wire:model.lazy="Area"  placeholder="Area"/>
+                                <input type="text" class="form-control" id="Area" name="Area" wire:model.blur="Area"  placeholder="Area"/>
                                 @error('Area') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-xxs-12 col-xs-6 mt alternate" >
                                 <label for="from">Pickup Point:</label>
-                                <input type="text" class="form-control" id="pickuppoint" name="pickuppoint" wire:model.lazy="pickuppoint"  placeholder="Pickup Point?"/>
+                                <input type="text" class="form-control" id="pickuppoint" name="pickuppoint" wire:model.blur="pickuppoint"  placeholder="Pickup Point?"/>
                                 @error('pickuppoint') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <label for="date-end">Reason:</label>
-                                <textarea class="form-control" rows="2" id="reason" name="reason" wire:model.lazy="reason" placeholder="Enter Reason for Request"></textarea>
+                                <textarea class="form-control" rows="2" id="reason" name="reason" wire:model.blur="reason" placeholder="Enter Reason for Request"></textarea>
                                 @error('reason') <span class="text-danger">{{ $message }}</span> @enderror
                                 </div>      
                             
                               <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <label for="from">Other Instructions</label>
-                                <textarea class="form-control" placeholder="Add Other Instruction notes for this Call" rows="2" name="bookingnotes" wire:model.lazy="bookingnotes"></textarea>
+                                <textarea class="form-control" placeholder="Add Other Instruction notes for this Call" rows="2" name="bookingnotes" wire:model.blur="bookingnotes"></textarea>
                                 @error('bookingnotes') <span class="text-danger">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <label for="from">Pickup Date</label>
-                                <input type="date" class="form-control" name="checkindate"  wire:model="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
+                                <input type="date" class="form-control" name="checkindate"  wire:model.live="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
                                 </div>
                                 <div class="col-xxs-12 col-xs-6 mt alternate">
                                     <label for="from">Pickup Time</label>
-                                    <input type="text" class="form-control"  wire:model="Pickuptime" name="Pickuptime"  id="datetime" placeholder="HH/MM/SS a"/>
+                                    <input type="text" class="form-control"  wire:model.live="Pickuptime" name="Pickuptime"  id="datetime" placeholder="HH/MM/SS a"/>
                                     </div>
                             </div>
                             

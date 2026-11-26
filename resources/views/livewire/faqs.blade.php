@@ -1,3 +1,4 @@
+<div>
 <header id="fh5co-header-section" class="sticky-banner"> 
     <div class="Informationcontainer">
         <div class="container">
@@ -11,7 +12,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -195,3 +196,5 @@
         </div>
     </div>
 </footer>
+
+</div>

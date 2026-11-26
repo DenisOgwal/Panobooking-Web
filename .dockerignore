@@ -12,3 +12,4 @@ public/hot
 public/storage
 docker-compose.yml
 Dockerfile
+public/build

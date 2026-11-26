@@ -1,3 +1,4 @@
+<div><div><div>{{-- TEMP (phase 0): extra wrappers absorb stray closing divs rendered further down; removed when this view is rebuilt --}}
 <div id="fh5co-page">
     <div class="Informationcontainer">
         <div class="container">
@@ -11,7 +12,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -164,12 +165,12 @@
                     
                     <div class="form-group">
                         @error('clientemail') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model.defer="clientemail"  required>
+                        <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model="clientemail"  required>
                    </div>
 
                     <div class="form-group">
                         @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="password" class="form-control" id="password" placeholder="Add your password here" wire:model.defer="password" required>
+                        <input type="password" class="form-control" id="password" placeholder="Add your password here" wire:model="password" required>
                     </div>
 
                 
@@ -204,7 +205,7 @@
                              <div class='product-wrapper'>
                                  <a href='{{route('TourPackageDetails',['searchslug'=>$tourpack->IDs])}}' class='single-banner-image-wrapper'>
                                      <img alt='' src='https://panobooking.com/AndroidFiles/TourPackages/{{$tourpack->TravelCompany}}{{$tourpack->PackageName}}.jpg ' style='Height:200px; width:100%;border-radius:10px;' onerror="this.onerror=null;this.src='images/place-2.jpg';"/>
-                                     <div class='price'><span></div>
+                                     <div class='price'><span></span></div>
                                  </a>
                                  <div class='product-description'>
                                      <div class='functional-buttons'>
@@ -325,3 +326,5 @@
     </div>
 </footer>
 </div>
+</div>
+</div></div>

@@ -11,7 +11,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -217,14 +217,14 @@
                             <div class="col-xxs-12 col-xs-12 mt">
                                 <div class="input-field">
                                     <label for="from">Destination:</label>
-                                    <input type="text" class="form-control" name="from_city" id="from_city" value="{{ request()->input('from_city') }}" {{--wire:model="from_city"--}} placeholder="Fort portal"/>
+                                    <input type="text" class="form-control" name="from_city" id="from_city" value="{{ request()->input('from_city') }}" {{--wire:model.live="from_city"--}} placeholder="Fort portal"/>
                                 </div>
                             </div>
                             
                             <div class="col-sm-12 mt">
                                 <section>
                                     <label for="class">Rooms:</label>
-                                    <select class="cs-select cs-skin-border" name="no_of_rooms" id="no_of_rooms" {{--wire:model="no_of_rooms"--}} >
+                                    <select class="cs-select cs-skin-border" name="no_of_rooms" id="no_of_rooms" {{--wire:model.live="no_of_rooms"--}} >
                                         <option value="" disabled selected>1 Room</option>
                                         <option value="1">1 Room</option>
                                         <option value="2">2 Rooms</option>
@@ -242,7 +242,7 @@
                             <div class="col-xxs-12 col-xs-6 mt">
                                 <section>
                                     <label for="class">Adult:</label>
-                                    <select class="cs-select cs-skin-border" name="no_of_adults" id="no_of_adults" {{--wire:model="no_of_adults"--}}>
+                                    <select class="cs-select cs-skin-border" name="no_of_adults" id="no_of_adults" {{--wire:model.live="no_of_adults"--}}>
                                         <option value="" disabled selected>1 Adult</option>
                                         <option value="1">1 Adult</option>
                                         <option value="2">2 Adults</option>
@@ -260,7 +260,7 @@
                             <div class="col-xxs-12 col-xs-6 mt">
                                 <section>
                                     <label for="class">Children:</label>
-                                    <select class="cs-select cs-skin-border" name="no_of_children" id="no_of_children" {{--wire:model="no_of_children"--}}>
+                                    <select class="cs-select cs-skin-border" name="no_of_children" id="no_of_children" {{--wire:model.live="no_of_children"--}}>
                                         <option value="" disabled selected>0</option>
                                         <option value="0">0 Children</option>
                                         <option value="1">1 Child</option>
@@ -887,12 +887,12 @@
                                         
                                         <div class="form-group">
                                             @error('clientemail') <span class="text-danger">{{ $message }}</span> @enderror
-                                            <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model.defer="clientemail"  required>
+                                            <input type="text" class="form-control" id="clientemail" placeholder="Add your email here" name="clientemail" wire:model="clientemail"  required>
                                        </div>
                     
                                         <div class="form-group">
                                             @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                                            <input type="password" class="form-control" id="password" placeholder="Add your password here" wire:model.defer="password" required>
+                                            <input type="password" class="form-control" id="password" placeholder="Add your password here" wire:model="password" required>
                                         </div>
                     
                                     

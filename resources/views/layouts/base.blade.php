@@ -334,7 +334,7 @@
 		@livewireScripts
 		
 		<script type="text/javascript">
-			window.livewire.on('userStore', () => {
+			Livewire.on('userStore', () => {
 				$('#modal-danger').modal('hide');
 			});
 		</script>

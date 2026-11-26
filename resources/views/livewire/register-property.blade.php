@@ -52,31 +52,31 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
           <label for="exampleInputEmail1" id="labels" class="form-label">Country</label>
           @error('country') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="Enter Country of Propeerty Location" name="country" wire:model="country">
+          <input type="text" class="form-control" placeholder="Enter Country of Propeerty Location" name="country" wire:model.live="country">
         </div>
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">City</label>
             @error('city') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="Enter City or Town of Property Location" name="city" wire:model="city">
+          <input type="text" class="form-control" placeholder="Enter City or Town of Property Location" name="city" wire:model.live="city">
         </div>
       </div>
       <div class="row">
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Region</label>
             @error('region') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="Which Region of the country?" name="region" wire:model="region">
+          <input type="text" class="form-control" placeholder="Which Region of the country?" name="region" wire:model.live="region">
         </div>
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">Place Name</label>
             @error('place') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="What is the place name?" name="place" wire:model="place">
+          <input type="text" class="form-control" placeholder="What is the place name?" name="place" wire:model.live="place">
         </div>
       </div>
       <div class="row">
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Place Type</label>
             @error('placetype') <span class="text-danger">{{ $message }}</span> @enderror
-            <select class="form-select" name="placetype" id="optionals" wire:model="placetype">
+            <select class="form-select" name="placetype" id="optionals" wire:model.live="placetype">
                 <option> Select Facility Category</option>
                 <option Value="Hotel">Hotel</option>
                 <option Value="Home Stays">Home Stays</option>
@@ -90,7 +90,7 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">Place Ratings</label>
             @error('ratings') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="number" class="form-control" placeholder="What is your Ratings from ascale of 3-5?" name="ratings" wire:model="ratings">
+          <input type="number" class="form-control" placeholder="What is your Ratings from ascale of 3-5?" name="ratings" wire:model.live="ratings">
         </div>
       </div>
 
@@ -98,12 +98,12 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Least Price</label>
             @error('leastprice') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="number" class="form-control" placeholder="What is the least price for the rooms you offer?" name="leastprice" wire:model="leastprice">
+            <input type="number" class="form-control" placeholder="What is the least price for the rooms you offer?" name="leastprice" wire:model.live="leastprice">
         </div>
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">Taxes Inclusive</label>
             @error('taxesinclusive') <span class="text-danger">{{ $message }}</span> @enderror
-            <select class="form-select" name="taxesinclusive" id="optionals" wire:model="taxesinclusive">
+            <select class="form-select" name="taxesinclusive" id="optionals" wire:model.live="taxesinclusive">
                 <option> Select Tax Inclusiveness</option>
                 <option Value="Tax Inclusive">Tax Inclusive</option>
                 <option Value="Not Inclusive">Not Inclusive</option>
@@ -114,12 +114,12 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label" >Least Price Short Description</label>
             @error('pricedescription') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="Talk about the advantages of the price offer." name="pricedescription" wire:model="pricedescription">
+          <input type="text" class="form-control" placeholder="Talk about the advantages of the price offer." name="pricedescription" wire:model.live="pricedescription">
         </div>
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">Comment "Slogan"</label>
             @error('slogan') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="What iss the slogan of the faciity" name="slogan" wire:model="slogan">
+          <input type="text" class="form-control" placeholder="What iss the slogan of the faciity" name="slogan" wire:model.live="slogan">
         </div>
       </div>
 
@@ -127,7 +127,7 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Credit Card Needed</label>
             @error('creditcard') <span class="text-danger">{{ $message }}</span> @enderror
-            <select class="form-select" name="creditcard" id="optionals" wire:model="creditcard">
+            <select class="form-select" name="creditcard" id="optionals" wire:model.live="creditcard">
                 <option> Select Credit Card Options</option>
                 <option Value="Credit Card Allowed">Credit Card Allowed</option>
                 <option Value="Credit Card Not Allowed">Creit Card Not Allowed</option>
@@ -136,7 +136,7 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">Exact Location</label>
             @error('exactlocation') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="E.g Plot No., House Name, Block, Street Name" name="exactlocation" wire:model="exactlocation">
+          <input type="text" class="form-control" placeholder="E.g Plot No., House Name, Block, Street Name" name="exactlocation" wire:model.live="exactlocation">
         </div>
       </div>
 
@@ -144,12 +144,12 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Bed and BreakFast Info</label>
             @error('bedandbreakfast') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="Enter Bed and Breakfast info related to the stay at the facility" name="bedandbreakfast" wire:model="bedandbreakfast">
+          <input type="text" class="form-control" placeholder="Enter Bed and Breakfast info related to the stay at the facility" name="bedandbreakfast" wire:model.live="bedandbreakfast">
         </div>
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">Facility Main Photo</label>
             @error('formFile') <span class="text-danger">{{ $message }}</span> @enderror
-            <input class="form-control" type="file" id="formFile" name="formFile" wire:model="formFile">
+            <input class="form-control" type="file" id="formFile" name="formFile" wire:model.live="formFile">
         </div>
       </div>
 
@@ -157,7 +157,7 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputPassword1" id="labels" class="form-label">Payment Options</label>
             @error('paymentoption') <span class="text-danger">{{ $message }}</span> @enderror
-            <select class="form-select" name="paymentoption" id="optionals"  wire:model="paymentoption">
+            <select class="form-select" name="paymentoption" id="optionals"  wire:model.live="paymentoption">
                 <option> Select Payment Options</option>
                 <option Value="Pay At Facility">Pay At Facility</option>
                 <option Value="E-Payment">E-Payment</option>
@@ -167,7 +167,7 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Telephone No.</label>
             @error('telephonenumber') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="number" class="form-control" placeholder="What is the contact no. for the facility e.g 2567XXXXXXXX" name="telephonenumber" wire:model="telephonenumber">
+            <input type="number" class="form-control" placeholder="What is the contact no. for the facility e.g 2567XXXXXXXX" name="telephonenumber" wire:model.live="telephonenumber">
         </div>
       </div>
 
@@ -175,7 +175,7 @@
         <div class="col-xxs-12 col-xs-6 mt alternate">
             <label for="exampleInputEmail1" id="labels" class="form-label">Email address</label>
             @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-          <input type="text" class="form-control" placeholder="Enter email" name="email" wire:model="email">
+          <input type="text" class="form-control" placeholder="Enter email" name="email" wire:model.live="email">
           <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
         </div>
         <div class="col-xxs-12 col-xs-6 mt alternate">

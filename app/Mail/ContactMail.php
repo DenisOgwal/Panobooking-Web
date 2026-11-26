@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Http\Livewire\ContactPage;
+use App\Livewire\ContactPage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;

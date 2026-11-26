@@ -182,7 +182,7 @@
                             @csrf
                         {{--<div class='product-price'>
                             <label for="from">No Of Rooms</label>
-                            <select class="cs-select cs-skin-border" name="Norooms" id="Norooms" wire:model="Norooms">
+                            <select class="cs-select cs-skin-border" name="Norooms" id="Norooms" wire:model.live="Norooms">
                                 
                                 @foreach ($rooms as $room) 
                                 @php $noofroo=$room->NoOfRooms @endphp
@@ -195,31 +195,31 @@
                         <div class="col-md-6">
                             <div class="input-field">
                                 <label for="date-end">Check-in</label>
-                                <input type="date" class="form-control" name="checkindate"  wire:model="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
+                                <input type="date" class="form-control" name="checkindate"  wire:model.live="checkindate" id="checkindate" placeholder="mm/dd/yyyy"/>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
                             <div wire:ignore class="input-field">
                                 <label for="date-end">Check-out</label>
-                                <input type="date" class="form-control" name="checkoutdate"  wire:model="checkoutdate" id="checkoutdate" placeholder="mm/dd/yyyy"/>
+                                <input type="date" class="form-control" name="checkoutdate"  wire:model.live="checkoutdate" id="checkoutdate" placeholder="mm/dd/yyyy"/>
                             </div>
                         </div>
                         <div class="col-md-6">
                             @error('Childrenno') <span class="text-danger">{{ $message }}</span> @enderror
                             <label for="Childrenno">No. of Children</label>
-                            <input type="nummber" class="form-control" name="Childrenno" id="Childrenno" wire:model="Childrenno" />    
+                            <input type="nummber" class="form-control" name="Childrenno" id="Childrenno" wire:model.live="Childrenno" />    
                             </div>
                         
                             <div class="col-md-6">
                         @error('DestinationPrice') <span class="text-danger">{{ $message }}</span> @enderror
                         <label for="DestinationPrice">Total Payable</label>
-                        <input type="number" class="form-control" name="DestinationPrice" id="DestinationPrice" wire:model="DestinationPrice" readonly placeholder="Total Price for this"/>    
+                        <input type="number" class="form-control" name="DestinationPrice" id="DestinationPrice" wire:model.live="DestinationPrice" readonly placeholder="Total Price for this"/>    
                         </div>
                         <div class="col-md-6">
                             @error('BookingDescription') <span class="text-danger">{{ $message }}</span> @enderror
                             <label for="DestinationPrice">Notes</label>
-                            <textarea type="text" class="form-control" name="BookingDescription" id="BookingDescription" wire:model="BookingDescription" placeholder="Please add Your Booking Notes here..."> </textarea>   
+                            <textarea type="text" class="form-control" name="BookingDescription" id="BookingDescription" wire:model.live="BookingDescription" placeholder="Please add Your Booking Notes here..."> </textarea>   
                             </div>
                             <div class="col-md-6" style="padding:10px">
                             <label for="from">Note: You will be contacted shortly after, Your Booking is Received. Thank you.</label>

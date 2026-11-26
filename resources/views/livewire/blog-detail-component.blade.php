@@ -11,7 +11,7 @@
                 <div id="currencysize" >
                     <span>Currency </span>
                    
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model="currencytype">
+                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
                         <option>UGX</option>
                         <option>USD</option>
                         <option>GBP</option>
@@ -105,13 +105,13 @@
         <div class="col-md-6">
             <div class="form-group">
                 @error('inputname')<p class ="text-danger">{{$message}}</p>@enderror
-                <input type="text" class="form-control" placeholder="Name"  name="inputname" wire:model.lazy="inputname" />    
+                <input type="text" class="form-control" placeholder="Name"  name="inputname" wire:model.blur="inputname" />    
             </div>    
         </div>
         <div class="col-md-6">
             <div class="form-group">
                 @error('email')<p class ="text-danger">{{$message}}</p>@enderror
-                <input type="text" class="form-control" placeholder="Email"  name="email" wire:model.lazy="email" />
+                <input type="text" class="form-control" placeholder="Email"  name="email" wire:model.blur="email" />
             </div>    
         </div>
     </div>
@@ -119,7 +119,7 @@
      <div class="col-md-12">
             <div class="form-group">
                 @error('comments')<p class ="text-danger">{{$message}}</p>@enderror
-                <textarea  class="form-control" cols="30" rows="7" placeholder="Comment..." id="comments"  name="comments" wire:model.lazy="comments" ></textarea>
+                <textarea  class="form-control" cols="30" rows="7" placeholder="Comment..." id="comments"  name="comments" wire:model.blur="comments" ></textarea>
             </div>    
      </div>
 

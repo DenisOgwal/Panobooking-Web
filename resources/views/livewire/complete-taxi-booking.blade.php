@@ -49,7 +49,7 @@
                     
                             <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <label for="class">Pick me up</label>
-                                <select class="form-control" id="pickuppoint" name="pickuppoint" wire:model="pickuppoint">
+                                <select class="form-control" id="pickuppoint" name="pickuppoint" wire:model.live="pickuppoint">
                                     <option value=" ">Select Pick up Point</option>
                                     <option value="From Airport">From Airport</option>
                                     <option value="To Airport">To Airport</option>
@@ -58,7 +58,7 @@
         
                             <div class="col-xxs-12 col-xs-6 mt alternate">
                                 <label for="class">Airport:</label>
-                                <select class="form-control" wire:model="airportfield"  id="airportfield" name="airportfield"  >
+                                <select class="form-control" wire:model.live="airportfield"  id="airportfield" name="airportfield"  >
                                     <option value=" ">Select Airport</option>
                                     <option value="Entebbe">Entebbe</option>
                                 </select>
@@ -66,7 +66,7 @@
                            
                            <div class="col-xxs-12 col-xs-6 mt alternate">
                             <label for="from">Place:</label>
-                            <select class="form-control" id="Destination" name="Destination" wire:model="Destination">
+                            <select class="form-control" id="Destination" name="Destination" wire:model.live="Destination">
                             @if(!empty($datas))
                                 @foreach ($datas as $data)
                                 <option value="{{$data['Tos']}}">{{$data['Tos']}}</option>
@@ -80,7 +80,7 @@
                         
                            <div class="col-xxs-12 col-xs-6 mt alternate">
                             <label for="class">No of People:</label>
-                            <select  class="form-control" wire:model="NoOfPeople" name="NoOfPeople" id="NoOfPeople">
+                            <select  class="form-control" wire:model.live="NoOfPeople" name="NoOfPeople" id="NoOfPeople">
                                 <option value=" ">Select No.Of People</option>
                                 <option value="1">1 Person</option>
                                 <option value="2">2 People</option>
@@ -96,20 +96,20 @@
                           </div>
                           <div class="col-xxs-12 col-xs-6 mt alternate">
                             <label for="from">Price</label>
-                            <input type="number" class="form-control" name="tripcost" id="tripcost" wire:model="tripcost" readonly placeholder="Price for this"/>    
+                            <input type="number" class="form-control" name="tripcost" id="tripcost" wire:model.live="tripcost" readonly placeholder="Price for this"/>    
                             </div>
                           <div class="col-xxs-12 col-xs-6 mt alternate" style="padding: 10px">
                             @error('bookingnotes') <span class="text-danger">{{ $message }}</span> @enderror
-                            <textarea class="form-control" placeholder="Add Other Instruction notes for this Booking" rows="2" name="bookingnotes" wire:model="bookingnotes"></textarea>
+                            <textarea class="form-control" placeholder="Add Other Instruction notes for this Booking" rows="2" name="bookingnotes" wire:model.live="bookingnotes"></textarea>
                         </div>
         
                         <div class="col-xxs-12 col-xs-6 mt alternate">
                         <label for="from">Pickup Date:</label>
-                        <input type="date" class="form-control" name="checkindate" id="checkindate" wire:model="checkindate" placeholder="mm/dd/yyyy"/>
+                        <input type="date" class="form-control" name="checkindate" id="checkindate" wire:model.live="checkindate" placeholder="mm/dd/yyyy"/>
                         </div>
                         <div class="col-xxs-12 col-xs-6 mt alternate">
                         <label for="from">Pickup Time:</label>
-                        <input type="text" class="form-control" name="Pickuptime"  id="datetime" wire:model="datetime"  placeholder="HH/MM/SS a"/>
+                        <input type="text" class="form-control" name="Pickuptime"  id="datetime" wire:model.live="datetime"  placeholder="HH/MM/SS a"/>
                         </div>
         
                         
