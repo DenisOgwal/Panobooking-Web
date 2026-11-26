@@ -1,103 +1,77 @@
 <?php
 
 namespace App\Livewire;
-use App\Support\ProviderNotifier;
-use App\Support\CustomerAuth;
-use App\Models\UserRegistrationModel;
-use Livewire\Component;
-use Illuminate\Support\Facades\Mail;
 
+use App\Models\UserRegistrationModel;
+use App\Support\CustomerAuth;
+use App\Support\ProviderNotifier;
+use Livewire\Component;
+
+/** /Register: new customer accounts start as "Not Approved" until an admin approves them. */
 class RegisterPage extends Component
 {
-    public $name;
-    public $email;
-    public $code;
-    public $phonenum;
-    public $password;
-    public $confirmpassword;
-    public function updated($fileds){
-        $this->validateOnly($fileds,[
-            'name' => 'required|min:6',
-            'email' => 'required|email',
-            'password' => 'required|min:8',
-            'code' => 'required',
-            'phonenum'=>'required',
-            'confirmpassword'=>'required|min:8',
-        ]);
-    }
-    public function submit()
-    {
-       
-       $data = $this->validate([
-            'name' => 'required|min:6',
-            'email' => 'required|email',
-            'password' => 'required|min:8',
-            'code' => 'required',
-            'phonenum'=>'required',
-            'confirmpassword'=>'required|min:8',
-        ]);
-        if($this->password==$this->confirmpassword){
-        $UserRegistrationModel= new UserRegistrationModel();
-        $UserRegistrationModel->FullNames = $this->name;
-        $UserRegistrationModel->Email = $this->email;
-        $UserRegistrationModel->Password = CustomerAuth::hash($this->password);
-        $UserRegistrationModel->Telephone = $this->code.$this->phonenum;
-        $UserRegistrationModel->ApprovalStatus = 'Not Approved';
-        $UserRegistrationModel->save();
-        app(ProviderNotifier::class)->send('checkreg.php', ['emails' => $this->email]);
-        $this->name='';
-        $this->email='';
-        $this->code='';
-        $this->phonenum='';
-        $this->password='';
-        $this->confirmpassword='';
-        /*if($this-> isOnline()){
-            $mail_data=[
-                'recipient'=>$this->email,
-                'fromEmail'=>'sales.panobooking@gmail.com',
-                'fromName'=>'PANOBOOKING ACCOUNTS',
-                'Subject'=>'Account Openning',
-                'body'=>'Please Click the button below to confirm your Panobooking account ',
-            ];
-            Mail::send('layouts.account_confirmation_Email',$mail_data, function($message) use($mail_data){
-                $message->to($this->email)
-                ->from('sales.panobooking@gmail.com' ,'PANOBOOKING ACCOUNTS')
-                ->subject('Account Openning');
-            });
-        }else{
-            session()->flash('success','email sent');
-            return redirect()->back()->withInput()->with('error','Check your internet connection');
-        }*/
+    public string $name = '';
+    public string $email = '';
+    public string $code = '+256';
+    public string $phonenum = '';
+    public string $password = '';
+    public string $confirmpassword = '';
 
-        $this->dispatch('alert', type: 'success',  message: 'User Created Successfully!. A confirmation Email has been sent. Confirm Account Email to begin using your Account.');
-        //return redirect()->to('/Login');
-        }else{
-            $this->dispatch('alert', type: 'error',  message: 'Password Does not match confirm Password!');  
-        }
-        //dd($this->name,$this->email,$this->password,$this->phonenum,'Progress');
+    public bool $registered = false;
+
+    protected function rules(): array
+    {
+        return [
+            'name' => 'required|string|min:3|max:120',
+            'email' => 'required|email|max:190|unique:registration,Email',
+            'code' => ['required', 'regex:/^\+\d{1,4}$/'],
+            'phonenum' => ['required', 'regex:/^[0-9 ]{6,15}$/'],
+            'password' => 'required|string|min:8|max:100',
+            'confirmpassword' => 'required|same:password',
+        ];
     }
-    public function isOnline($site='https://www.youtube.com/'){
-        if(@fopen($site,"r")){
-            return true;
-        }else{
-            return false;
+
+    protected function messages(): array
+    {
+        return [
+            'email.unique' => 'An account with this email already exists. Try signing in instead.',
+            'confirmpassword.same' => 'The passwords do not match.',
+            'phonenum.regex' => 'Enter digits only, e.g. 700 123456.',
+        ];
+    }
+
+    protected function validationAttributes(): array
+    {
+        return ['name' => 'full name', 'code' => 'country code', 'phonenum' => 'phone number', 'confirmpassword' => 'password confirmation'];
+    }
+
+    public function updated($field): void
+    {
+        if ($field !== 'password') {
+            $this->validateOnly($field);
         }
     }
+
+    public function submit(): void
+    {
+        $this->validate();
+
+        UserRegistrationModel::create([
+            'FullNames' => $this->name,
+            'Email' => $this->email,
+            'Password' => CustomerAuth::hash($this->password),
+            'Telephone' => $this->code . preg_replace('/\s+/', '', $this->phonenum),
+            'ApprovalStatus' => 'Not Approved',
+        ]);
+
+        app(ProviderNotifier::class)->send('checkreg.php', ['emails' => $this->email]);
+
+        $this->reset('password', 'confirmpassword');
+        $this->registered = true;
+    }
+
     public function render()
     {
-        return view('livewire.register-page')->layout('layouts.bases');
-    
-    }
-    public function alertSuccess()
-    {
-        $this->dispatch('alert', type: 'success',  message: 'User Created Successfully!');
-    }
-    public function alertError()
-    {
-        $this->dispatch('alert', type: 'error',  message: 'Something is Wrong!');
-    }
-    public function alertInfo()
-    {
-        $this->dispatch('alert', type: 'info',  message: 'Going Well!');
+        return view('livewire.register-page')->layout('components.layouts.app', ['title' => 'Create an account']);
     }
 }

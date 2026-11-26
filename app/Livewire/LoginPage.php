@@ -1,52 +1,61 @@
 <?php
 
 namespace App\Livewire;
+
 use App\Support\CustomerAuth;
-use App\Models\LoginModel;
-use Illuminate\Http\Request;
+use Livewire\Attributes\Url;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 
+/** /Login */
 class LoginPage extends Component
 {
-    public $name;
-    public $phonenum;
-    public $email;
-    public $password;
-    public function updated($fileds){
-        $this->validateOnly($fileds,[
-            'email' => 'required|email',
-            'password' => 'required|min:8',
-        ]);
-    }
-    public function signin() {
-       
-       $this->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:8',
-        ]);
+    #[Validate('required|email')]
+    public string $email = '';
 
-        $result = app(CustomerAuth::class)->attempt($this->email, $this->password);
+    #[Validate('required|min:8')]
+    public string $password = '';
 
-        if ($result === CustomerAuth::RESULT_OK) {
-            session()->flash('alert', ['type' => 'success', 'message' => 'Welcome back, ' . app(CustomerAuth::class)->name() . '!']);
-            return redirect()->to('/');
-        }
-
-        $message = $result === CustomerAuth::RESULT_BAD_PASSWORD
-            ? 'That password is incorrect.'
-            : 'No approved account exists for that email address.';
-        $this->dispatch('alert', type: 'error', message: $message);
-    }
+    /** Optional local path to return to after signing in (?return=/PendingBookings). */
+    #[Url(as: 'return', except: '')]
+    public string $returnTo = '';
 
     public function mount()
     {
         if (app(CustomerAuth::class)->check()) {
-            return redirect()->to('/');
+            return redirect()->to($this->safeReturn());
         }
+    }
+
+    public function signin()
+    {
+        $this->validate();
+
+        $auth = app(CustomerAuth::class);
+        $result = $auth->attempt($this->email, $this->password);
+
+        if ($result === CustomerAuth::RESULT_OK) {
+            session()->flash('alert', ['type' => 'success', 'message' => 'Welcome back, ' . $auth->name() . '!']);
+
+            return $this->redirect($this->safeReturn());
+        }
+
+        $this->reset('password');
+        $this->addError('email', $result === CustomerAuth::RESULT_BAD_PASSWORD
+            ? 'That password is incorrect.'
+            : 'No approved account exists for that email address.');
+    }
+
+    /** Only allow local paths, never another host. */
+    private function safeReturn(): string
+    {
+        $to = $this->returnTo;
+
+        return (str_starts_with($to, '/') && ! str_starts_with($to, '//')) ? $to : '/';
     }
 
     public function render()
     {
-        return view('livewire.login-page')->layout('layouts.bases');
+        return view('livewire.login-page')->layout('components.layouts.app', ['title' => 'Sign in']);
     }
 }

@@ -1,58 +1,29 @@
-
-<section class="vh-100" style="background-color: #3352ff;">
-    <div class="container py-5 h-100">
-      <div class="row d-flex justify-content-center align-items-center h-100">
-        <div class="col col-xl-10">
-          <div class="card" style="border-radius: 1rem;">
-            <div class="row g-0">
-              <div class="col-md-6 col-lg-5 d-none d-md-block">
-                <img src="{{asset('images/login 1.jpg')}}" alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;height:515px;"  />
-              </div>
-              <div class="col-md-6 col-lg-7 d-flex align-items-center">
-                <div class="card-body p-4 p-lg-3 text-black">
-  
-                  <form wire:submit.prevent="signin">
-                    @csrf
-                    <div class="d-flex align-items-center mb-1 pb-1">
-                        <img src="{{asset('images/panologo2.png')}}" alt="Logo" style='Height:80px;width:auto;'>
-          
+<div>
+    <section class="section">
+        <div class="container-xl">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-5">
+                    <div class="form-card">
+                        <div class="text-center mb-4">
+                            <img src="{{ asset('images/panaicon.png') }}" alt="" width="56" height="56" class="mb-3">
+                            <h1 class="h3 mb-1">Welcome back</h1>
+                            <p class="text-muted mb-0">Sign in to book and manage your trips.</p>
+                        </div>
+                        <form wire:submit="signin" novalidate>
+                            <x-field label="Email" name="email" type="email" wire:model="email" autocomplete="email" icon="bi-envelope" autofocus />
+                            <x-field label="Password" name="password" type="password" wire:model="password" autocomplete="current-password" icon="bi-key" />
+                            <button class="btn btn-primary btn-lg w-100" type="submit">
+                                <span wire:loading.remove wire:target="signin">Sign in</span>
+                                <span wire:loading wire:target="signin"><span class="spinner-border spinner-border-sm me-2"></span>Signing in…</span>
+                            </button>
+                        </form>
+                        <p class="text-center text-muted small mt-4 mb-0">New to Panobooking? <a href="/Register">Create an account</a></p>
                     </div>
-  
-                    <h5 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Sign into your account</h5>
-  
-                    <div class="form-outline mb-2">
-                      @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                      <input type="email" name="email" wire:model.live="email" class="form-control form-control-lg" />
-                      <label class="form-label" for="form2Example17">Email address</label>
-                    </div>
-  
-                    <div class="form-outline mb-2">
-                      @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                      <input type="password" name="password"  wire:model.live="password" class="form-control form-control-lg" />
-                      <label class="form-label" for="form2Example27">Password</label>
-                    </div>
-  
-                    <div class="pt-1 mb-2">
-                      <button class="btn btn-primary btn-lg" type="submit">Login</button>
-                    </div>
-  
-                    
-                    <p class="mb-2 pb-lg-2" style="color: #393f81;"> 
-                      <a class="small text-muted" href="#!">Forgot password?</a> &nbsp;|&nbsp;
-                      Don't have an account? <a href="/Register" style="color: #393f81;">Register here</a>
-                      </p>
-                      <p class="mb-2 pb-lg-2">
-                    <a href="/TermsAndConditions" class="small text-muted">Terms of use.</a>
-                    <a href="/privacypolicy" class="small text-muted">Privacy policy</a>
-                    <a href="/" class="small text-muted">Home</a>
-                      </p>
-                  </form>
-  
+                    <p class="text-center small text-muted mt-3">
+                        By continuing you agree to our <a href="/TermsAndConditions">terms</a> and <a href="/privacypolicy">privacy policy</a>.
+                    </p>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
+</div>

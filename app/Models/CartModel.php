@@ -33,4 +33,32 @@ class CartModel extends Model
     {
         return $query->where('Confirmed', 'Confirmed');
     }
+
+    /** Free-text filter over what the customer sees in their bookings list. */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+        if ($term === '') {
+            return $query;
+        }
+        $like = '%' . addcslashes($term, '%_\\') . '%';
+
+        return $query->where(fn ($q) => $q->where('Facility', 'like', $like)
+            ->orWhere('ProductName', 'like', $like)
+            ->orWhere('BookingType', 'like', $like)
+            ->orWhere('Descriptions', 'like', $like));
+    }
+
+    /** Icon for the booking type. */
+    public function getTypeIconAttribute(): string
+    {
+        return match ($this->BookingType) {
+            'Car Rental' => 'bi-car-front',
+            'Airport Taxi' => 'bi-taxi-front',
+            'Ambulance' => 'bi-heart-pulse',
+            'Tour Package' => 'bi-compass',
+            'Home Guest House' => 'bi-house-heart',
+            default => 'bi-building',
+        };
+    }
 }

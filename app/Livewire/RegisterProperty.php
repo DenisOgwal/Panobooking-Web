@@ -1,101 +1,84 @@
 <?php
 
 namespace App\Livewire;
-use App\Models\HotelsModel;
-use App\Models\BlogModel;
+
+use App\Livewire\Concerns\RegistersListing;
 use App\Models\RegisterPropertyModel;
-use Livewire\WithFileUploads;
 use Livewire\Component;
 
+/** /RegisterProperty: list a hotel, lodge, apartment… (pending approval). */
 class RegisterProperty extends Component
 {
-    use WithFileUploads;
-    public $country;
-    public $city;
-    public $region;
-    public $place;
-    public $placetype;
-    public $leastprice;
-    public $taxesinclusive;
-    public $pricedescription;
-    public $slogan;
-    public $creditcard;
-    public $exactlocation;
-    public $bedandbreakfast;
-    public $paymentoption;
-    public $telephonenumber;
-    public $email;
-    public $ratings;
-    public $formFile;
-    public function updated($fileds){
-        $this->validateOnly($fileds,[
-            'country' => 'required',
-            'city' => 'required',
-            'region' => 'required',
-            'place' => 'required',
-            'placetype'=>'required',
-            'leastprice'=>'required',
-            'taxesinclusive' => 'required',
-            'pricedescription' => 'required',
-            'slogan' => 'required',
-            'creditcard' => 'required',
-            'exactlocation'=>'required',
-            'bedandbreakfast'=>'required',
-            'paymentoption' => 'required',
-            'telephonenumber' => 'required',
-            'email' => 'required|email',
-            'ratings' => 'required',
-            'formFile' => 'required|image|mimes:jpeg,png,svg,jpg',
-        ]);
-    }
-    public function submit()
+    use RegistersListing;
+
+    public const TYPES = ['Hotel', 'Apartment', 'Lodge', 'Resort', 'Cottage', 'Guest House', 'Villa', 'Country Home'];
+
+    public string $place = '';
+    public string $placetype = 'Hotel';
+    public string $country = 'Uganda';
+    public string $region = '';
+    public string $city = '';
+    public string $exactlocation = '';
+    public $leastprice = '';
+    public string $pricedescription = '';
+    public string $taxesinclusive = 'Yes';
+    public string $paymentoption = 'No';
+    public string $creditcard = 'Yes';
+    public string $bedandbreakfast = 'Yes';
+    public string $slogan = '';
+    public $ratings = '';
+    public string $telephonenumber = '';
+    public string $email = '';
+
+    protected function rules(): array
     {
-       
-       $data = $this->validate([
-        'country' => 'required',
-        'city' => 'required',
-        'region' => 'required',
-        'place' => 'required',
-        'placetype'=>'required',
-        'leastprice'=>'required',
-        'taxesinclusive' => 'required',
-        'pricedescription' => 'required',
-        'slogan' => 'required',
-        'creditcard' => 'required',
-        'exactlocation'=>'required',
-        'bedandbreakfast'=>'required',
-        'paymentoption' => 'required',
-        'telephonenumber' => 'required',
-        'email' => 'required|email',
-        'ratings' => 'required',
-        'formFile' => 'required|image|mimes:jpeg,png,svg,jpg',
-        ]);
-        $RegisterPropertyModel= new RegisterPropertyModel();
-        $RegisterPropertyModel->Place = $this->place;
-        $RegisterPropertyModel->PlaceType = $this->placetype;
-        $RegisterPropertyModel->City = $this->city;
-        $RegisterPropertyModel->Country = $this->country;
-        $RegisterPropertyModel->Rating = $this->ratings;
-        $RegisterPropertyModel->Comment = $this->slogan;
-        $RegisterPropertyModel->Prices = $this->leastprice;
-        $RegisterPropertyModel->PriceSpecifications = $this->pricedescription;
-        $RegisterPropertyModel->TaxesInclusive = $this->taxesinclusive;
-        $RegisterPropertyModel->Prepayment = $this->paymentoption;
-        $RegisterPropertyModel->BedBreakFast = $this->bedandbreakfast;
-        $RegisterPropertyModel->CreditCard = $this->creditcard;
-        $RegisterPropertyModel->ExactLocation = $this->exactlocation;
-        $RegisterPropertyModel->EmailAddress = $this->email;
-        $RegisterPropertyModel->ContactNo = $this->telephonenumber;
-        $RegisterPropertyModel->save();
-        $newfilename=$this->place.'.jpg';
-        $this->formFile->storeAs('AndroidFiles/DestinationImages', $newfilename);
-        $this->reset();
-        $this->dispatch('alert', type: 'success',  message: 'Property Registered Successfully!. Please wait for confirmation and response from Panobooking');    
+        return [
+            'place' => [...self::SAFE_NAME, 'unique:pickuplocations,Place'],
+            'placetype' => 'required|in:' . implode(',', self::TYPES),
+            'country' => 'required|string|max:80',
+            'region' => 'required|string|max:80',
+            'city' => 'required|string|max:80',
+            'exactlocation' => 'required|string|max:200',
+            'leastprice' => 'required|numeric|min:1000',
+            'pricedescription' => 'required|string|max:500',
+            'taxesinclusive' => 'required|in:Yes,No',
+            'paymentoption' => 'required|in:Yes,No',
+            'creditcard' => 'required|in:Yes,No',
+            'bedandbreakfast' => 'required|in:Yes,No',
+            'slogan' => 'required|string|max:300',
+            'ratings' => 'required|numeric|min:1|max:5',
+            'telephonenumber' => ['required', 'regex:/^\+?[0-9 ]{7,20}$/'],
+            'email' => 'required|email|max:190',
+            'formFile' => self::PHOTO,
+        ];
     }
+
+    protected function validationAttributes(): array
+    {
+        return ['place' => 'property name', 'placetype' => 'property type', 'exactlocation' => 'address', 'leastprice' => 'lowest price',
+            'pricedescription' => 'price details', 'slogan' => 'short description', 'ratings' => 'star rating',
+            'telephonenumber' => 'phone number', 'formFile' => 'photo'];
+    }
+
+    public function submit(): void
+    {
+        $this->validate();
+
+        RegisterPropertyModel::create([
+            'Place' => $this->place, 'PlaceType' => $this->placetype, 'City' => $this->city, 'Country' => $this->country,
+            'Rating' => $this->ratings, 'Comment' => $this->slogan, 'Prices' => $this->leastprice,
+            'PriceSpecifications' => $this->pricedescription, 'TaxesInclusive' => $this->taxesinclusive,
+            'Prepayment' => $this->paymentoption, 'BedBreakFast' => $this->bedandbreakfast, 'CreditCard' => $this->creditcard,
+            'ExactLocation' => $this->exactlocation, 'EmailAddress' => $this->email, 'ContactNo' => $this->telephonenumber,
+            'SearchTerms' => trim("{$this->place} {$this->city} {$this->region} {$this->placetype}"),
+        ]);
+        $this->storePhoto('AndroidFiles/DestinationImages', $this->place);
+
+        $this->submitted = true;
+    }
+
     public function render()
     {
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        return view('livewire.register-property',['topproperties'=>$topproperties,'topblogs'=>$topblogs])->layout('layouts.basessss');
+        return view('livewire.register-property')->layout('components.layouts.app', ['title' => 'List your property']);
     }
 }

@@ -1,231 +1,47 @@
-<div id="fh5co-page">
-    <header id="fh5co-header-section" class="sticky-banner"> 
-        <div class="container">
-            <div class="nav-header">
-                <a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle dark"><i></i></a>
-                <h1 id="fh5co-logo"><a href="/"><img src="images/panologo.png" style="height: 40px;"></a></h1>
-                <!-- START #fh5co-menu-wrap -->
-                <nav id="fh5co-menu-wrap" role="navigation">
-                    <ul class="sf-menu" id="fh5co-primary-menu">
-                        <li><a href="/">Stays</a></li>	
-                        <li><a href="/taxis">Airport Taxi</a></li>
-                        <li><a href="/TourPackages">Tour Packages</a></li>	
-                        <li><a href="/cars">Car Rental</a></li>
-                        <li  class="active"><a href="/ambulance">Ambulance</a></li>
-                        <li><a href="/blog">Blog</a></li>
-                        <li><a href="/contactus">Contact</a></li>
-                        <li>
-                            @if(session()->has('pano_client_data'))
-                            
-                            <a href="#" class="fh5co-sub-ddown">{!!Str::limit(session()->get('pano_client_data.FullNames'),10)!!}</a>
-                            <ul class="fh5co-sub-menu">
-                                <li><a href="/PendingBookings">Pending Bookings</a></li>
-                                <li><a href="/Bookings">Bookings History</a></li>
-                                <a href="/clientlogout">Logout</a>
-                            </ul>
-                            @else
-                            <a href="#" class="fh5co-sub-ddown">Account</a>
-                            <ul class="fh5co-sub-menu">
-                                <li><a href="/Login">Sign in</a></li>
-                                <li><a href="/Register">Register</a></li>
-                            </ul>
-                            @endif
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
-  
-  <div class="container mt-5 mb-5 p-4 border border-info rounded">
-  <form wire:submit.prevent="submit" enctype="multipart/form-data">
-      <div class="row">
-          <div class="col">
-          <h2>Ambulance Details</h2>
-          </div>
-          <div class="col mr-auto">
-              <a href="/"><img src="images/panologo2.png" style="height: 40px;float: right;"></a>
-          </div>
-      </div>
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Ambulance Reg. No.</label>
-              @error('carname') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter Ambulance Name/ Brand or Registration number" name="carname" wire:model.live="carname">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Ambulance Category</label>
-              @error('carcategory') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Please Enter Ambulance Category e.g Category1 or Category 2" name="carcategory" wire:model.live="carcategory">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Facility Name</label>
-              @error('drivername') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Please Enter Facility's or Driver's Name " name="drivername" wire:model.live="drivername" >
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-            <label for="exampleInputPassword1" id="labels" class="form-label">Payment Options</label>
-            @error('paymentoption') <span class="text-danger">{{ $message }}</span> @enderror
-            <select class="form-select" name="paymentoption" id="optionals" wire:model.live="paymentoption">
-                <option> Select Payment Options</option>
-                <option Value="Pay At Facility">Pay Cash</option>
-                <option Value="E-Payment">E-Payment</option>
-                <option Value="Pay In the Bank">Pay In the Bank</option>
-              </select> 
-        </div>
-        </div>
-        
-  
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Address</label>
-              @error('Carlocation') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter Full address of Ambulance parking" name="Carlocation" wire:model.live="Carlocation">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-            <label for="exampleInputEmail1" id="labels" class="form-label">Ambulance Main Image</label>
-            @error('formFile') <span class="text-danger">{{ $message }}</span> @enderror
-            <input class="form-control" type="file" id="formFile" wire:model.live="formFile">
-        </div>
-        </div>
-  
-        <div class="row">    
-            <div class="col-xxs-12 col-xs-6 mt alternate">
-                <label for="exampleInputEmail1" id="labels" class="form-label">Email address</label>
-                @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="text" class="form-control" placeholder="Enter email" name="email" wire:model.live="email">
-              <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-            </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Telephone No.</label>
-              @error('telphonenumber') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="number" class="form-control" placeholder="What is the contact no. for the facility e.g +2567XXXXXXXX" name="telphonenumber" wire:model.live="telphonenumber">
-          </div>
-        </div>
-  
-        <div class="row">
-         
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Password</label>
-              @error('pswd') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="password" class="form-control" placeholder="Enter password" name="pswd" wire:model.live="pswd">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-            <label for="exampleInputPassword1" id="labels" class="form-label">Description</label>
-            @error('description') <span class="text-danger">{{ $message }}</span> @enderror
-            <textarea class="form-control" placeholder="Please describe the Ambulance" name="description" wire:model.live="description"></textarea>
-        </div>
-        </div>
-        <div class="row">        
-          </div>
-  
-  
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-      <div class="mb-3 form-check">
-        <div id="emailHelp" class="form-text">By signing in or creating an account, you agree with our <a href="/TermsAndConditions">Terms & Conditions</a> and <a href="/privacypolicy">Privacy Statement</a></div>
-        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-        <label class="form-check-label" for="exampleCheck1">Check This if you agree</label>
-      </div> 
-    </div>
-        </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-  </div>
-  <div>
-    &nbsp;
-  </div>
-  <footer>
-    <div id="footer">
-        <div class="container">
-            <div class="row row-bottom-padded-md">
-                <div class="owl-carousel footer-carousel owl-theme">
-                    <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Property</h3>
-                    <ul>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Hotel'])}}">Hotels</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Home Stays'])}}">Home Stays</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Guest Houses'])}}">Guest Houses</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Apartments'])}}">Apartments</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Country Homes'])}}">Country Homes</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Villas'])}}">Villas</a></li>
-                        </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Destinations</h3>
-                    <ul>
-                        <li><a href="/Regions">Regions</a></li>
-                        <li><a href="/Cities">Cities</a></li>
-                        <li><a href="/Cities">Towns</a></li>
-                        <li><a href="/TourismSites">Tourism Sites</a></li>
-                        <li><a href="/Events">Events</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Top Propertys</h3>
-                    <ul>
-                        @foreach ($topproperties as $topproperty)
-                        <li><a href="{{route('HotelSingle',['hotelslug'=>$topproperty->IDs])}}">{{$topproperty->Place}}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <!--<div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Interest</h3>
-                    <ul>
-                        <li><a href="#">Beaches</a></li>
-                        <li><a href="#">Family Travel</a></li>
-                        <li><a href="#">Budget Travel</a></li>
-                        <li><a href="#">Food &amp; Drink</a></li>
-                        <li><a href="#">Honeymoon and Romance</a></li>
-                    </ul>
-                </div>
-            </div>-->
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Articles</h3>
-                    <ul>
-                        @foreach ($topblogs as $topblog)
-                        <li><a href="{{route('BlogDetail',['blogslug'=>$topblog->ID])}}">{{$topblog->BlogTitle}}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Help</h3>
-                    <ul>
-                        <li><a href="/privacypolicy">Privacy Policy</a></li>
-                        <li><a href="/TermsAndConditions">Terms & Conditions</a></li>
-                        <li><a href="/Faqs">FAQS</a></li>
-                        <li><a href="/HelpCenter">Help Center</a></li>
-                        <li><a href="/contactus">Contact Us</a></li>
-                    </ul>
-                </div>
-            </div>
-            </div>
-        </div>
+<div>
+    <x-page-hero title="Add an ambulance" subtitle="Help people reach care faster. We verify every ambulance before it is listed." :crumbs="[['List with us'], ['Ambulance']]" />
+    <section class="section-sm">
+        <div class="container-xl">
             <div class="row justify-content-center">
-                <div class="col-md-6 col-md-offset-3 text-center">
-                    <p class="fh5co-social-icons">
-                        <a href="https://twitter.com/Panobooking1" target="_blank"><i class="icon-twitter2"></i></a>
-                        <a href="https://www.facebook.com/Panobooking1" target="_blank"><i class="icon-facebook2"></i></a>
-                        <a href="https://www.instagram.com/panobooking1/" target="_blank"><i class="icon-instagram" target="_blank"></i></a>
-                        <a href="https://www.youtube.com/channel/UCmjiIcgdYqeJCQn0dOb3IMA" target="_blank"><i class="icon-youtube"></i></a>
-                    </p>
-                    <p>Copyright &copy; <script>document.write(new Date().getFullYear());</script> <a href="panobooking.com">Panobooking</a>. All Rights Reserved.<!-- <br>Made with <i class="icon-heart3"></i> by <a href="http://freehtml5.co/" target="_blank">Freehtml5.co</a> --></p>
+                <div class="col-lg-8">
+                    <div class="form-card">
+                        @if ($submitted)
+                            @include('livewire.partials.listing-submitted', ['what' => 'ambulance'])
+                        @else
+                            <form wire:submit="submit" novalidate>
+                                <h2 class="h5 mb-3"><i class="bi bi-heart-pulse text-danger me-2"></i>The ambulance</h2>
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Number plate" name="carname" wire:model.blur="carname" placeholder="UAM 123A" /></div>
+                                    <div class="col-sm">
+                                        <x-field label="Level of care" name="carcategory" select wire:model="carcategory">
+                                            @foreach (\App\Livewire\RegisterAmbulance::CATEGORIES as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach
+                                        </x-field>
+                                    </div>
+                                </div>
+                                <x-field label="Vehicle" name="description" wire:model.blur="description" placeholder="e.g. Toyota Land Cruiser ambulance" />
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Operator / hospital" name="drivername" wire:model.blur="drivername" /></div>
+                                    <div class="col-sm"><x-field label="Based in" name="Carlocation" wire:model.blur="Carlocation" icon="bi-geo-alt" /></div>
+                                </div>
+                                <x-field label="Payment method" name="paymentoption" wire:model.blur="paymentoption" placeholder="Cash, insurance, mobile money…" />
+
+                                <h2 class="h5 mt-4 mb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i>Contact &amp; account</h2>
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Dispatch phone" name="telphonenumber" type="tel" wire:model.blur="telphonenumber" icon="bi-telephone" /></div>
+                                    <div class="col-sm"><x-field label="Email" name="email" type="email" wire:model.blur="email" icon="bi-envelope" /></div>
+                                </div>
+                                <x-field label="Driver app password" name="pswd" type="password" wire:model="pswd" autocomplete="new-password" hint="At least 8 characters." />
+                                @include('livewire.partials.photo-upload')
+
+                                <button class="btn btn-danger btn-lg w-100 mt-2" type="submit" wire:loading.attr="disabled" wire:target="formFile,submit">
+                                    <span wire:loading.remove wire:target="submit">Submit ambulance</span>
+                                    <span wire:loading wire:target="submit"><span class="spinner-border spinner-border-sm me-2"></span>Submitting…</span>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</footer>
-  </div>
-  
+    </section>
+</div>

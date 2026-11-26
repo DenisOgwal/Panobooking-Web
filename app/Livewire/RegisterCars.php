@@ -1,111 +1,99 @@
 <?php
 
 namespace App\Livewire;
-use App\Models\HotelsModel;
-use App\Models\BlogModel;
+
+use App\Livewire\Concerns\RegistersListing;
 use App\Models\RentalCarModel;
-use Livewire\WithFileUploads;
 use Livewire\Component;
 
+/** /RegisterCars: list a rental car (pending approval). */
 class RegisterCars extends Component
 {
-    use WithFileUploads;
-    public $carname;
-    public $carcategory;
-    public $CarSpecs;
-    public $carratings;
-    public $driversage;
-    public $Carcompany;
-    public $kampaladrive;
-    public $upcountrydrive;
-    public $noofpassengers;
-    public $noofdoors;
-    public $automaticoption;
-    public $laggagesoption;
-    public $Carlocation;
-    public $formFile;
-    public $email;
-    public $pswd;
-    public $description;
-    public $paymentoption;
-    public $telphonenumber;
-    public function updated($fileds){
-        $this->validateOnly($fileds,[
-            'carname' => 'required',
-            'carcategory' => 'required',
-            'CarSpecs' => 'required',
-            'carratings' => 'required',
-            'driversage' => 'required',
-            'Carcompany'=>'required',
-            'kampaladrive'=>'required',
-            'upcountrydrive' => 'required',
-            'noofpassengers' => 'required',
-            'noofdoors' => 'required',
-            'automaticoption' => 'required',
-            'laggagesoption'=>'required',
-            'Carlocation'=>'required',
-            'description' => 'required',
-            'paymentoption' => 'required',
-            'telphonenumber' => 'required',
-            'pswd' => 'required|min:5',
-            'email' => 'required|email',
-            'formFile' => 'required|image|mimes:jpeg,png,svg,jpg',
-        ]);
-    }
-    public function submit()
+    use RegistersListing;
+
+    public const CATEGORIES = ['Saloon', 'SUV', 'Van', 'Pickup', 'Minibus', 'Bus', 'Luxury'];
+
+    /** Panobooking's commission added to the owner's daily rates. */
+    public const COMMISSION = 0.05;
+
+    public string $carname = '';
+    public string $carcategory = 'Saloon';
+    public string $CarSpecs = '';
+    public string $Carcompany = '';
+    public string $Carlocation = '';
+    public $kampaladrive = '';
+    public $upcountrydrive = '';
+    public $noofpassengers = 4;
+    public $noofdoors = 4;
+    public string $automaticoption = 'Yes';
+    public $laggagesoption = 2;
+    public $driversage = 23;
+    public $carratings = '';
+    public string $description = '';
+    public string $paymentoption = 'Cash';
+    public string $telphonenumber = '';
+    public string $email = '';
+    public string $pswd = '';
+
+    protected function rules(): array
     {
-       
-       $data = $this->validate([
-            'carname' => 'required',
-            'carcategory' => 'required',
-            'CarSpecs' => 'required',
-            'carratings' => 'required',
-            'driversage' => 'required',
-            'Carcompany'=>'required',
-            'kampaladrive'=>'required',
-            'upcountrydrive' => 'required',
-            'noofpassengers' => 'required',
-            'noofdoors' => 'required',
-            'automaticoption' => 'required',
-            'laggagesoption'=>'required',
-            'Carlocation'=>'required',
-            'description' => 'required',
-            'paymentoption' => 'required',
-            'telphonenumber' => 'required',
-            'pswd' => 'required|min:5',
-            'email' => 'required|email',
-            'formFile' => 'required|image|mimes:jpeg,png,svg,jpg',
-        ]);
-        $RegisterCarModel= new RentalCarModel();
-        $RegisterCarModel->DriverName = $this->Carcompany;
-        $RegisterCarModel->TaxiNo = $this->carname;
-        $RegisterCarModel->Company = $this->Carcompany;
-        $RegisterCarModel->Ratings = $this->carratings;
-        $RegisterCarModel->DriverAge = $this->driversage;
-        $RegisterCarModel->CarSpec = $this->CarSpecs;
-        $RegisterCarModel->Repayments = $this->paymentoption;
-        $RegisterCarModel->Price = ($this->kampaladrive+(0.05*$this->kampaladrive));
-        $RegisterCarModel->PricePerDay = ($this->upcountrydrive+(0.05*$this->upcountrydrive));
-        $RegisterCarModel->CurrentLocation = $this->Carlocation;
-        $RegisterCarModel->EmailAddress = $this->email;
-        $RegisterCarModel->TelephoneNumber = $this->telphonenumber;
-        $RegisterCarModel->Password = md5($this->pswd);
-        $RegisterCarModel->Passengers = $this->noofpassengers;
-        $RegisterCarModel->Laggages  = $this->laggagesoption;
-        $RegisterCarModel->Automatic = $this->automaticoption;
-        $RegisterCarModel->Doors = $this->noofdoors;
-        $RegisterCarModel->Description = $this->description;
-        $RegisterCarModel->CarCategory = $this->carcategory;
-        $RegisterCarModel->save();
-        $newfilename=$this->Carcompany.$this->carname.'.jpg';
-        $this->formFile->storeAs('AndroidDriver/FileUpload/', $newfilename);
-        $this->reset();
-        $this->dispatch('alert', type: 'success',  message: 'Car Registered Successfully!. Please wait for confirmation and response from Panobooking');    
+        return [
+            'carname' => [...self::SAFE_NAME, 'unique:carrentals,TaxiNo'],
+            'carcategory' => 'required|in:' . implode(',', self::CATEGORIES),
+            'CarSpecs' => 'required|string|max:120',
+            'Carcompany' => self::SAFE_NAME,
+            'Carlocation' => 'required|string|max:120',
+            'kampaladrive' => 'required|numeric|min:1000',
+            'upcountrydrive' => 'required|numeric|min:1000',
+            'noofpassengers' => 'required|integer|min:1|max:60',
+            'noofdoors' => 'required|integer|min:2|max:6',
+            'automaticoption' => 'required|in:Yes,No',
+            'laggagesoption' => 'required|integer|min:0|max:20',
+            'driversage' => 'required|integer|min:18|max:80',
+            'carratings' => 'required|numeric|min:1|max:5',
+            'description' => 'required|string|max:1000',
+            'paymentoption' => 'required|string|max:60',
+            'telphonenumber' => ['required', 'regex:/^\+?[0-9 ]{7,20}$/'],
+            'email' => 'required|email|max:190',
+            'pswd' => 'required|string|min:8|max:100',
+            'formFile' => self::PHOTO,
+        ];
     }
+
+    protected function validationAttributes(): array
+    {
+        return ['carname' => 'number plate', 'carcategory' => 'category', 'CarSpecs' => 'make and model', 'Carcompany' => 'company name',
+            'Carlocation' => 'location', 'kampaladrive' => 'Kampala daily rate', 'upcountrydrive' => 'upcountry daily rate',
+            'noofpassengers' => 'passengers', 'noofdoors' => 'doors', 'laggagesoption' => 'luggage', 'driversage' => 'minimum driver age',
+            'carratings' => 'rating', 'paymentoption' => 'payment method', 'telphonenumber' => 'phone number', 'pswd' => 'password', 'formFile' => 'photo'];
+    }
+
+    public function submit(): void
+    {
+        $this->validate();
+        $withCommission = fn ($v) => round((float) $v * (1 + self::COMMISSION), 2);
+
+        RentalCarModel::create([
+            'DriverName' => $this->Carcompany, 'Company' => $this->Carcompany, 'TaxiNo' => $this->carname,
+            'Ratings' => $this->carratings, 'DriverAge' => $this->driversage, 'CarSpec' => $this->CarSpecs,
+            'Repayments' => $this->paymentoption,
+            'Price' => $withCommission($this->kampaladrive), 'PricePerDay' => $withCommission($this->upcountrydrive),
+            'CurrentLocation' => $this->Carlocation, 'City' => $this->Carlocation,
+            'EmailAddress' => $this->email, 'TelephoneNumber' => $this->telphonenumber,
+            // Driver passwords are checked by the separate driver app, which uses MD5.
+            'Password' => md5($this->pswd),
+            'Passengers' => $this->noofpassengers, 'Laggages' => $this->laggagesoption, 'Automatic' => $this->automaticoption,
+            'Doors' => $this->noofdoors, 'Description' => $this->description, 'CarCategory' => $this->carcategory,
+            'SearchTerms' => trim("{$this->CarSpecs} {$this->carcategory} {$this->Carlocation} {$this->Carcompany}"),
+        ]);
+        $this->storePhoto('AndroidDriver/FileUpload', $this->Carcompany . $this->carname);
+
+        $this->reset('pswd');
+        $this->submitted = true;
+    }
+
     public function render()
     {
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        return view('livewire.register-cars',['topproperties'=>$topproperties,'topblogs'=>$topblogs])->layout('layouts.basessss');
+        return view('livewire.register-cars')->layout('components.layouts.app', ['title' => 'Register a car']);
     }
 }

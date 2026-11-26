@@ -14,6 +14,9 @@ class AmbulanceModel extends Model
     protected $table = 'ambulances';
     protected $primaryKey = 'IDs';
 
+    /** Mass-assignable except the key and admin-controlled flags (forms must not self-approve or promote). */
+    protected $guarded = ['IDs', 'Approved', 'Trending', 'Featured', 'TrendRank', 'FaturedRank', 'Offered'];
+
     public const SEARCH_COLUMNS = ['SearchTerms', 'CurrentLocation', 'City', 'DriverName', 'TaxiNo', 'AmbulanceCategory', 'CarSpec'];
 
     public function Ambulancedetails(): HasOne

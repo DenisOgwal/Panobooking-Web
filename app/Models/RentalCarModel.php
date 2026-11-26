@@ -13,5 +13,8 @@ class RentalCarModel extends Model
     protected $table = 'carrentals';
     protected $primaryKey = 'IDs';
 
+    /** Mass-assignable except the key and admin-controlled flags (forms must not self-approve or promote). */
+    protected $guarded = ['IDs', 'Approved', 'Trending', 'Featured', 'TrendRank', 'FaturedRank', 'Offered'];
+
     public const SEARCH_COLUMNS = ['SearchTerms', 'CurrentLocation', 'City', 'DriverName', 'TaxiNo', 'Company', 'CarCategory', 'CarSpec'];
 }

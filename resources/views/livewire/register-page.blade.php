@@ -1,102 +1,49 @@
-
-
-<section class="vh-100" style="background-color: #3352ff;">
-    <div class="container h-100">
-      <div class="row d-flex justify-content-center align-items-center h-100">
-        <div class="col-lg-12 col-xl-11">
-          <div class="card text-black" style="border-radius: 25px;">
-            <div class="card-body p-md-3">
-              <div class="row justify-content-center">
-                <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
-  
-                  <p class="text-center h2 fw-bold mb-3 mx-1 mx-md-4 mt-4">
-                    <a href="/">Home</a>&nbsp;
-                    <a href="/Login">Login</a>&nbsp;
-                    Sign up</p>
-                
-                  <form class="mx-1 mx-md-4" wire:submit.prevent="submit" >
-                     @csrf
-                    <div class="d-flex flex-row align-items-center mb-2">
-                      <i class="fas fa-user fa-lg me-3 fa-fw"></i>
-                      <div class="form-outline flex-fill mb-0">
-                        @error('name') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="text" class="form-control" name="name" wire:model.live="name"/>
-                       
-                        <label class="form-label" for="form3Example1c">Your Name</label>
-                      </div>
+<div>
+    <section class="section">
+        <div class="container-xl">
+            <div class="row justify-content-center">
+                <div class="col-md-9 col-lg-6">
+                    <div class="form-card">
+                        @if ($registered)
+                            <div class="success-panel">
+                                <div class="check"><i class="bi bi-envelope-check" aria-hidden="true"></i></div>
+                                <h1 class="h3">Thanks, {{ \Illuminate\Support\Str::of($name)->explode(' ')->first() }}!</h1>
+                                <p class="text-muted">Your account for <strong>{{ $email }}</strong> has been created. We review new accounts quickly, and you'll be able to sign in once it's approved.</p>
+                                <a class="btn btn-primary" href="/">Explore stays</a>
+                            </div>
+                        @else
+                            <div class="text-center mb-4">
+                                <img src="{{ asset('images/panaicon.png') }}" alt="" width="56" height="56" class="mb-3">
+                                <h1 class="h3 mb-1">Create your account</h1>
+                                <p class="text-muted mb-0">Book stays, cars, transfers and tours in one place.</p>
+                            </div>
+                            <form wire:submit="submit" novalidate>
+                                <x-field label="Full name" name="name" wire:model.blur="name" autocomplete="name" icon="bi-person" />
+                                <x-field label="Email" name="email" type="email" wire:model.blur="email" autocomplete="email" icon="bi-envelope" />
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-4 col-sm-3">
+                                        <x-field label="Code" name="code" select wire:model="code">
+                                            @foreach (['+256' => 'UG +256', '+254' => 'KE +254', '+255' => 'TZ +255', '+250' => 'RW +250', '+211' => 'SS +211', '+243' => 'CD +243', '+44' => 'UK +44', '+1' => 'US +1'] as $value => $label)
+                                                <option value="{{ $value }}">{{ $label }}</option>
+                                            @endforeach
+                                        </x-field>
+                                    </div>
+                                    <div class="col"><x-field label="Phone number" name="phonenum" type="tel" wire:model.blur="phonenum" autocomplete="tel-national" placeholder="700 123456" /></div>
+                                </div>
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Password" name="password" type="password" wire:model="password" autocomplete="new-password" hint="At least 8 characters." /></div>
+                                    <div class="col-sm"><x-field label="Confirm password" name="confirmpassword" type="password" wire:model.blur="confirmpassword" autocomplete="new-password" /></div>
+                                </div>
+                                <button class="btn btn-primary btn-lg w-100" type="submit">
+                                    <span wire:loading.remove wire:target="submit">Create account</span>
+                                    <span wire:loading wire:target="submit"><span class="spinner-border spinner-border-sm me-2"></span>Creating…</span>
+                                </button>
+                            </form>
+                            <p class="text-center text-muted small mt-4 mb-0">Already have an account? <a href="/Login">Sign in</a></p>
+                        @endif
                     </div>
-  
-                    <div class="d-flex flex-row align-items-center mb-2">
-                      <i class="fas fa-envelope fa-lg me-3 fa-fw"></i>
-                      <div class="form-outline flex-fill mb-0">
-                        @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="email"  class="form-control" name="email" wire:model.live="email"/>
-                        <label class="form-label" for="form3Example3c">Your Email</label>
-                      </div>
-                    </div>
-
-                    <div class="d-flex flex-row align-items-center mb-2">
-                        <i class="fas fa-phone fa-lg me-3 fa-fw"></i>
-                          <div class="form-outline align-items-center col-md-3 mb-2">
-                            @error('code') <span class="text-danger">{{ $message }}</span> @enderror
-                            <input type="text" class="form-control form-control-lg" name="code" wire:model.live="code" />
-                            <label class="form-label" for="form3Examplea4">Code +</label>
-                        </div>
-                      
-                          <div class="form-outline align-items-center col-md-8 mb-2">
-                            @error('phonenum') <span class="text-danger">{{ $message }}</span> @enderror
-                            <input type="number" class="form-control form-control-lg" name="phonenum" wire:model.live="phonenum" />
-                            <label class="form-label" for="form3Examplea8">Phone Number</label>
-                        </div>
-                      </div>
-    
-  
-                    <div class="d-flex flex-row align-items-center mb-2">
-                      <i class="fas fa-lock fa-lg me-3 fa-fw"></i>
-                      <div class="form-outline flex-fill mb-0">
-                        @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="password" class="form-control" name="password"  wire:model.live="password"/>
-                        <label class="form-label" for="form3Example4c">Password</label>
-                      </div>
-                    </div>
-  
-                    <div class="d-flex flex-row align-items-center mb-2">
-                      <i class="fas fa-key fa-lg me-3 fa-fw"></i>
-                      <div class="form-outline flex-fill mb-0">
-                        @error('confirmpassword') <span class="text-danger">{{ $message }}</span> @enderror
-                        <input type="password"  class="form-control" name="confirmpassword" wire:model.live="confirmpassword"/>
-                        <label class="form-label" for="form3Example4cd">Repeat your password</label>
-                      </div>
-                    </div>
-  
-                    <div class="form-check d-flex justify-content-center mb-3">
-                      <input
-                        class="form-check-input me-2"
-                        type="checkbox"
-                        value=""
-                        id="form2Example3c"
-                      />
-                      <label class="form-check-label" for="form2Example3">
-                        I agree all statements in <a href="TermsAndConditions">Terms of service</a>
-                      </label>
-                    </div>
-  
-                    <div class="d-flex justify-content-center mx-4 mb-1 mb-lg-1">
-                      <button type="submit" class="btn btn-primary btn-lg">Register</button>
-                    </div>
-                  </form>
-  
                 </div>
-                <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
-  
-                    <img src="{{asset('images/Register Image 2.jpg')}}" class="img-fluid" alt="Sample image">
-  
-                </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
-  
+    </section>
+</div>

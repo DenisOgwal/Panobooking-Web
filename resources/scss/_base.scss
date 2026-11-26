@@ -222,3 +222,5 @@ h1, h2, .h1, .h2 { letter-spacing: -.025em; }
 .faq .accordion-button { font-weight: 600; }
 .faq .accordion-item + .accordion-item { margin-top: .5rem; }
 .faq .accordion-item { border-radius: $border-radius !important; border: 1px solid $pb-line; overflow: hidden; }
+
+.photo-preview { width: 9rem; height: 6.5rem; }

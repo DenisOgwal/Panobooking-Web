@@ -2,75 +2,70 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\RegistersListing;
 use App\Models\AmbulanceModel;
-use App\Models\HotelsModel;
-use App\Models\BlogModel;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
+/** /RegisterAmbulance: list an ambulance (pending approval). */
 class RegisterAmbulance extends Component
 {
-    use WithFileUploads;
-    public $carname;
-    public $carcategory;
-    public $drivername;
-    public $paymentoption;
-    public $Carlocation;
-    public $formFile;
-    public $email;
-    public $telphonenumber;
-    public $pswd;
-    public $description;
-    
-    public function updated($fileds){
-        $this->validateOnly($fileds,[
-            'carname' => 'required',
-            'carcategory' => 'required',
-            'drivername' => 'required',
-            'paymentoption' => 'required',
-            'Carlocation' => 'required',
-            'description' => 'required',
-            'telphonenumber' => 'required',
-            'pswd' => 'required|min:5',
-            'email' => 'required|email',
-            'formFile' => 'required|image|mimes:jpeg,png,svg,jpg',
-        ]);
-    }
-    public function submit()
+    use RegistersListing;
+
+    public const CATEGORIES = ['Advanced Life Support', 'Basic Life Support', 'Patient Transport', 'Neonatal', 'Air Ambulance'];
+
+    public string $carname = '';
+    public string $carcategory = 'Basic Life Support';
+    public string $drivername = '';
+    public string $Carlocation = '';
+    public string $description = '';
+    public string $paymentoption = 'Cash';
+    public string $telphonenumber = '';
+    public string $email = '';
+    public string $pswd = '';
+
+    protected function rules(): array
     {
-       
-       $data = $this->validate([
-        'carname' => 'required',
-        'carcategory' => 'required',
-        'drivername' => 'required',
-        'paymentoption' => 'required',
-        'Carlocation' => 'required',
-        'description' => 'required',
-        'telphonenumber' => 'required',
-        'pswd' => 'required|min:5',
-        'email' => 'required|email',
-        'formFile' => 'required|image|mimes:jpeg,png,svg,jpg',
-        ]);
-        $ambulanceModel= new AmbulanceModel();
-        $ambulanceModel->DriverName = $this->drivername;
-        $ambulanceModel->TaxiNo = $this->carname;
-        $ambulanceModel->AmbulanceCategory = $this->carcategory;
-        $ambulanceModel->Repayments  = $this->paymentoption;
-        $ambulanceModel->CurrentLocation = $this->Carlocation;
-        $ambulanceModel->CarSpec = $this->description;
-        $ambulanceModel->Password = md5($this->pswd);
-        $ambulanceModel->EmailAddress = $this->email;
-        $ambulanceModel->TelephoneNumber =$this->telphonenumber;
-        $ambulanceModel->save();
-        $newfilename=$this->carname.'.jpg';
-        $this->formFile->storeAs('AndroidDriver/FileUpload/', $newfilename);
-        $this->reset();
-        $this->dispatch('alert', type: 'success',  message: 'Ambulance Registered Successfully!. Please wait for confirmation and response from Panobooking');    
+        return [
+            'carname' => [...self::SAFE_NAME, 'unique:ambulances,TaxiNo'],
+            'carcategory' => 'required|in:' . implode(',', self::CATEGORIES),
+            'drivername' => 'required|string|max:120',
+            'Carlocation' => 'required|string|max:120',
+            'description' => 'required|string|max:200',
+            'paymentoption' => 'required|string|max:60',
+            'telphonenumber' => ['required', 'regex:/^\+?[0-9 ]{7,20}$/'],
+            'email' => 'required|email|max:190',
+            'pswd' => 'required|string|min:8|max:100',
+            'formFile' => self::PHOTO,
+        ];
     }
+
+    protected function validationAttributes(): array
+    {
+        return ['carname' => 'number plate', 'carcategory' => 'category', 'drivername' => 'operator name', 'Carlocation' => 'base location',
+            'description' => 'vehicle', 'paymentoption' => 'payment method', 'telphonenumber' => 'phone number', 'pswd' => 'password', 'formFile' => 'photo'];
+    }
+
+    public function submit(): void
+    {
+        $this->validate();
+
+        AmbulanceModel::create([
+            'DriverName' => $this->drivername, 'TaxiNo' => $this->carname, 'AmbulanceCategory' => $this->carcategory,
+            'Repayments' => $this->paymentoption, 'CurrentLocation' => $this->Carlocation, 'City' => $this->Carlocation,
+            'CarSpec' => $this->description,
+            // Driver passwords are checked by the separate driver app, which uses MD5.
+            'Password' => md5($this->pswd),
+            'EmailAddress' => $this->email, 'TelephoneNumber' => $this->telphonenumber,
+            'SearchTerms' => trim("{$this->carcategory} ambulance {$this->Carlocation}"),
+        ]);
+        $this->storePhoto('AndroidDriver/FileUpload', $this->carname);
+
+        $this->reset('pswd');
+        $this->submitted = true;
+    }
+
     public function render()
     {
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        return view('livewire.register-ambulance',['topproperties'=>$topproperties,'topblogs'=>$topblogs])->layout('layouts.basessss');
+        return view('livewire.register-ambulance')->layout('components.layouts.app', ['title' => 'Add an ambulance']);
     }
 }

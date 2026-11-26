@@ -1,293 +1,63 @@
-<div id="fh5co-page">
-    <header id="fh5co-header-section" class="sticky-banner"> 
-        <div class="container">
-            <div class="nav-header">
-                <a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle dark"><i></i></a>
-                <h1 id="fh5co-logo"><a href="/"><img src="images/panologo.png" style="height: 40px;"></a></h1>
-                <!-- START #fh5co-menu-wrap -->
-                <nav id="fh5co-menu-wrap" role="navigation">
-                    <ul class="sf-menu" id="fh5co-primary-menu">
-                        <li><a href="/">Stays</a></li>	
-                        <li><a href="/TourPackages">Tour Packages</a></li>	
-                        <li><a href="/taxis">Airport Taxi</a></li>
-                        <li class="active"><a href="/cars">Car Rental</a></li>
-                        <li><a href="/ambulance">Ambulance</a></li>
-                        <li><a href="/blog">Blog</a></li>
-                        <li><a href="/contactus">Contact</a></li>
-                        <li>
-                          @if(session()->has('pano_client_data'))
-                          
-                          <a href="#" class="fh5co-sub-ddown">{!!Str::limit(session()->get('pano_client_data.FullNames'),10)!!}</a>
-                          <ul class="fh5co-sub-menu">
-                              <li><a href="/PendingBookings">Pending Bookings</a></li>
-                              <li><a href="/Bookings">Bookings History</a></li>
-                              <a href="/clientlogout">Logout</a>
-                          </ul>
-                          @else
-                          <a href="#" class="fh5co-sub-ddown">Account</a>
-                          <ul class="fh5co-sub-menu">
-                              <li><a href="/Login">Sign in</a></li>
-                              <li><a href="/Register">Register</a></li>
-                          </ul>
-                          @endif
-                      </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
-  
-  <div class="container mt-5 mb-5 p-4 border border-info rounded">
-    <form wire:submit.prevent="submit" enctype="multipart/form-data">
-      <div class="row">
-          <div class="col">
-          <h2>Car Details</h2>
-          </div>
-          <div class="col mr-auto">
-              <a href="/"><img src="images/panologo2.png" style="height: 40px;float: right;"></a>
-          </div>
-      </div>
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Car Name</label>
-              @error('carname') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter Car Name/ Brand or Registration number" name="carname" wire:model.live="carname">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Car Category</label>
-              @error('carcategory') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Please Enter Car Category" name="carcategory" wire:model.live="carcategory">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Car Specifications</label>
-              @error('CarSpecs') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Please Enter Car Specifications E.g Car Model" name="CarSpecs" wire:model.live="CarSpecs">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Ratings</label>
-              @error('carratings') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="number" class="form-control" placeholder="What is your Car Ratings from ascale of 3-5?" name="carratings" wire:model.live="carratings">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Company/ Driver</label>
-              @error('Carcompany') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="text" class="form-control" placeholder="What is your car hiring company, else fill with your name" name="Carcompany" wire:model.live="Carcompany">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Driver Age</label>
-              @error('driversage') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="number" class="form-control" placeholder="What is the drivers Age" name="driversage" wire:model.live="driversage">
-          </div>
-        </div>
-  
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Rental Price per day/ Kampala Drive</label>
-              @error('kampaladrive') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="number" class="form-control" placeholder="What is the least price for renting the car for a drive around Kampala?" name="kampaladrive" wire:model.live="kampaladrive">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Rental Price per day/ Upcountry Drive</label>
-              @error('upcountrydrive') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="number" class="form-control" placeholder="What is the least price for renting the car for a drive outside Kampala?" name="upcountrydrive" wire:model.live="upcountrydrive">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label" >No. of Passengers</label>
-              @error('noofpassengers') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="How many passengers can your car carry Maximumly?" name="noofpassengers" wire:model.live="noofpassengers">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">No. of Doors</label>
-              @error('noofdoors') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="How many doors does your car have?" name="noofdoors" wire:model.live="noofdoors">
-          </div>
-        </div>
-  
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Automatic</label>
-              @error('automaticoption') <span class="text-danger">{{ $message }}</span> @enderror
-              <select class="form-select" name="automaticoption" id="optionals" wire:model.live="automaticoption">
-                  <option> Select Automatic Options</option>
-                  <option Value="Yes">Yes</option>
-                  <option Value="No">No</option>
-                </select> 
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Laggages</label>
-              @error('laggagesoption') <span class="text-danger">{{ $message }}</span> @enderror
-              <select class="form-select" name="laggagesoption" id="optionals" wire:model.live="laggagesoption">
-                <option> Select Laggages Options</option>
-                <option Value="Yes">Yes</option>
-                <option Value="No">No</option>
-              </select> 
-          </div>
-        </div>
-  
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Address</label>
-              @error('Carlocation') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter Full address of car parking" name="Carlocation" wire:model.live="Carlocation">
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-            <label for="exampleInputEmail1" id="labels" class="form-label">Car Main Image</label>
-            @error('formFile') <span class="text-danger">{{ $message }}</span> @enderror
-            <input class="form-control" type="file" id="formFile" wire:model.live="formFile">
-        </div>
-        </div>
-  
-        <div class="row">    
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Payment Options</label>
-              @error('paymentoption') <span class="text-danger">{{ $message }}</span> @enderror
-              <select class="form-select" name="paymentoption" id="optionals" wire:model.live="paymentoption">
-                  <option> Select Payment Options</option>
-                  <option Value="Pay At Facility">Pay Cash</option>
-                  <option Value="E-Payment">E-Payment</option>
-                  <option Value="Pay In the Bank">Pay In the Bank</option>
-                </select> 
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Telephone No.</label>
-              @error('telphonenumber') <span class="text-danger">{{ $message }}</span> @enderror
-              <input type="number" class="form-control" placeholder="What is the contact no. for the facility e.g +2567XXXXXXXX" name="telphonenumber" wire:model.live="telphonenumber">
-          </div>
-        </div>
-  
-        <div class="row">
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputEmail1" id="labels" class="form-label">Email address</label>
-              @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="text" class="form-control" placeholder="Enter email" name="email" wire:model.live="email">
-            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-          </div>
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-              <label for="exampleInputPassword1" id="labels" class="form-label">Password</label>
-              @error('pswd') <span class="text-danger">{{ $message }}</span> @enderror
-            <input type="password" class="form-control" placeholder="Enter password" name="pswd" wire:model.live="pswd">
-          </div>
-        </div>
-        <div class="row">    
-            <div class="col-xxs-12 col-xs-6 mt alternate">
-                <label for="exampleInputPassword1" id="labels" class="form-label">Description</label>
-                @error('description') <span class="text-danger">{{ $message }}</span> @enderror
-                <textarea class="form-control" placeholder="Please describe the car" name="description" wire:model.live="description"></textarea>
-            </div>
-            
-        
-  
-  
-        
-          <div class="col-xxs-12 col-xs-6 mt alternate">
-      <div class="mb-3 form-check">
-        <div id="emailHelp" class="form-text">By signing in or creating an account, you agree with our <a href="/TermsAndConditions">Terms & Conditions</a> and <a href="/privacypolicy">Privacy Statement</a></div>
-        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-        <label class="form-check-label" for="exampleCheck1">Check This if you agree</label>
-      </div> 
-    </div>
-        </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-  </div>
-  <div>
-    &nbsp;
-  </div>
-  <footer>
-    <div id="footer">
-        <div class="container">
-            <div class="row row-bottom-padded-md">
-                <div class="owl-carousel footer-carousel owl-theme">
-                    <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Property</h3>
-                    <ul>
-                      <li><a href="{{route('PropertyTypes',['propertyslug'=>'Hotel'])}}">Hotels</a></li>
-                      <li><a href="{{route('PropertyTypes',['propertyslug'=>'Home Stays'])}}">Home Stays</a></li>
-                      <li><a href="{{route('PropertyTypes',['propertyslug'=>'Guest Houses'])}}">Guest Houses</a></li>
-                      <li><a href="{{route('PropertyTypes',['propertyslug'=>'Apartments'])}}">Apartments</a></li>
-                      <li><a href="{{route('PropertyTypes',['propertyslug'=>'Country Homes'])}}">Country Homes</a></li>
-                      <li><a href="{{route('PropertyTypes',['propertyslug'=>'Villas'])}}">Villas</a></li>
-                        </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Destinations</h3>
-                    <ul>
-                      <li><a href="/Regions">Regions</a></li>
-                      <li><a href="/Cities">Cities</a></li>
-                      <li><a href="/Cities">Towns</a></li>
-                      <li><a href="/TourismSites">Tourism Sites</a></li>
-                      <li><a href="/Events">Events</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Top Propertys</h3>
-                    <ul>
-                        @foreach ($topproperties as $topproperty)
-                        <li><a href="{{route('HotelSingle',['hotelslug'=>$topproperty->IDs])}}">{{$topproperty->Place}}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <!--<div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Interest</h3>
-                    <ul>
-                        <li><a href="#">Beaches</a></li>
-                        <li><a href="#">Family Travel</a></li>
-                        <li><a href="#">Budget Travel</a></li>
-                        <li><a href="#">Food &amp; Drink</a></li>
-                        <li><a href="#">Honeymoon and Romance</a></li>
-                    </ul>
-                </div>
-            </div>-->
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Articles</h3>
-                    <ul>
-                        @foreach ($topblogs as $topblog)
-                        <li><a href="{{route('BlogDetail',['blogslug'=>$topblog->ID])}}">{{$topblog->BlogTitle}}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Help</h3>
-                    <ul>
-                        <li><a href="/privacypolicy">Privacy Policy</a></li>
-                        <li><a href="/TermsAndConditions">Terms & Conditions</a></li>
-                        <li><a href="/Faqs">FAQS</a></li>
-                        <li><a href="/HelpCenter">Help Center</a></li>
-                        <li><a href="/contactus">Contact Us</a></li>
-                    </ul>
-                </div>
-            </div>
-            </div>
-        </div>
+<div>
+    <x-page-hero title="Register a rental car" subtitle="Earn from your vehicle. We review every car before it is listed." :crumbs="[['List with us'], ['Car']]" />
+    <section class="section-sm">
+        <div class="container-xl">
             <div class="row justify-content-center">
-                <div class="col-md-6 col-md-offset-3 text-center">
-                    <p class="fh5co-social-icons">
-                        <a href="https://twitter.com/Panobooking1" target="_blank"><i class="icon-twitter2"></i></a>
-                        <a href="https://www.facebook.com/Panobooking1" target="_blank"><i class="icon-facebook2"></i></a>
-                        <a href="https://www.instagram.com/panobooking1/" target="_blank"><i class="icon-instagram" target="_blank"></i></a>
-                        <a href="https://www.youtube.com/channel/UCmjiIcgdYqeJCQn0dOb3IMA" target="_blank"><i class="icon-youtube"></i></a>
-                    </p>
-                    <p>Copyright &copy; <script>document.write(new Date().getFullYear());</script> <a href="panobooking.com">Panobooking</a>. All Rights Reserved.<!-- <br>Made with <i class="icon-heart3"></i> by <a href="http://freehtml5.co/" target="_blank">Freehtml5.co</a> --></p>
+                <div class="col-lg-9">
+                    <div class="form-card">
+                        @if ($submitted)
+                            @include('livewire.partials.listing-submitted', ['what' => 'car'])
+                        @else
+                            <form wire:submit="submit" novalidate>
+                                <h2 class="h5 mb-3"><i class="bi bi-car-front text-primary me-2"></i>The car</h2>
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Number plate" name="carname" wire:model.blur="carname" placeholder="UAA 123A" /></div>
+                                    <div class="col-sm"><x-field label="Make and model" name="CarSpecs" wire:model.blur="CarSpecs" placeholder="Toyota RAV4" /></div>
+                                    <div class="col-sm">
+                                        <x-field label="Category" name="carcategory" select wire:model="carcategory">
+                                            @foreach (\App\Livewire\RegisterCars::CATEGORIES as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach
+                                        </x-field>
+                                    </div>
+                                </div>
+                                <div class="row g-3 row-cols-2 row-cols-md-5 mb-3">
+                                    <div class="col"><x-field label="Passengers" name="noofpassengers" type="number" min="1" wire:model.blur="noofpassengers" /></div>
+                                    <div class="col"><x-field label="Doors" name="noofdoors" type="number" min="2" max="6" wire:model.blur="noofdoors" /></div>
+                                    <div class="col"><x-field label="Luggage" name="laggagesoption" type="number" min="0" wire:model.blur="laggagesoption" /></div>
+                                    <div class="col"><x-field label="Automatic" name="automaticoption" select wire:model="automaticoption"><option value="Yes">Yes</option><option value="No">No</option></x-field></div>
+                                    <div class="col"><x-field label="Rating" name="carratings" type="number" min="1" max="5" step="0.5" wire:model.blur="carratings" /></div>
+                                </div>
+                                <x-field label="Description" name="description" textarea rows="3" wire:model.blur="description" placeholder="Condition, extras, with or without driver…" />
+
+                                <h2 class="h5 mt-4 mb-3"><i class="bi bi-tag text-primary me-2"></i>Rates &amp; terms</h2>
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Kampala daily rate (UGX)" name="kampaladrive" type="number" min="1000" step="1000" wire:model.blur="kampaladrive" /></div>
+                                    <div class="col-sm"><x-field label="Upcountry daily rate (UGX)" name="upcountrydrive" type="number" min="1000" step="1000" wire:model.blur="upcountrydrive" /></div>
+                                    <div class="col-sm"><x-field label="Min. driver age" name="driversage" type="number" min="18" wire:model.blur="driversage" /></div>
+                                </div>
+                                <p class="small text-muted mt-n2">A {{ (int) (\App\Livewire\RegisterCars::COMMISSION * 100) }}% Panobooking service fee is added to the rates customers see.</p>
+                                <x-field label="Payment method" name="paymentoption" wire:model.blur="paymentoption" placeholder="Cash, mobile money…" />
+
+                                <h2 class="h5 mt-4 mb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i>Owner &amp; account</h2>
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Company or owner name" name="Carcompany" wire:model.blur="Carcompany" /></div>
+                                    <div class="col-sm"><x-field label="Car location" name="Carlocation" wire:model.blur="Carlocation" icon="bi-geo-alt" /></div>
+                                </div>
+                                <div class="row g-0 column-gap-3">
+                                    <div class="col-sm"><x-field label="Phone" name="telphonenumber" type="tel" wire:model.blur="telphonenumber" icon="bi-telephone" /></div>
+                                    <div class="col-sm"><x-field label="Email" name="email" type="email" wire:model.blur="email" icon="bi-envelope" /></div>
+                                    <div class="col-sm"><x-field label="Driver app password" name="pswd" type="password" wire:model="pswd" autocomplete="new-password" hint="At least 8 characters." /></div>
+                                </div>
+                                @include('livewire.partials.photo-upload')
+
+                                <button class="btn btn-primary btn-lg w-100 mt-2" type="submit" wire:loading.attr="disabled" wire:target="formFile,submit">
+                                    <span wire:loading.remove wire:target="submit">Submit car</span>
+                                    <span wire:loading wire:target="submit"><span class="spinner-border spinner-border-sm me-2"></span>Submitting…</span>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</footer>
-  </div>
-  
+    </section>
+</div>
