@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\SortsListings;
 use App\Models\HotelsModel;
-use App\Support\Facets;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Url;
 use Livewire\Component;
