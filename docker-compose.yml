@@ -1,0 +1,56 @@
+services:
+  app:
+    build: .
+    container_name: panobooking-app
+    ports:
+      - "8000:80"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: panobooking
+      DB_USERNAME: panobooking
+      DB_PASSWORD: secret
+      SESSION_DRIVER: database
+      MAIL_MAILER: log
+    volumes:
+      - app-storage:/var/www/html/storage/app
+      - app-uploads:/var/www/html/files
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    container_name: panobooking-db
+    environment:
+      MYSQL_DATABASE: panobooking
+      MYSQL_USER: panobooking
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./docker/db-init:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: panobooking-pma
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+
+volumes:
+  db-data:
+  app-storage:
+  app-uploads:
