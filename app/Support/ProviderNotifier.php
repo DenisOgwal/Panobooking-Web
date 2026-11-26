@@ -25,7 +25,7 @@ class ProviderNotifier
         $url = config('panobooking.notifications.base_url') . '/' . ltrim($script, '/');
 
         if (! config('panobooking.notifications.enabled')) {
-            Log::info('Provider notification not sent (disabled)', ['script' => $script, 'params' => array_keys($params)]);
+            $this->log('info', 'Provider notification not sent (disabled)', ['script' => $script, 'params' => array_keys($params)]);
 
             return false;
         }
@@ -33,9 +33,19 @@ class ProviderNotifier
         try {
             return Http::timeout(5)->get($url, $params)->successful();
         } catch (Throwable $e) {
-            Log::warning('Provider notification failed', ['script' => $script, 'error' => $e->getMessage()]);
+            $this->log('warning', 'Provider notification failed', ['script' => $script, 'error' => $e->getMessage()]);
 
             return false;
+        }
+    }
+
+    /** Logging must never break the booking that triggered it (e.g. an unwritable log file). */
+    private function log(string $level, string $message, array $context): void
+    {
+        try {
+            Log::log($level, $message, $context);
+        } catch (Throwable) {
+            // ignore
         }
     }
 }

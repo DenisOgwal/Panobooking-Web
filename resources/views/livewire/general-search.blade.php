@@ -1,381 +1,87 @@
+@php
+    use App\Support\Media;
+    use Illuminate\Support\Str;
+    $groups = collect([
+        ['stays', 'Stays', 'bi-building', $hotelsearched],
+        ['cars', 'Rental cars', 'bi-car-front', $carsearched],
+        ['taxis', 'Airport taxis', 'bi-taxi-front', $taxisearched],
+        ['ambulances', 'Ambulances', 'bi-heart-pulse', $ambulancesearched],
+        ['tours', 'Tour packages', 'bi-compass', $tourpackagesearched],
+        ['sites', 'Tourism sites', 'bi-camera', $tourismsites],
+        ['events', 'Events', 'bi-calendar-event', $eventss],
+    ]);
+    $total = $groups->sum(fn ($g) => $g[3]->count());
+@endphp
+<div>
+    <x-page-hero :title="$term !== '' ? 'Results for “' . $term . '”' : 'Search Panobooking'"
+                 :subtitle="$total . ' ' . Str::plural('match', $total) . ' across stays, transport, tours and events'"
+                 :crumbs="[['Search']]">
+        <form class="mt-3 header-search search-wide input-icon" action="{{ route('generalSearchs') }}" method="GET" role="search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <label class="visually-hidden" for="gs-term">Search</label>
+            <input id="gs-term" class="form-control form-control-lg rounded-pill" type="search" name="salessearch" value="{{ $term }}" placeholder="Try a town, hotel, car or activity">
+        </form>
+    </x-page-hero>
 
-<div id="fh5co-page">
-    <div class="Informationcontainer">
-        <div class="container">
-            <div class="row" id="centerrow">
-                <form name="search_hotel_form" action="{{route('generalSearchs')}}" method="GET">
-                <div  id="generalsearch" ><input type="search" name="salessearch" id="salessearch" placeholder="Search Accomodation, Cars, Airport Taxis, Ambulances..."/>
-                <button class="btn shadow-none Listingbuttonss" type='submit' name="searchbutton">Search</button></div>
-                </form>
-                <form wire:submit.prevent="changecurrency">
-                    @csrf
-                <div id="currencysize" >
-                    <span>Currency </span>
-                   
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
-                        <option>UGX</option>
-                        <option>USD</option>
-                        <option>GBP</option>
-                        <option>EUR</option>
-                        <option>KES</option>
-                        <option>TZS</option>	
-                        </select>  
-                    </div>     	
-            </form>
-                <div id="registrybuttons" ><p><a href="/RegisterProperty"><button class="btn shadow-none Listingbuttons">List Property</button></a><a href="/RegisterCars"><button class="btn shadow-none Listingbuttons">Register Car</button></a><a href="/RegisterAmbulance"><button class="btn shadow-none Listingbuttons">Add Ambulance</button></a></p></div>
-            </div>
-        </div>
-    </div> 
-    <header id="fh5co-header-section" class="sticky-banner"> 
-        <div class="container">
-            <div class="nav-header">
-                <a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle dark"><i></i></a>
-                <h1 id="fh5co-logo"><a href="/"><img src="images/panologo.png" style="height:50px;"></a></h1>
-                <!-- START #fh5co-menu-wrap -->
-                <nav id="fh5co-menu-wrap" role="navigation">
-                    <ul class="sf-menu" id="fh5co-primary-menu">
-                        <li class="active"><a href="/">Stays</a></li>	
-                        <li><a href="/TourPackages">Tour Packages</a></li>	
-                        <li><a href="/taxis">Airport Taxi</a></li>
-                        <li><a href="/cars">Car Rental</a></li>
-                        <li><a href="/ambulance">Ambulance</a></li>
-                        <li><a href="/blog">Blog</a></li>
-                        <li><a href="/contactus">Contact</a></li>
-                        <li>
-                            @if(session()->has('pano_client_data'))
-                            
-                            <a href="#" class="fh5co-sub-ddown">{!!Str::limit(session()->get('pano_client_data.FullNames'),10)!!}</a>
-                            <ul class="fh5co-sub-menu">
-                                <li><a href="/PendingBookings">Pending Bookings</a></li>
-                                <li><a href="/Bookings">Bookings History</a></li>
-                                <a href="/clientlogout">Logout</a>
-                            </ul>
-                            @else
-                            <a href="#" class="fh5co-sub-ddown">Account</a>
-                            <ul class="fh5co-sub-menu">
-                                <li><a href="/Login">Sign in</a></li>
-                                <li><a href="/Register">Register</a></li>
-                            </ul>
-                            @endif
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <div wire:ignore id="fh5co-tours" class="fh5co-section-gray">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                    <h3>Stays Search</h3>
-                <p>{{$hotelsearched->count()}} Results Found for {{request()->input('salessearch')}} Stays Search</p>
-                </div>
-            </div>
-          
-            <div class="row">
-                <div class="owl-carousel featured-carousel owl-theme" >
-                @foreach ($hotelsearched as $hotelsearched)
-                <div class="item" >
-                <div class="col-md-4 col-sm-3 fh5co-tours animate-box" style="width:100%;" data-animate-effect="fadeIn">
-                    <div  href="{{route('HotelSingle',['hotelslug'=>$hotelsearched->IDs])}}"><img src="https://panobooking.com/AndroidFiles/DestinationImages/{{$hotelsearched->Place}}.jpg"  class="img-responsive" onerror="this.onerror=null;this.src='images/place-2.jpg';"/>
-                        <div class="desc">
-                            <span></span>
-                            <h3>{{$hotelsearched->Place}}</h3>
-                          
-                            <span>{{ $hotelsearched->City}}</span>
-                            <span class="price">{!!$currencypick!!}. {{number_format(ceil($hotelsearched->Prices/$currenyvalue),0)}}</span>
-                            <a class="btn btn-primary btn-outline" href="{{route('HotelSingle',['hotelslug'=>$hotelsearched->IDs])}}">Book Now <i class="icon-arrow-right22"></i></a>
-                        </div>
-                    </div>
-                </div> 
-            </div>  
-                @endforeach
-            </div>
-        </div>
-        </div>
+    <div class="container-xl">
+        <nav class="d-flex flex-wrap gap-2 py-3" aria-label="Result types">
+            @foreach ($groups as [$key, $label, $icon, $items])
+                <a @class(['btn btn-sm btn-icon', 'btn-soft' => $items->isNotEmpty(), 'btn-ghost text-muted' => $items->isEmpty()]) href="#{{ $key }}">
+                    <i class="bi {{ $icon }}"></i>{{ $label }} <span class="badge rounded-pill text-bg-light">{{ $items->count() }}</span>
+                </a>
+            @endforeach
+        </nav>
     </div>
 
-    <div id="fh5co-tours" class="fh5co-section-gray">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                    <h3>Rental Cars Search</h3>
-                    <p>{{$carsearched->count()}} Results for {{request()->input('salessearch')}} Cars Search</p>
-                </div>
+    @if ($total === 0)
+        <section class="section-sm">
+            <div class="container-xl">
+                <x-empty-state title="Nothing matched “{{ $term }}”">Check the spelling, or try a town such as Kampala, Jinja or Entebbe.</x-empty-state>
             </div>
-            <div class="row">
-                <div class="owl-carousel taxifeatured-carousel owl-theme"  style="color:black;">
-                    @foreach ($carsearched as $carsearched)
-                    <div class="item">
-                    <div class="col-md-4 col-sm-6 fh5co-tours animate-box" style="width:100%;" data-animate-effect="fadeIn">
-                        <div  href="{{route('CarDetails',['carslug'=>$carsearched->IDs])}}"><img src="https://panobooking.com/AndroidDriver/FileUpload/{{$carsearched->DriverName}}{{$carsearched->TaxiNo}}.jpg"  class="img-responsive" onerror="this.onerror=null;this.src='images/place-2.jpg';"/>
-                            <div class="desc">
-                                <span></span>
-                                <h3>{{$carsearched->TaxiNo}}</h3>
-                                <span class="price">{!!$currencypick!!}. {{number_format(ceil($carsearched->Price/$currenyvalue),0)}}</span>
-                                <a class="btn btn-primary btn-outline" href="{{route('CarDetails',['carslug'=>$carsearched->IDs])}}">Book Now <i class="icon-arrow-right22"></i></a>
-                            </div>
+        </section>
+    @endif
+
+    @foreach ($groups as [$key, $label, $icon, $items])
+        @continue($items->isEmpty())
+        <section id="{{ $key }}" class="section-sm">
+            <div class="container-xl">
+                <x-section-heading :title="$label" />
+                <div class="row g-3 g-lg-4 row-cols-1 row-cols-sm-2 row-cols-lg-4">
+                    @foreach ($items as $item)
+                        <div class="col">
+                            @switch($key)
+                                @case('stays')
+                                    <x-listing-card :href="route('HotelSingle', ['hotelslug' => $item->IDs])" :image="Media::image('hotel', $item)"
+                                        :title="$item->Place" :location="$item->City" :rating="$item->Rating" :price="$item->Prices" unit="per night" :badge="$item->PlaceType" />
+                                    @break
+                                @case('cars')
+                                    @include('livewire.partials.vehicle-card', ['vehicle' => $item, 'type' => 'car'])
+                                    @break
+                                @case('taxis')
+                                    @include('livewire.partials.vehicle-card', ['vehicle' => $item, 'type' => 'taxi'])
+                                    @break
+                                @case('ambulances')
+                                    @include('livewire.partials.vehicle-card', ['vehicle' => $item, 'type' => 'ambulance'])
+                                    @break
+                                @case('tours')
+                                    <x-listing-card :href="route('TourPackageDetails', ['searchslug' => $item->IDs])" :image="Media::image('tour', $item)"
+                                        :title="$item->PackageName" :location="$item->City" :price="$item->PackageFees2" price-prefix="" unit="per person"
+                                        :badge="$item->TripDays ? $item->TripDays . ' days' : null" />
+                                    @break
+                                @case('sites')
+                                    <x-listing-card :href="route('TourismSiteDetails', ['searchslug' => $item->ID])" :image="Media::image('site', $item)"
+                                        :title="$item->SiteName" :location="$item->City" cta="Explore">{{ Str::limit($item->ShortDescription, 70) }}</x-listing-card>
+                                    @break
+                                @case('events')
+                                    <x-listing-card :href="route('EventsDetails', ['searchslug' => $item->ID])" :image="Media::image('event', $item)"
+                                        :title="$item->EventName" :location="$item->City" cta="Details"
+                                        :badge="\Illuminate\Support\Carbon::parse($item->StartDate)->format('j M')">{{ Str::limit($item->ShortDescription, 70) }}</x-listing-card>
+                                    @break
+                            @endswitch
                         </div>
-                    </div> 
-                </div>  
                     @endforeach
                 </div>
-            </div> 
-        </div>
-    </div>
-
-    <div id="fh5co-tours" class="fh5co-section-gray">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                    <h3>Taxi Results Search</h3>
-                    <p>{{$taxisearched->count()}} Results for {{request()->input('salessearch')}} Airport Taxi Search</p>
-                </div>
             </div>
-            <div class="row">
-                <div class="owl-carousel taxifeatured-carousel owl-theme">
-                @foreach ($taxisearched as $taxisearched)
-                <div class="item" >
-                    <div class="col-md-4 col-sm-6 fh5co-tours animate-box" style="width:100%;" data-animate-effect="fadeIn">
-                        <div  href="{{route('TaxiDetails',['taxislug'=>$taxisearched->IDs])}}"><img src="https://panobooking.com/AndroidDriver/FileUpload/{{$taxisearched->TaxiNo}}.jpg" class="img-responsive" onerror="this.onerror=null;this.src='images/place-2.jpg';"/>
-                            <div class="desc">
-                                <span></span>
-                                <h3>{{$taxisearched->TaxiNo}}</h3>
-                                <span>{{$taxisearched->CarSpec}}</span>
-                                <span>{{$taxisearched->CurrentLocation}}</span>
-                                <span class="price"></span>
-                                <a class="btn btn-primary btn-outline" href="{{route('TaxiDetails',['taxislug'=>$taxisearched->IDs])}}">Order Now <i class="icon-arrow-right22"></i></a>
-                            </div>
-                        </div>
-                    </div> 
-                </div> 
-                @endforeach
-            </div>
-        </div>
-        </div>
-    </div>
-
-    <div id="fh5co-tours" class="fh5co-section-gray">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                    <h3>Ambulance Results Search</h3>
-                    <p>{{$ambulancesearched->count()}} Results for {{request()->input('salessearch')}} Ambulance Search</p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="owl-carousel taxifeatured-carousel owl-theme">
-                @foreach ($ambulancesearched as $ambulancesearch)
-                <div class="item" >
-                    <div class="col-md-4 col-sm-6 fh5co-tours animate-box" style="width:100%;" data-animate-effect="fadeIn">
-                        <div href="{{route('AmbulanceDetails',['ambulanceslug'=>$ambulancesearch->IDs])}}"><img src="https://panobooking.com/AndroidDriver/FileUpload/{{ $ambulancesearch->TaxiNo}}.jpg" class="img-responsive" onerror="this.onerror=null;this.src='images/place-2.jpg';"/>
-                            <div class="desc">
-                                <span></span>
-                                <h3>{{ $ambulancesearch->TaxiNo}}</h3>
-                                <span>{{ $ambulancesearch->CarSpec}}</span>
-                                <span>Location: {{ $ambulancesearch->CurrentLocation}}</span>
-                                <a class="btn btn-primary btn-outline" href="{{route('AmbulanceDetails',['ambulanceslug'=>$ambulancesearch->IDs])}}">Call Now <i class="icon-arrow-right22"></i></a>
-                            </div>
-                        </div>
-                    </div> 
-                </div> 
-                @endforeach
-            </div>
-        </div>
-        </div>
-    </div>
-
-    <div id="fh5co-tours" class="fh5co-section-gray">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                    <h3>Tour Packages Search Results</h3>
-                    <p>{{$tourpackagesearched->count()}} Results for {{request()->input('salessearch')}} Tour Package Search</p>
-                </div>
-            </div>
-                <div class="row">
-                    <div class="owl-carousel blog-carousel owl-theme" style="color:black;">
-                    @foreach ($tourpackagesearched as $tourismpackage)
-                    <div class="item" >
-                    <div class="col-md-4 col-sm-6 fh5co-tours3 animate-box" data-animate-effect="fadeIn" style="width:100%;">
-                        <div><a  href="{{route('TourPackageDetails',['searchslug'=>$tourismpackage->IDs])}}"><img src="https://panobooking.com/AndroidFiles/TourPackages/{{$tourismpackage->TravelCompany}}{{$tourismpackage->PackageName}}.jpg"  class="img-responsive" onerror="this.onerror=null;this.src='images/place-2.jpg';">
-                            <div class="desc">
-                                <span></span>
-                                <h3><a  href="{{route('TourPackageDetails',['searchslug'=>$tourismpackage->IDs])}}">{{$tourismpackage->PackageName}}</a></h3>
-                                <span>{{$tourismpackage->City}}</span>
-                                <span class="price">{!!$currencypick!!}  
-                                    @if($currencypick=="UGX"){{number_format($tourismpackage->PackageFees2/$currenyvalue,0)}}
-                                    @else{{number_format(ceil($tourismpackage->PackageFees2/$currenyvalue),0)}}
-                                    @endif</span>
-                                <a class="btn btn-primary btn-outline" href="{{route('TourPackageDetails',['searchslug'=>$tourismpackage->IDs])}}">Book Now<i class="icon-arrow-right22"></i></a>
-                            </div>
-                        </div>    
-                    </div>  
-                </div>    
-                    @endforeach     
-                </div>  
-            </div> 
-        </div>
-    </div>
-
-
-    <div wire:ignore id="fh5co-blog-section" class="fh5co-section-gray">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                    <h3>Tourism Sites Search Results</h3>
-                    <p>{{$tourismsites->count()}} Results for {{request()->input('salessearch')}} Tourism Sites Search</p>
-                </div>
-            </div>
-        </div>
-        <div class="container">
-            <div class="row">
-                <div class="owl-carousel blog-carousel owl-theme" style="color:black;">
-                @foreach ($tourismsites as $tourismsites)
-                <div class="item" >
-                <div class="col-lg-4 col-md-4 col-sm-6" style="width:100%;">
-                    <div class="fh5co-blog animate-box" >
-                        <a href="{{route('TourismProperties',['searchslug'=>$tourismsites->SearchKeyWords,'siteslug'=>$tourismsites->SiteName,'cityslug'=>$tourismsites->City])}}"><img class="img-responsive" src="https://panobooking.com/AndroidFiles/TourismSiteThumbnail/{{$tourismsites->SiteName}}.jpg" onerror="this.onerror=null;this.src='images/place-2.jpg';"/></a>        
-                        <div class="blog-text">
-                            <div class="prod-title">
-                                <h3><a href="{{route('TourismProperties',['searchslug'=>$tourismsites->SearchKeyWords,'siteslug'=>$tourismsites->SiteName,'cityslug'=>$tourismsites->City])}}">{!!Str::limit($tourismsites->SiteName,25)!!}</a></h3>
-                                <p>{!!Str::limit($tourismsites->ShortDescription,95)!!}</p>
-                                <p><a href="{{route('TourismSiteDetails',['searchslug'=>$tourismsites->ID])}}" >Learn More...</a></p>
-                            </div>
-                        </div> 
-                    </div>
-                </div>
-            </div>
-                @endforeach
-            </div>
-        </div>       
-        </div>
-    </div>
-    
-    <div wire:ignore id="fh5co-blog-section" class="fh5co-section-gray">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                    <h3>Upcoming Events Search Results</h3>
-                    <p>{{$eventss->count()}} Results for {{request()->input('salessearch')}} Upcoming Events Search</p>
-                    
-                </div>
-            </div>
-        </div>
-        <div class="container">
-            <div class="row">
-                <div class="owl-carousel blog-carousel owl-theme" style="color:black;">
-                @foreach ($eventss as $eventss)
-                <div class="item" >
-                <div class="col-lg-4 col-md-4 col-sm-6" style="width:100%;">
-                    <div class="fh5co-blog animate-box" >
-                        <a href="{{route('EventsProperties',['searchslug'=>$eventss->SearchKeyWords,'siteslug'=>$eventss->EventName,'cityslug'=>$eventss->City])}}"><img class="img-responsive" src="https://panobooking.com/AndroidFiles/EventsThumbnail/{{$eventss->EventName}}.jpg" onerror="this.onerror=null;this.src='images/place-2.jpg';"/></a>        
-                        <div class="blog-text">
-                            <div class="prod-title">
-                                <h3><a href="{{route('EventsProperties',['searchslug'=>$eventss->SearchKeyWords,'siteslug'=>$eventss->EventName,'cityslug'=>$eventss->City])}}">{!!Str::limit($eventss->EventName,25)!!}</a></h3>
-                                <p>{!!Str::limit($eventss->ShortDescription,95)!!}</p>
-                                <p><a href="{{route('EventsDetails',['searchslug'=>$eventss->ID])}}">Learn More...</a></p>
-                            </div>
-                        </div> 
-                    </div>
-                </div>
-            </div>
-                @endforeach
-            </div>
-        </div>       
-        </div>
-    </div>
-    
-
-    <footer>
-        <div id="footer">
-            <div class="container">
-                <div class="row row-bottom-padded-md">
-                    <div class="owl-carousel footer-carousel owl-theme">
-                        <div class="item">
-                    <div class="col fh5co-footer-link">
-                        <h3>Property</h3>
-                        <ul>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Hotel'])}}">Hotels</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Home Stays'])}}">Home Stays</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Guest Houses'])}}">Guest Houses</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Apartments'])}}">Apartments</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Country Homes'])}}">Country Homes</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Villas'])}}">Villas</a></li>
-                            </ul>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="col fh5co-footer-link">
-                        <h3>Destinations</h3>
-                        <ul>
-                            <li><a href="/Regions">Regions</a></li>
-                            <li><a href="/Cities">Cities</a></li>
-                            <li><a href="/Cities">Towns</a></li>
-                            <li><a href="/TourismSites">Tourism Sites</a></li>
-                            <li><a href="/Events">Events</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="col fh5co-footer-link">
-                        <h3>Top Propertys</h3>
-                        <ul>
-                            @foreach ($topproperties as $topproperty)
-                            <li><a href="{{route('HotelSingle',['hotelslug'=>$topproperty->IDs])}}">{{$topproperty->Place}}</a></li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-                <!--<div class="item">
-                    <div class="col fh5co-footer-link">
-                        <h3>Interest</h3>
-                        <ul>
-                            <li><a href="#">Beaches</a></li>
-                            <li><a href="#">Family Travel</a></li>
-                            <li><a href="#">Budget Travel</a></li>
-                            <li><a href="#">Food &amp; Drink</a></li>
-                            <li><a href="#">Honeymoon and Romance</a></li>
-                        </ul>
-                    </div>
-                </div>-->
-                <div class="item">
-                    <div class="col fh5co-footer-link">
-                        <h3>Articles</h3>
-                        <ul>
-                            @foreach ($topblogs as $topblog)
-                            <li><a href="{{route('BlogDetail',['blogslug'=>$topblog->ID])}}">{{$topblog->BlogTitle}}</a></li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="col fh5co-footer-link">
-                        <h3>Help</h3>
-                        <ul>
-                            <li><a href="/privacypolicy">Privacy Policy</a></li>
-                            <li><a href="/TermsAndConditions">Terms & Conditions</a></li>
-                            <li><a href="/Faqs">FAQS</a></li>
-                            <li><a href="/HelpCenter">Help Center</a></li>
-                            <li><a href="/contactus">Contact Us</a></li>
-                        </ul>
-                    </div>
-                </div>
-                </div>
-            </div>
-                <div class="row justify-content-center">
-                    <div class="col-md-6 col-md-offset-3 text-center">
-                        <p class="fh5co-social-icons">
-                            <a href="https://twitter.com/Panobooking1" target="_blank"><i class="icon-twitter2"></i></a>
-                            <a href="https://www.facebook.com/Panobooking1" target="_blank"><i class="icon-facebook2"></i></a>
-                            <a href="https://www.instagram.com/panobooking1/" target="_blank"><i class="icon-instagram" target="_blank"></i></a>
-                            <a href="https://www.youtube.com/channel/UCmjiIcgdYqeJCQn0dOb3IMA" target="_blank"><i class="icon-youtube"></i></a>
-                        </p>
-                        <p>Copyright &copy; <script>document.write(new Date().getFullYear());</script> <a href="panobooking.com">Panobooking</a>. All Rights Reserved.<!-- <br>Made with <i class="icon-heart3"></i> by <a href="http://freehtml5.co/" target="_blank">Freehtml5.co</a> --></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
+        </section>
+    @endforeach
 </div>

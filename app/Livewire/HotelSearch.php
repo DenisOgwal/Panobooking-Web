@@ -1,85 +1,40 @@
 <?php
 
 namespace App\Livewire;
-use Livewire\Attributes\Url;
+
+use App\Livewire\Concerns\SortsListings;
 use App\Models\HotelsModel;
+use App\Support\Facets;
+use Livewire\Attributes\Url;
 use Livewire\Component;
-use Illuminate\Http\Request;
-use App\Models\BlogModel;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
+
+/** /HotelSearch?from_city=…: stays whose city or search terms match. */
 class HotelSearch extends Component
 {
+    use SortsListings;
+
     #[Url(as: 'from_city')]
-    public $url_from_city;
-    
-    public $currencytype;
-    public $currenyvalue;
-    public $pickarea;
-    public function mount(Request $request){
-        $this->pickarea=$request->input('from_city');
-    if(session()->has('pano_client_data')){
-        $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-        $collection=$login;
-        $plucked = $collection->pluck('SelectedCurrency')->first();
-        $this->currencytype=$plucked;
-        if($this->currencytype=="UGX"){
-            $this->currenyvalue=1;
-        }else{
-        $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-        $collections=$selectedcurrency;
-        $plucks = $collections->pluck('CurrencyValue')->first();
-        $this->currenyvalue=$plucks;
-        }
-    }else{
-        $this->currencytype="UGX";
-        $this->currenyvalue=1;
-       
-    }
-}
-    public function updated($fileds){
-        LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-            return redirect()->to('/HotelSearch?from_city='.$this->pickarea);
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-            $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-            return redirect()->to('/Login');
-        }
-       
-        }
+    public $url_from_city = '';
+
     public function render()
     {
-        $request = request();
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::where('Approved','Approved')->orderBy('TrendRank','ASC')->take(5)->get();
-        $from_city = $this->url_from_city;
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        $hotelsearched=HotelsModel::approved()->search($from_city, ['City'])->paginate(24);
-        $hotelsfeatured=HotelsModel::where('Featured','Yes')->where('Approved','Approved')->orderBy('FaturedRank','ASC')->get();
-        $hotels=HotelsModel::where('Trending','Yes')->where('Approved','Approved')->orderBy('TrendRank','ASC')->get();
-        return view('livewire.hotel-search',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'hotelsfeatured'=>$hotelsfeatured,'hotels'=>$hotels,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'hotelsearched'=>$hotelsearched])->layout('layouts.base');
-    }
-    /*function fetch_data(Request $request){
-        if($request->ajax()){
-            $from_city = $this->url_from_city;
-            $hotelsearched=HotelsModel::approved()->search($from_city, ['City'])->paginate(24);
-            return view('livewire.hotelpagination',compact('hotelsearched'))->render();
-        }
-    }*/
-}
+        $term = trim((string) $this->url_from_city);
 
+        $results = $this->applySort(
+            HotelsModel::approved()->search($term, ['City', 'Place', 'SearchTerms']),
+            'Prices', 'Place', 'Rating', 'TrendRank'
+        )->paginate($this->perPage);
+
+        return view('livewire.hotel-search', [
+            'results' => $results,
+            'kind' => 'hotel',
+            'title' => $term !== '' ? "Stays matching “{$term}”" : 'Find a stay',
+            'subtitle' => 'Compare prices and amenities, then book directly.',
+            'crumbs' => [['Stays', '/DestinationsList'], ['Search']],
+            'facets' => Facets::hotelCities(),
+            'activeFacet' => Facets::hotelCities()->keys()->first(fn ($c) => strcasecmp($c, $term) === 0),
+            'facetUrl' => fn (?string $c) => $c ? route('DestinationsList', ['destinationslug' => $c]) : route('DestinationsList'),
+            'sortOptions' => $this->sortOptions(),
+        ])->layout('components.layouts.app', ['title' => 'Search stays']);
+    }
+}

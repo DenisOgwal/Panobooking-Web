@@ -1,55 +1,44 @@
 <?php
 
 namespace App\Livewire;
-use Livewire\Attributes\Url;
-use App\Models\BlogModel;
-use Illuminate\Http\Request;
-use App\Models\DestinationsModel;
+
+use App\Livewire\Concerns\SortsListings;
 use App\Models\HomeGuestModel;
+use App\Support\Facets;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
+/** /HomeGuestsList?destinationslug={City}: guest houses, optionally in one city. */
 class GuestHouseList extends Component
 {
+    use SortsListings;
+
     #[Url(as: 'destinationslug')]
-    public $url_destinationslug;public $sorting;
-    public $pagesize;
-    public function mount(){
-        $this->sorting="default";
-        $this->pagesize=12;
+    public $url_destinationslug = '';
+
+    protected string $pageTitle = 'Home stays';
+
+    protected function query(string $city)
+    {
+        return HomeGuestModel::query()->when($city !== '', fn ($q) => $q->where('City', $city));
     }
+
     public function render()
     {
-        $request = request();
-        $pickuplocation = $this->url_destinationslug;
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HomeGuestModel::orderBy('IDs','DESC')->take(5)->get();
-    if($this->sorting=="Name"){
-        if( $this->url_destinationslug){
-        $hotels=HomeGuestModel::where('City',$pickuplocation)->orderby('Place','ASC')->paginate($this->pagesize);
-        }else{
-            $hotels=HomeGuestModel::orderby('Place','ASC')->paginate($this->pagesize);
-        }
-    }else if ($this->sorting=="Price"){
-        if( $this->url_destinationslug){
-            $hotels=HomeGuestModel::where('City',$pickuplocation)->orderby('Prices','ASC')->paginate($this->pagesize);
-            }else{
-                $hotels=HomeGuestModel::orderby('Prices','ASC')->paginate($this->pagesize);
-            }
-    }
-    else if ($this->sorting=="default"){
-        if( $this->url_destinationslug){
-            $hotels=HomeGuestModel::where('City',$pickuplocation)->paginate($this->pagesize);
-            }else{
-                $hotels=HomeGuestModel::paginate($this->pagesize);
-            }
-    }else{
-        if( $this->url_destinationslug){
-            $hotels=HomeGuestModel::where('City',$pickuplocation)->paginate($this->pagesize);
-            }else{
-                $hotels=HomeGuestModel::paginate($this->pagesize);
-            }
-    }
-        $firstdestinations=HomeGuestModel::groupBy('City')->select('City', \DB::raw('COUNT(*) as cnt'))->get()->groupBy('City');
-        return view('livewire.guest-house-list',['hotels'=>$hotels,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'firstdestinations'=>$firstdestinations])->layout('layouts.basess');
+        $city = trim((string) $this->url_destinationslug);
+        $results = $this->applySort($this->query($city), 'Prices', 'GuestHouseName')->paginate($this->perPage);
+        $title = $city !== '' ? "Home stays in {$city}" : $this->pageTitle;
+
+        return view('livewire.guest-house-list', [
+            'results' => $results,
+            'kind' => 'guesthouse',
+            'title' => $title,
+            'subtitle' => 'Stay with local hosts: home-cooked meals, quiet gardens and a warm welcome.',
+            'crumbs' => array_filter([['Home stays', '/homeguests'], $city !== '' ? [$city] : null]),
+            'facets' => Facets::guestHouseCities(),
+            'activeFacet' => $city,
+            'facetUrl' => fn (?string $c) => $c ? route('HomeGuestsList', ['destinationslug' => $c]) : route('HomeGuestsList'),
+            'sortOptions' => $this->sortOptions(),
+        ])->layout('components.layouts.app', ['title' => $title]);
     }
 }

@@ -1,89 +1,41 @@
 <?php
 
 namespace App\Livewire;
-use Livewire\Attributes\Url;
+
+use App\Models\AmbulanceModel;
+use App\Models\events as EventModel;
 use App\Models\HotelsModel;
-use Livewire\Component;
-use App\Models\BlogModel;
-use Illuminate\Http\Request;
 use App\Models\RentalCarModel;
 use App\Models\TaxiModel;
-use App\Models\AmbulanceModel;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
-use App\Models\TourPackages;
 use App\Models\TourismSite;
-use App\Models\events as ModelsEvents;
+use App\Models\TourPackages;
+use Livewire\Attributes\Url;
+use Livewire\Component;
 
+/** /generalSearchs?salessearch=…: one search across every kind of listing. */
 class GeneralSearch extends Component
 {
+    private const LIMIT = 12;
+
     #[Url(as: 'salessearch')]
-    public $url_salessearch;
-    public $currencytype;
-    public $currenyvalue;
-    public $pickarea;
-    public function mount(Request $request){
-        $this->pickarea=$request->input('salessearch');
-    if(session()->has('pano_client_data')){
-        $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-        $collection=$login;
-        $plucked = $collection->pluck('SelectedCurrency')->first();
-        $this->currencytype=$plucked;
-        if($this->currencytype=="UGX"){
-            $this->currenyvalue=1;
-        }else{
-        $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-        $collections=$selectedcurrency;
-        $plucks = $collections->pluck('CurrencyValue')->first();
-        $this->currenyvalue=$plucks;
-        }
-    }else{
-        $this->currencytype="UGX";
-        $this->currenyvalue=1;
-       
-    }
-}
-    public function updated($fileds){
-        LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-            return redirect()->to('/generalSearchs?salessearch='.$this->pickarea);
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-            $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-            return redirect()->to('/Login');
-        }
-    
-        }
+    public $url_salessearch = '';
+
     public function render()
     {
-        $request = request();
-        $salessearch = $this->url_salessearch;
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        $hotelsearched=HotelsModel::approved()->search($salessearch, HotelsModel::SEARCH_COLUMNS)->orderBy('FaturedRank','ASC')->get();
-        $carsearched=RentalCarModel::approved()->search($salessearch, RentalCarModel::SEARCH_COLUMNS)->orderBy('updated_at','ASC')->get();
-        $taxisearched=TaxiModel::when(! TaxiModel::servesDestination($salessearch), fn ($q) => $q->search($salessearch, TaxiModel::SEARCH_COLUMNS))->orderBy('updated_at','ASC')->get();
-        $ambulancesearched=AmbulanceModel::approved()->search($salessearch, AmbulanceModel::SEARCH_COLUMNS)->orderBy('updated_at','ASC')->get();
-        $mytime = \Carbon\Carbon::now();
-        $currentda=$mytime->toDateString();
-        $tourpackagesearched=TourPackages::upcoming()->search($salessearch, TourPackages::SEARCH_COLUMNS)->orderBy('IDs','ASC')->get();
-        $tourismsites=TourismSite::search($salessearch, TourismSite::SEARCH_COLUMNS)->orderBy('ID','ASC')->get();
-        $eventss=ModelsEvents::upcoming()->search($salessearch, ModelsEvents::SEARCH_COLUMNS)->orderBy('ID','ASC')->get();
-        return view('livewire.general-search',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'hotelsearched'=>$hotelsearched,'carsearched'=>$carsearched,'taxisearched'=>$taxisearched,'ambulancesearched'=>$ambulancesearched,'tourpackagesearched'=>$tourpackagesearched,'tourismsites'=>$tourismsites,'eventss'=>$eventss])->layout('layouts.base');
+        $term = trim((string) $this->url_salessearch);
+
+        $data = [
+            'term' => $term,
+            'hotelsearched' => HotelsModel::approved()->search($term, HotelsModel::SEARCH_COLUMNS)->orderByRaw('FaturedRank IS NULL')->orderBy('FaturedRank')->limit(self::LIMIT)->get(),
+            'carsearched' => RentalCarModel::approved()->search($term, RentalCarModel::SEARCH_COLUMNS)->latest('updated_at')->limit(self::LIMIT)->get(),
+            'taxisearched' => TaxiModel::when(! TaxiModel::servesDestination($term), fn ($q) => $q->search($term, TaxiModel::SEARCH_COLUMNS))->latest('updated_at')->limit(self::LIMIT)->get(),
+            'ambulancesearched' => AmbulanceModel::approved()->search($term, AmbulanceModel::SEARCH_COLUMNS)->latest('updated_at')->limit(self::LIMIT)->get(),
+            'tourpackagesearched' => TourPackages::upcoming()->search($term, TourPackages::SEARCH_COLUMNS)->orderBy('TravelDate')->limit(self::LIMIT)->get(),
+            'tourismsites' => TourismSite::search($term, TourismSite::SEARCH_COLUMNS)->orderBy('SiteName')->limit(self::LIMIT)->get(),
+            'eventss' => EventModel::upcoming()->search($term, EventModel::SEARCH_COLUMNS)->orderBy('StartDate')->limit(self::LIMIT)->get(),
+        ];
+
+        return view('livewire.general-search', $data)
+            ->layout('components.layouts.app', ['title' => $term !== '' ? "Search: {$term}" : 'Search']);
     }
 }

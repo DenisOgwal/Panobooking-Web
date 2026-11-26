@@ -1,91 +1,45 @@
 <?php
 
 namespace App\Livewire;
-use Livewire\Attributes\Url;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
-use App\Models\BlogModel;
+
+use App\Livewire\Concerns\SortsListings;
 use App\Models\HotelsModel;
-use Illuminate\Http\Request;
+use App\Support\Facets;
+use Illuminate\Support\Str;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
+/** /PropertyTypes?propertyslug={Hotel|Lodge|…}: stays of one property type. */
 class PropertyTypes extends Component
 {
+    use SortsListings;
+
     #[Url(as: 'propertyslug')]
-    public $url_propertyslug;
-    public $clientname;
-    public $clientemail;
-    public $clientjob;
-    public $clientcompany;
-    public $clientfeedback;
-    public $currencytype;
-    public $currenyvalue;
-    public function updated($fields){
-        $this->validateOnly($fields,[
-            'clientname'=>'required|min:6',
-            'clientemail'=>'required|email',
-            'clientcompany'=>'required',
-            'clientfeedback'=>'required|min:20',
-        ]); 
-    
-    }
-    public function updatedCurrencytype(){
-        $data =$this->validate([
-            'currencytype'=>'required|min:1',
-        ]);
-        LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-            return redirect()->to('/PropertyTypes');
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-            $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-            return redirect()->to('/Login');
-        }    
-    }
-    public function mount(){
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-           
-        }
-    }
+    public $url_propertyslug = '';
+
     public function render()
     {
-        $request = request();
-        $propertytype=$this->url_propertyslug;
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::where('Approved','Approved')->orderBy('TrendRank','ASC')->take(5)->get();
-        $hotelsearched=HotelsModel::where('PlaceType', $propertytype)->where('Approved','Approved')->paginate(24);
-        $hotelsfeatured=HotelsModel::where('Featured','Yes')->where('PlaceType', $propertytype)->where('Approved','Approved')->orderBy('FaturedRank','ASC')->get();
-        $hotels=HotelsModel::where('Trending','Yes')->where('PlaceType', $propertytype)->where('Approved','Approved')->orderBy('TrendRank','ASC')->get();
-        return view('livewire.property-types',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'hotelsearched'=>$hotelsearched,'hotelsfeatured'=>$hotelsfeatured,'hotels'=>$hotels])->layout('layouts.base');
+        $type = trim((string) $this->url_propertyslug);
+        // Accept plural forms used by older links ("Apartments", "Guest Houses").
+        $types = array_values(array_unique(array_filter([$type, Str::singular($type)])));
+
+        $results = $this->applySort(
+            HotelsModel::approved()->when($types, fn ($q) => $q->whereIn('PlaceType', $types)),
+            'Prices', 'Place', 'Rating', 'FaturedRank'
+        )->paginate($this->perPage);
+
+        $label = $type !== '' ? Str::plural(Str::singular($type)) : 'All property types';
+
+        return view('livewire.property-types', [
+            'results' => $results,
+            'kind' => 'hotel',
+            'title' => $label,
+            'subtitle' => $type !== '' ? 'Every ' . Str::lower(Str::singular($type)) . ' on Panobooking, in one place.' : null,
+            'crumbs' => [['Stays', '/DestinationsList'], [$label]],
+            'facets' => collect(),
+            'activeFacet' => null,
+            'facetUrl' => fn (?string $c) => route('DestinationsList'),
+            'sortOptions' => $this->sortOptions(),
+        ])->layout('components.layouts.app', ['title' => $label]);
     }
 }

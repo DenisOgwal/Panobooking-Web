@@ -214,3 +214,5 @@ h1, h2, .h1, .h2 { letter-spacing: -.025em; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+.search-wide { max-width: 32rem; }

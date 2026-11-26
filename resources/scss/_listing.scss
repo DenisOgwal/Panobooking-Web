@@ -20,6 +20,12 @@
         a:first-child { grid-row: span 2; }
         img { aspect-ratio: auto; }
         a:nth-child(n + 6) { display: none; }
+
+        // Fewer photos: keep the mosaic full instead of leaving holes.
+        &[data-count="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+        &[data-count="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; a:first-child { grid-row: auto; } }
+        &[data-count="3"] { grid-template-columns: 2fr 1fr; }
+        &[data-count="4"] { grid-template-columns: 2fr 1fr 1fr; a:nth-child(4) { grid-column: 2 / span 2; } }
     }
 }
 
@@ -91,7 +97,7 @@
     h3 { font-size: 1.125rem; margin-bottom: .25rem; }
     .room-aside { display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; }
     @include media-breakpoint-up(md) {
-        grid-template-columns: 14rem 1fr 12rem;
+        grid-template-columns: 14rem 1fr 13.5rem;
         .room-aside { text-align: right; align-items: flex-end; border-left: 1px solid $pb-line; padding-left: 1.25rem; }
     }
 }

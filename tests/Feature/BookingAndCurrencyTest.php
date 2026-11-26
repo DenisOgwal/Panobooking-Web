@@ -33,14 +33,19 @@ class BookingAndCurrencyTest extends TestCase
     {
         $this->asDemoCustomer();
 
+        $in = now()->addDays(10)->toDateString();
+        $out = now()->addDays(13)->toDateString();
+
         // Room 2 = Nile Breeze Hotel, Deluxe Double, UGX 252,000 / night
         Livewire::withQueryParams(['hotelfinalslug' => 2])
             ->test(CompleteBooking::class)
-            ->set('checkindate', '2026-12-10')
-            ->set('checkoutdate', '2026-12-13')
+            ->set('checkindate', $in)
+            ->set('checkoutdate', $out)
             ->set('Childrenno', 1)
             ->set('Destinationquantity', 2)
+            ->assertSet('total', 2 * 3 * 252000)
             ->call('submitfeedback')
+            ->assertHasNoErrors()
             ->assertRedirect('/BookingSuccess');
 
         $row = DB::table('cart')->where('User', 'demo@panobooking.test')->orderByDesc('IDs')->first();
@@ -48,8 +53,40 @@ class BookingAndCurrencyTest extends TestCase
         $this->assertSame('Nile Breeze Hotel', $row->Facility);
         $this->assertEquals(2, $row->Quantity);
         $this->assertEquals(2 * 3 * 252000, $row->Cost);
+        $this->assertSame($in, $row->DatesFrom);   // plain dates, no time part
+        $this->assertSame($out, $row->DatesTo);
+        $this->assertSame('Has 1 Children', $row->Descriptions);
         $this->assertSame('Pending', $row->Confirmed);
         $this->assertNotNull($row->Date);
+    }
+
+    public function test_booking_validates_dates_and_room_count(): void
+    {
+        $this->asDemoCustomer();
+
+        Livewire::withQueryParams(['hotelfinalslug' => 2]) // 6 Deluxe Doubles in the seed
+            ->test(CompleteBooking::class)
+            ->set('checkindate', now()->subDay()->toDateString())
+            ->set('checkoutdate', now()->subDays(2)->toDateString())
+            ->set('Destinationquantity', 99)
+            ->call('submitfeedback')
+            ->assertHasErrors(['checkindate', 'checkoutdate', 'Destinationquantity']);
+
+        $this->assertSame(0, DB::table('cart')->where('Descriptions', 'like', 'Has%')->where('Quantity', 99)->count());
+    }
+
+    public function test_guests_must_sign_in_before_booking(): void
+    {
+        Livewire::withQueryParams(['hotelfinalslug' => 2])
+            ->test(CompleteBooking::class)
+            ->call('submitfeedback')
+            ->assertHasErrors('clientemail')
+            ->assertNoRedirect();
+    }
+
+    public function test_unknown_room_returns_404(): void
+    {
+        $this->get('/CompleteBooking?hotelfinalslug=999')->assertNotFound();
     }
 
     public function test_bookings_do_not_call_the_live_site_outside_production(): void
@@ -58,7 +95,8 @@ class BookingAndCurrencyTest extends TestCase
 
         Livewire::withQueryParams(['hotelfinalslug' => 2])
             ->test(CompleteBooking::class)
-            ->set('checkindate', '2026-12-10')->set('checkoutdate', '2026-12-11')
+            ->set('checkindate', now()->addDay()->toDateString())
+            ->set('checkoutdate', now()->addDays(2)->toDateString())
             ->set('Destinationquantity', 1)
             ->call('submitfeedback');
 

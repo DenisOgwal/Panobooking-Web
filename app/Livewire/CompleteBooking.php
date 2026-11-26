@@ -1,149 +1,134 @@
 <?php
 
 namespace App\Livewire;
-use App\Support\ProviderNotifier;
-use Livewire\Attributes\Url;
-use App\Models\BlogModel;
+
+use App\Livewire\Concerns\SignsInInline;
 use App\Models\CartModel;
-use App\Models\HotelsModel;
-use Illuminate\Http\Request;
 use App\Models\RoomsModel;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
-use Illuminate\Support\Facades\Mail;
+use App\Support\Currency;
+use App\Support\CustomerAuth;
+use App\Support\ProviderNotifier;
+use Illuminate\Support\Carbon;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
+/** /CompleteBooking?hotelfinalslug={room IDs}: reserve a hotel room. */
 class CompleteBooking extends Component
 {
+    use SignsInInline;
+
     #[Url(as: 'hotelfinalslug')]
     public $url_hotelfinalslug;
-    public $hotelfinalslug;
-    Public $Norooms;
-    public $DestinationPrice;
-    public $DestinationPrices;
-    public $Destinationquantity;
-    public $email;
-    public $hotelemail;
-    public $fullnames;
-    public $checkoutdate;
-    public $checkindate;
-    public $result;
-    public $Childrenno;
-    public $roomprice;
-    public $roomnoss;
-    public $facilityname;
-    public $roomname;
-    public $mynotesbook;
-    public $roomids;
-    public $currencytype;
-    public $currenyvalue;
-    //public $BookingDescription;
-    protected $casts = [
-        'checkoutdate' => 'date:Y-m-d',
-        'checkindate' => 'date:Y-m-d',
-    ];
-    public function mount(Request $request){
-        $this->checkoutdate = now();
-        $this->checkindate = now()->addYear();
-        $this->roomids = $request->input('hotelfinalslug');
-        $this->roomprice=RoomsModel::where('IDs',$this->roomids)->value('Price');
-        $this->roomnoss=RoomsModel::where('IDs',$this->roomids)->value('NoOfRooms');
-        $this->facilityname=RoomsModel::where('IDs',$this->roomids)->value('HotelName');
-        $this->hotelemail=HotelsModel::where('Place',$this->facilityname)->value('EmailAddress');
-        $this->roomname=RoomsModel::where('IDs',$this->roomids)->value('RoomName');
-        $this->email=session()->get('pano_client_data.Email');
-        $this->fullnames=session()->get('pano_client_data.FullNames');
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-           
-        }
-    }
-    public function updatedReminder()
+
+    public string $checkindate = '';
+    public string $checkoutdate = '';
+    public $Destinationquantity = 1;
+    public $Childrenno = 0;
+
+    public function mount(): void
     {
-    $this->checkoutdate = $this->checkindate->addYear();
+        abort_if(! $this->room, 404);
+        $this->checkindate = now()->addDay()->toDateString();
+        $this->checkoutdate = now()->addDays(2)->toDateString();
     }
-    public function updated(){
-        $start_time = \Carbon\Carbon::parse($this->checkindate);
-        $finish_time = \Carbon\Carbon::parse($this->checkoutdate);
-        $this->result = $start_time->diffInDays($finish_time, false);
-        
-        
-        if($this->Destinationquantity==""){
-            $this->DestinationPrice=$this->result;
-            $this->DestinationPrices=$this->result;
-        }else{
-            if($this->roomnoss < $this->Destinationquantity){
-                $this->reset('Destinationquantity');
-                $this->dispatch('alert', type: 'error', message: 'The Number of rooms Entered are more than those Available');
-            }
-            if ($this->result > 0) {
-                $this->DestinationPrices=(int)$this->Destinationquantity*(int)$this->result*(int)$this->roomprice;
-                $this->DestinationPrice= (int)$this->Destinationquantity*(int)$this->result*ceil((((int)ceil($this->roomprice)) / $this->currenyvalue));
-            }
+
+    #[Computed]
+    public function room(): ?RoomsModel
+    {
+        return RoomsModel::with(['roomdetails', 'hotel'])->find($this->url_hotelfinalslug);
+    }
+
+    #[Computed]
+    public function nights(): int
+    {
+        try {
+            $nights = (int) Carbon::parse($this->checkindate)->diffInDays(Carbon::parse($this->checkoutdate), false);
+        } catch (\Throwable) {
+            return 0;
+        }
+
+        return max(0, $nights);
+    }
+
+    /** Total in UGX. */
+    #[Computed]
+    public function total(): float
+    {
+        return $this->nights * max(0, (int) $this->Destinationquantity) * (float) $this->room?->Price;
+    }
+
+    protected function rules(): array
+    {
+        $available = max(1, (int) $this->room?->NoOfRooms);
+
+        return [
+            'checkindate' => 'required|date|after_or_equal:today',
+            'checkoutdate' => 'required|date|after:checkindate',
+            'Destinationquantity' => "required|integer|min:1|max:{$available}",
+            'Childrenno' => 'nullable|integer|min:0|max:20',
+        ];
+    }
+
+    protected function validationAttributes(): array
+    {
+        return ['checkindate' => 'check-in', 'checkoutdate' => 'check-out', 'Destinationquantity' => 'rooms', 'Childrenno' => 'children'];
+    }
+
+    public function updated($field): void
+    {
+        $this->validateOnly($field);
+        if ($field === 'checkindate') {
+            $this->resetValidation('checkoutdate');
         }
     }
-    public function submitfeedback(Request $request){
-        $this->validate([
-            'checkoutdate' => 'required',
-            'checkindate' => 'required',
-            'Destinationquantity' => 'required',
-            //'BookingDescription'=>'min:0',
+
+    public function submitfeedback()
+    {
+        $auth = app(CustomerAuth::class);
+        if (! $auth->check()) {
+            $this->addError('clientemail', 'Please sign in to complete your booking.');
+
+            return;
+        }
+
+        $this->validate();
+
+        $room = $this->room;
+        $currency = app(Currency::class);
+        $children = (int) $this->Childrenno;
+
+        CartModel::create([
+            'Facility' => $room->HotelName,
+            'ProductName' => $room->RoomName,
+            'User' => $auth->email(),
+            'UserNames' => $auth->name(),
+            'Quantity' => (int) $this->Destinationquantity,
+            'Cost' => $this->total,
+            'OrderCode' => 'N/A',
+            'DatesFrom' => Carbon::parse($this->checkindate)->toDateString(),
+            'DatesTo' => Carbon::parse($this->checkoutdate)->toDateString(),
+            'BookingType' => 'Stays',
+            'Currency' => $currency->code(),
+            'CurrencyAmount' => $currency->convert($this->total),
+            'Descriptions' => "Has {$children} Children",
         ]);
-        if(session()->has('pano_client_data')){
-            $cartmodel= new CartModel();
-            $cartmodel->Facility = $this->facilityname;
-            $cartmodel->ProductName = $this->roomname;
-            $cartmodel->User = $this->email;
-            $cartmodel->UserNames = $this->fullnames;
-            $cartmodel->Quantity = $this->Destinationquantity;
-            $cartmodel->Cost = $this->DestinationPrices;
-            $cartmodel->OrderCode = 'N/A';
-            $cartmodel->DatesFrom = $this->checkindate;
-            $cartmodel->DatesTo = $this->checkoutdate;
-            $cartmodel->BookingType = "Stays";
-            $cartmodel->Currency = $this->currencytype;
-            $cartmodel->CurrencyAmount  = ceil($this->DestinationPrice);
-            $cartmodel->Descriptions ='Has '.$this->Childrenno.' Children';//. $this->BookingDescription;
-            $cartmodel->save();
-            $this->mynotesbook='Please Reserve for '.$this->fullnames.' '.$this->Destinationquantity.' '.$this->roomname.' Rooms for a Period: From '.$this->checkindate.'. To: '.$this->checkoutdate.'. TOTAL PAYABLE: '.$this->currencytype.' '.$this->DestinationPrice.'. Client Has '.$this->Childrenno.' Children';// Booking Notes: '. $this->BookingDescription;
-            app(ProviderNotifier::class)->send('SendHotel.php', ['hotelemail' => $this->hotelemail, 'bookingnotes' => $this->mynotesbook]);
-            
-            $this->dispatch('alert', type: 'success',  message: 'Booking Successful');//Booking Successful
-            return redirect()->to('/BookingSuccess');
-            }else{
-                $this->dispatch('alert', type: 'error',  message: 'Booking Faied!');  
-            }
+
+        app(ProviderNotifier::class)->send('SendHotel.php', [
+            'hotelemail' => $room->hotel?->EmailAddress,
+            'bookingnotes' => sprintf('Please reserve for %s %d %s room(s) from %s to %s. TOTAL PAYABLE: %s. Client has %d children.',
+                $auth->name(), $this->Destinationquantity, $room->RoomName, $this->checkindate, $this->checkoutdate,
+                $currency->format($this->total), $children),
+        ]);
+
+        session()->flash('alert', ['type' => 'success', 'message' => 'Booking received!']);
+
+        return $this->redirect('/BookingSuccess');
     }
-    public function isOnline($site='https://www.youtube.com/'){
-        if(@fopen($site,"r")){
-            return true;
-        }else{
-            return false;
-        }
-    }
+
     public function render()
     {
-        $request = request();
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        $roomid = $this->url_hotelfinalslug;
-        $rooms=RoomsModel::where('IDs',$roomid)->with('roomdetails')->get();
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        return view('livewire.complete-booking',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'rooms'=>$rooms])->layout('layouts.basessss');
+        return view('livewire.complete-booking')
+            ->layout('components.layouts.app', ['title' => 'Reserve ' . $this->room->RoomName]);
     }
 }
