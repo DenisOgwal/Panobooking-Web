@@ -2,111 +2,54 @@
 
 namespace App\Livewire;
 
-use Livewire\Attributes\Url;
 use App\Models\BlogCommentCount;
 use App\Models\BlogModel;
-use App\Models\HotelsModel;
-use App\Models\FeedBackModel;
-use Illuminate\Http\Request;
+use Livewire\Attributes\Url;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
-use App\Models\LoginModel;
-use App\Models\CurrencySelect;
+
+/** /BlogDetail?blogslug={id}: article with moderated comments. */
 class BlogDetailComponent extends Component
 {
     #[Url(as: 'blogslug')]
     public $url_blogslug;
-    //public BlogModel $blogss;
-    public $blogslug;
-    public $email;
-    public $inputname;
-    public $comments;
-    public $blog_id;
-    public $currencytype;
-    public $currenyvalue;
-    public function mount()
-{
-    $this->blog_id   = request()->blogslug;
-    if(session()->has('pano_client_data')){
-        $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-        $collection=$login;
-        $plucked = $collection->pluck('SelectedCurrency')->first();
-        $this->currencytype=$plucked;
-        if($this->currencytype=="UGX"){
-            $this->currenyvalue=1;
-        }else{
-        $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-        $collections=$selectedcurrency;
-        $plucks = $collections->pluck('CurrencyValue')->first();
-        $this->currenyvalue=$plucks;
-        }
-    }else{
-        $this->currencytype="UGX";
-        $this->currenyvalue=1;
-       
-    }
-}
 
-    public function updated($fileds){
-        $this->validateOnly($fileds,[
-            'email' => 'required|email',
-            'inputname' => 'required|min:6',
-            'comments' => 'required|min:20',
-        ]);
-    }
-    public function updatedCurrencytype(){
-        $data =$this->validate([
-            'currencytype'=>'required|min:1',
-        ]);
-        LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-            return redirect()->to('/BlogDetail?blogslug='.$this->blog_id);
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-            $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-            return redirect()->to('/Login');
-        }
-        
-    }
-    public function comment(Request $request)
+    #[Validate('required|min:3|max:120', as: 'name')]
+    public string $inputname = '';
+
+    #[Validate('required|email|max:190', as: 'email')]
+    public string $email = '';
+
+    #[Validate('required|min:20|max:3000', as: 'comment')]
+    public string $comments = '';
+
+    public function comment(): void
     {
-       $this->validate([
-            'email' => 'required|email',
-            'inputname' => 'required|min:6',
-            'comments' => 'required|min:20',
+        $this->validate();
+        $post = BlogModel::find($this->url_blogslug);
+        abort_if(! $post, 404);
+
+        BlogCommentCount::create([
+            'blog_model_id' => $post->id,
+            'BlogID' => $post->id,
+            'Comment' => $this->comments,
+            'NameOfCommenter' => $this->inputname,
+            'CommentEmail' => $this->email,
         ]);
-        $commentsmodel= new BlogCommentCount();
-        $commentsmodel->blog_model_id = $this->blog_id;
-        $commentsmodel->Comment = $this->comments;
-        $commentsmodel->NameOfCommenter = $this->inputname;
-        $commentsmodel->CommentEmail = $this->email;
-        $commentsmodel->save();
-        //$this->dispatch('closeModal'); // Close model
-    $this->dispatch('alert', type: 'success',  message: 'Comment Successful');
+
+        $this->reset('inputname', 'email', 'comments');
+        $this->dispatch('alert', type: 'success', message: 'Thanks! Your comment will appear once it has been approved.');
     }
+
     public function render()
     {
-        $request = request();
-        $pickuplocation = $this->url_blogslug;
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        $blogs=BlogModel::where('ID',$pickuplocation)->get();
-        $clientfeedbacks=FeedBackModel::where('Approved',"Approved")->get();
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        $blogcomments=BlogCommentCount::where('blog_model_id',$pickuplocation)->where('Approval',"Approved")->get();
-        return view('livewire.blog-detail-component',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'blogcomments'=>$blogcomments,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'blogs'=>$blogs,'clientfeedbacks'=>$clientfeedbacks])->layout('layouts.base');
+        $post = BlogModel::find($this->url_blogslug);
+        abort_if(! $post, 404);
+
+        return view('livewire.blog-detail-component', [
+            'post' => $post,
+            'approvedComments' => $post->approvedComments()->orderByDesc('id')->get(),
+            'more' => BlogModel::where('id', '!=', $post->id)->orderByDesc('Date')->limit(3)->get(),
+        ])->layout('components.layouts.app', ['title' => $post->BlogTitle, 'description' => $post->BlogShortDescription]);
     }
 }

@@ -216,3 +216,9 @@ h1, h2, .h1, .h2 { letter-spacing: -.025em; }
 }
 
 .search-wide { max-width: 32rem; }
+
+// Accordions inside long-form copy (FAQs): headings are buttons, not prose headings.
+.prose .accordion-header { margin: 0; font-size: 1rem; }
+.faq .accordion-button { font-weight: 600; }
+.faq .accordion-item + .accordion-item { margin-top: .5rem; }
+.faq .accordion-item { border-radius: $border-radius !important; border: 1px solid $pb-line; overflow: hidden; }

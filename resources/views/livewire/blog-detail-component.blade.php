@@ -1,245 +1,61 @@
-<div id="fh5co-page">
-    <div class="Informationcontainer">
-        <div class="container">
-            <div class="row" id="centerrow">
-                <form name="search_hotel_form" action="{{route('generalSearchs')}}" method="GET">
-                <div  id="generalsearch" ><input type="search" name="salessearch" id="salessearch" placeholder="Search Accomodation, Cars, Airport Taxis, Ambulances..."/>
-                <button class="btn shadow-none Listingbuttonss" type='submit' name="searchbutton">Search</button></div>
-                </form>
-                <form wire:submit.prevent="changecurrency">
-                    @csrf
-                <div id="currencysize" >
-                    <span>Currency </span>
-                   
-                        <select class="currencyselect" id="currencytype" name="currencytype" wire:model.live="currencytype">
-                        <option>UGX</option>
-                        <option>USD</option>
-                        <option>GBP</option>
-                        <option>EUR</option>
-                        <option>KES</option>
-                        <option>TZS</option>	
-                        </select>  
-                    </div>     	
-            </form>
-                <div id="registrybuttons" ><p><a href="/RegisterProperty"><button class="btn shadow-none Listingbuttons">List Property</button></a><a href="/RegisterCars"><button class="btn shadow-none Listingbuttons">Register Car</button></a><a href="/RegisterAmbulance"><button class="btn shadow-none Listingbuttons">Add Ambulance</button></a></p></div>
-            </div>
-        </div>
-    </div> 
-<header id="fh5co-header-section" class="sticky-banner"> 
-    <div class="container">
-        <div class="nav-header">
-            <a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle dark"><i></i></a>
-            <h1 id="fh5co-logo"><a href="/"><img src="images/panologo.png" style="height: 40px;"></a></h1>
-            <!-- START #fh5co-menu-wrap -->
-            <nav id="fh5co-menu-wrap" role="navigation">
-                <ul class="sf-menu" id="fh5co-primary-menu">
-                    <li><a href="/">Stays</a></li>	
-                    <li><a href="/TourPackages">Tour Packages</a></li>	
-                    <li><a href="/taxis">Airport Taxi</a></li>
-                    <li><a href="/cars">Car Rental</a></li>
-                    <li><a href="/ambulance">Ambulance</a></li>
-                    <li  class="active"><a href="/blog">Blog</a></li>
-                    <li><a href="/contactus">Contact</a></li>
-                    <li>
-                        @if(session()->has('pano_client_data'))
-                        
-                        <a href="#" class="fh5co-sub-ddown">{!!Str::limit(session()->get('pano_client_data.FullNames'),10)!!}</a>
-                        <ul class="fh5co-sub-menu">
-                            <li><a href="/PendingBookings">Pending Bookings</a></li>
-                            <li><a href="/Bookings">Bookings History</a></li>
-                            <a href="/clientlogout">Logout</a>
-                        </ul>
-                        @else
-                        <a href="#" class="fh5co-sub-ddown">Account</a>
-                        <ul class="fh5co-sub-menu">
-                            <li><a href="/Login">Sign in</a></li>
-                            <li><a href="/Register">Register</a></li>
-                        </ul>
-                        @endif
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-</header>
-<div wire:ignore id="fh5co-tours" class="fh5co-section-gray">
-    <div class="container">
-        @foreach ($blogs as $blog)
-        <div class="row  mt-5">
-            <div class="col-md-8 col-md-offset-2 text-center heading-section animate-box">
-                <h3>{!!$blog->BlogTitle!!}</h3>
-                <p>{!!$blog->BlogShortDescription!!}</p>
-            </div>
-        </div>
+@php use App\Support\Media; use Illuminate\Support\Carbon; @endphp
+<div>
+    <x-page-hero :title="$post->BlogTitle" :subtitle="$post->BlogShortDescription" :crumbs="[['Blog', '/blog'], [\Illuminate\Support\Str::limit($post->BlogTitle, 40)]]">
+        <div class="mt-2 small text-white-50"><i class="bi bi-calendar3 me-1"></i>{{ $post->Date ? Carbon::parse($post->Date)->format('j F Y') : '' }}</div>
+    </x-page-hero>
 
-<div wire:ignore class="row" style="padding-top: 10px;">
-   <!-- <div class="col-md-12 animate-box">
-        <h2 class="heading-title">Travel Booking guide to book a perfect hotel</h2>
-    </div>-->
+    <section class="section-sm">
+        <div class="container-xl">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <article class="form-card">
+                        <img class="w-100 rounded-3 mb-4 object-fit-cover" height="360" src="{{ Media::image('blog', $post) }}" data-fallback="{{ Media::placeholder() }}" alt="">
+                        <div class="prose mw-100">{!! nl2br(e($post->Description)) !!}</div>
+                    </article>
 
-    <div class="col-md-6 justify-content-center animate-box">
-        <p>{!!$blog->Description!!}</p>
-        
-        <!--<a href="#">Read More <i class="icon-arrow-right22"></i></a>-->
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-        <img class="img-responsive" src="https://panobooking.com/AndroidFiles/BlogsThumbnail/{{$blog->BlogTitle}}.jpg" onerror="this.onerror=null;this.src='images/image-placeholder.png';"/>
-        </div>
-    </div>
-</div>
-@endforeach
-</div>
-</div>
-<div id="fh5co-testimonial" style="background-image:url(images/img_bg_1.jpg);">
-    <div class="container">
-        <div class="row  animate-box">
-            <div class="col-md-8 col-md-offset-2 text-center fh5co-heading">
-                <h2>Comments</h2>
-            </div>
-        </div>
-<div class="col-md-6" wire:ignore.self>
-    <form wire:submit.prevent="comment">
-        @csrf
-    <div class="row">
-        <div class="col-md-6">
-            <div class="form-group">
-                @error('inputname')<p class ="text-danger">{{$message}}</p>@enderror
-                <input type="text" class="form-control" placeholder="Name"  name="inputname" wire:model.blur="inputname" />    
-            </div>    
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                @error('email')<p class ="text-danger">{{$message}}</p>@enderror
-                <input type="text" class="form-control" placeholder="Email"  name="email" wire:model.blur="email" />
-            </div>    
-        </div>
-    </div>
-    
-     <div class="col-md-12">
-            <div class="form-group">
-                @error('comments')<p class ="text-danger">{{$message}}</p>@enderror
-                <textarea  class="form-control" cols="30" rows="7" placeholder="Comment..." id="comments"  name="comments" wire:model.blur="comments" ></textarea>
-            </div>    
-     </div>
-
-        <div class="col-md-12  text-center mt-3">
-            <div class="form-group">
-                <button type="submit"  class="btn btn-primary">Post</button>
-            </div>
-        </div>
-    </form>
-</div>
-<div class="col-md-6" wire:ignore>
-    <div class="row">
-        <div class="owl-carousel comments-carousel owl-theme" style="color:black;">
-        @foreach ($blogcomments as $key =>$blogcomments)
-        <div class="item" wire:key="{{'blogcomments'.$key}}" >
-        <div class="col-md-12">
-            <div class="box-testimony animate-box">
-                <blockquote>
-                    <span class="quote"><span><i class="icon-quotes-right"></i></span></span>
-                    <p>&ldquo;{{$blogcomments->Comment}}&rdquo;</p>
-                </blockquote>
-                <p class="author">{{$blogcomments->NameOfCommenter}} <a href="" target="_blank"> {{$blogcomments->CommentDate}}</a></p>
-            </div>  
-        </div>
-        </div>
-       @endforeach
-        </div>
-    </div>
-</div>
-</div>
-</div>
-
-<footer>
-    <div id="footer">
-        <div class="container">
-            <div class="row row-bottom-padded-md">
-                <div class="owl-carousel footer-carousel owl-theme">
-                    <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Property</h3>
-                    <ul>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Hotel'])}}">Hotels</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Home Stays'])}}">Home Stays</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Guest Houses'])}}">Guest Houses</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Apartments'])}}">Apartments</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Country Homes'])}}">Country Homes</a></li>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Villas'])}}">Villas</a></li>
-                        </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Destinations</h3>
-                    <ul>
-                        <li><a href="/Regions">Regions</a></li>
-                        <li><a href="/Cities">Cities</a></li>
-                        <li><a href="/Cities">Towns</a></li>
-                        <li><a href="/TourismSites">Tourism Sites</a></li>
-                        <li><a href="/Events">Events</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Top Propertys</h3>
-                    <ul>
-                        @foreach ($topproperties as $topproperty)
-                        <li><a href="{{route('HotelSingle',['hotelslug'=>$topproperty->IDs])}}">{{$topproperty->Place}}</a></li>
+                    <div class="detail-section mt-4" id="comments">
+                        <h2>{{ $approvedComments->count() }} {{ \Illuminate\Support\Str::plural('comment', $approvedComments->count()) }}</h2>
+                        @foreach ($approvedComments as $c)
+                            <div class="d-flex gap-3 py-3 border-bottom">
+                                <span class="testimonial p-0 border-0 bg-transparent"><span class="avatar">{{ mb_substr($c->NameOfCommenter, 0, 1) }}</span></span>
+                                <div>
+                                    <strong>{{ $c->NameOfCommenter }}</strong>
+                                    <small class="text-muted ms-2">{{ $c->CommentDate ? Carbon::parse($c->CommentDate)->format('j M Y') : $c->created_at?->format('j M Y') }}</small>
+                                    <p class="mb-0 mt-1">{{ $c->Comment }}</p>
+                                </div>
+                            </div>
                         @endforeach
-                    </ul>
+
+                        <h3 class="h5 mt-4">Leave a comment</h3>
+                        <form wire:submit="comment" novalidate>
+                            <div class="row g-0 column-gap-3">
+                                <div class="col-sm"><x-field label="Name" name="inputname" wire:model.blur="inputname" autocomplete="name" /></div>
+                                <div class="col-sm"><x-field label="Email (not published)" name="email" type="email" wire:model.blur="email" autocomplete="email" /></div>
+                            </div>
+                            <x-field label="Comment" name="comments" textarea rows="4" wire:model.blur="comments" />
+                            <button class="btn btn-primary" type="submit">
+                                <span wire:loading.remove wire:target="comment">Post comment</span>
+                                <span wire:loading wire:target="comment"><span class="spinner-border spinner-border-sm me-2"></span>Posting…</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-           <!-- <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Interest</h3>
-                    <ul>
-                        <li><a href="#">Beaches</a></li>
-                        <li><a href="#">Family Travel</a></li>
-                        <li><a href="#">Budget Travel</a></li>
-                        <li><a href="#">Food &amp; Drink</a></li>
-                        <li><a href="#">Honeymoon and Romance</a></li>
-                    </ul>
-                </div>
-            </div>-->
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Articles</h3>
-                    <ul>
-                        @foreach ($topblogs as $topblog)
-                        <li><a href="{{route('BlogDetail',['blogslug'=>$topblog->ID])}}">{{$topblog->BlogTitle}}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Help</h3>
-                    <ul>
-                        <li><a href="/privacypolicy">Privacy Policy</a></li>
-                        <li><a href="/TermsAndConditions">Terms & Conditions</a></li>
-                        <li><a href="/Faqs">FAQS</a></li>
-                        <li><a href="/HelpCenter">Help Center</a></li>
-                        <li><a href="/contactus">Contact Us</a></li>
-                    </ul>
-                </div>
-            </div>
+                <aside class="col-lg-4">
+                    @if ($more->isNotEmpty())
+                        <div class="booking-box">
+                            <h2 class="h6 text-uppercase text-muted mb-3">More guides</h2>
+                            <div class="d-flex flex-column gap-3">
+                                @foreach ($more as $m)
+                                    <a class="d-flex gap-3 text-body" href="{{ route('BlogDetail', ['blogslug' => $m->id]) }}">
+                                        <img class="rounded-3 flex-shrink-0 object-fit-cover" width="84" height="64" src="{{ Media::image('blog', $m) }}" data-fallback="{{ Media::placeholder() }}" alt="" loading="lazy">
+                                        <span class="fw-semibold small">{{ $m->BlogTitle }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </aside>
             </div>
         </div>
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-md-offset-3 text-center">
-                    <p class="fh5co-social-icons">
-                        <a href="https://twitter.com/Panobooking1" target="_blank"><i class="icon-twitter2"></i></a>
-                        <a href="https://www.facebook.com/Panobooking1" target="_blank"><i class="icon-facebook2"></i></a>
-                        <a href="https://www.instagram.com/panobooking1/" target="_blank"><i class="icon-instagram" target="_blank"></i></a>
-                        <a href="https://www.youtube.com/channel/UCmjiIcgdYqeJCQn0dOb3IMA" target="_blank"><i class="icon-youtube"></i></a>
-                    </p>
-                    <p>Copyright &copy; <script>document.write(new Date().getFullYear());</script> <a href="panobooking.com">Panobooking</a>. All Rights Reserved.<!-- <br>Made with <i class="icon-heart3"></i> by <a href="http://freehtml5.co/" target="_blank">Freehtml5.co</a> --></p>
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
+    </section>
 </div>

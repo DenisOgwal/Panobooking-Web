@@ -1,97 +1,36 @@
 <?php
 
 namespace App\Livewire;
+
+use App\Livewire\Concerns\FindsNearbyListings;
 use Livewire\Attributes\Url;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
-use App\Models\BlogModel;
-use Illuminate\Http\Request;
-use App\Models\DestinationsModel;
-use App\Models\HotelsModel;
-use App\Models\RentalCarModel;
-use App\Models\TaxiModel;
-use App\Models\AmbulanceModel;
 use Livewire\Component;
 
+/** /EventsProperties?cityslug=&siteslug=&searchslug= */
 class EventsProperties extends Component
 {
+    use FindsNearbyListings;
+
     #[Url(as: 'cityslug')]
-    public $url_cityslug;
-    #[Url(as: 'searchslug')]
-    public $url_searchslug;
+    public $url_cityslug = '';
+
     #[Url(as: 'siteslug')]
-    public $url_siteslug;
-    public $clientname;
-    public $clientemail;
-    public $clientjob;
-    public $clientcompany;
-    public $clientfeedback;
-    public $currencytype;
-    public $currenyvalue;
-    public $newsearchslug;
-    public $newcityslug;
-    public $newsiteslug;
-    public function updated($fields){
-        LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-            return redirect()->to('/EventsProperties?searchslug='.$this->newsearchslug.'&sitename='.$this->newsiteslug.'&cityslug='.$this->newcityslug);
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-            $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-            return redirect()->to('/Login');
-        }
-       
-    }
-    public function mount(){
-        $this->newsearchslug= request()->searchslug;
-        $this->newsiteslug= request()->siteslug;
-        $this->newcityslug= request()->cityslug;
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-           
-        }
-    }
+    public $url_siteslug = '';
+
+    #[Url(as: 'searchslug')]
+    public $url_searchslug = '';
+
     public function render()
     {
-        $request = request();
-        $cityname = $this->url_cityslug;
-        $searchname = $this->url_searchslug;
-        $sitename = $this->url_siteslug;
-        $hotelsearched=HotelsModel::approved()->where(fn ($q) => $q->where('City', $cityname)->orWhere(fn ($q) => $q->searchAny([$searchname, $sitename, $cityname], ['SearchTerms'])))->get();
-        $carsearched=RentalCarModel::approved()->where(fn ($q) => $q->where('City', $cityname)->orWhere(fn ($q) => $q->searchAny([$searchname, $sitename, $cityname], ['SearchTerms'])))->get();
-        $taxisearched=TaxiModel::forDestination($cityname, [$searchname, $sitename])->get();
-        $ambulancesearched=AmbulanceModel::approved()->where(fn ($q) => $q->where('City', $cityname)->orWhere(fn ($q) => $q->searchAny([$searchname, $sitename, $cityname], ['SearchTerms'])))->get();
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::where('Approved','Approved')->orderBy('TrendRank','ASC')->take(5)->get();
-        return view('livewire.events-properties',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'hotelsearched'=>$hotelsearched,'carsearched'=>$carsearched,'taxisearched'=>$taxisearched,'ambulancesearched'=>$ambulancesearched])->layout('layouts.base');
+        $city = trim((string) $this->url_cityslug);
+        $name = trim((string) $this->url_siteslug);
+
+        return view('livewire.properties', $this->nearbyListings($city, [$name, $this->url_searchslug]) + [
+            'city' => $city,
+            'country' => '',
+            'heading' => $name !== '' ? 'Stay near ' . $name : ($city !== '' ? 'Travel in ' . $city : 'Stay near events'),
+            'subheading' => 'Stays, cars, taxis and ambulances close to this event.',
+            'crumbs' => [['Events', '/Events'], [$name ?: $city ?: 'Nearby']],
+        ])->layout('components.layouts.app', ['title' => $name !== '' ? 'Stay near ' . $name : 'Stay near events']);
     }
 }

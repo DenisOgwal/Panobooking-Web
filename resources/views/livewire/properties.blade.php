@@ -1,7 +1,8 @@
 @php use App\Support\Media; @endphp
 <div>
-    <x-page-hero :title="$city !== '' ? 'Travel in ' . $city : 'Destinations'" subtitle="Stays, cars, airport taxis and ambulances, all in one place."
-                 :crumbs="array_filter([['Regions', '/Regions'], $country !== '' ? [$country, '/Regions'] : null, [$city ?: 'City']])" />
+    <x-page-hero :title="$heading ?? ($city !== '' ? 'Travel in ' . $city : 'Destinations')"
+                 :subtitle="$subheading ?? 'Stays, cars, airport taxis and ambulances, all in one place.'"
+                 :crumbs="$crumbs ?? array_filter([['Regions', '/Regions'], $country !== '' ? [$country, '/Regions'] : null, [$city ?: 'City']])" />
 
     @php
         $sections = [

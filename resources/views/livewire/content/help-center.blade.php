@@ -1,0 +1,22 @@
+{{-- Extracted from the legacy page; edit the copy here. --}}
+<h2>HOW TO ACCESS PANOBOOKING SERVICES</h2>
+<ul>
+<li><h2>a)</h2> Access the PANOBOOKING portal via our website (<a href="https://panobooking.com">https://panobooking.com</a>) or by downloading our mobile app from play store and explore the wide range of services offered via the platform. Further information can be accessed via our social handles (Facebook(<a href="https://facebook.com/Panobooking1">https://facebook.com/Panobooking1</a>) , Twitter(<a href="https://twitter.com/Panobooking1">https://twitter.com/Panobooking1 </a>) &amp;Instagram(<a href="https://instagram.com/Panobooking1">https://instagram.com/Panobooking1</a>). Panobooking Limited (“Panobooking” or “we”) operates an e-commerce platform consisting of a web and mobile applications together with supporting logistics and payment infrastructure, for the sale and purchase of specified services and services in Uganda. Some of Panobooking’s services hotel booking services, car rental services, and ambulance rental services.</li>
+<li><h2>b)</h2> Create an account with us for easy access and instant feedback incase of any inquiries made. This also helps in making inquiries and bookings for the different services offered. How to get an account;</li>
+<li>    i. Get to the PANOBOOKING interface </li>
+<li>    ii. Click on account</li>
+<li>    iii. For first time users, click register and fill the form given and register your account. If you already have an account simply log into your account.</li>
+<li><h2>c)</h2> Make a reservation and you will get immediate feedback about the availability of the requested for service or an answer as regard’s the inquiry made will be given immediately. How to make a reservation;</li>
+<li>    i. Booking a hotel; a) Click on stays and a list of accommodation facilities will be availed and the different regions where they are found. (b) Click on the region you wish to have a get accommodation from, hotels will be displayed then make a hotel choice. (c) Reserve your room of preference.</li>
+<li>    ii. Booking an airport taxi;(a) click on airport taxi, then feed in the information about pickup and drop off locations and dates, then reserve your ride.</li>
+<li>    iii. Hiring an ambulance; Click on ambulances, then ambulances will be displayed according to category based on how ill the person is then choose the ambulance of choice. </li>
+<li>    iv. Booking a car; click on car rental car categories will be displayed, choose the category of car you wish for such as wedding cars, safari cars and self-drive cars, then choose a car you would like to rent.</li>
+<li>     v. Book your next tip; click on the tour packages, different packages will be displayed. select one of your choices considering the destinations to be visited and the dates which best serves your interests.</li>
+<li><h2>d)</h2> The page also gives us chance to view top tourism destinations in the country and the facilities near them so that it’s easy to plan for transport and accommodation while visiting the destinations. A click on the attraction name (red line) will enable you learn more about the destination whereas a click on view nearby properties will lead you to facilities near the tourism site.</li>
+<li><h2>e)</h2> Interest yourself with reading our informative and educative blogs by simply clicking on the blog button, be guided as you learn and feel free to drop a comment there after.</li>
+<li><h2>f)</h2> We welcome more service providers on the platform, accommodation facilities, car rentals and ambulances can be registered from wherever you are. </li>
+<li>    i. For accommodation registration, click on list property and a form with the required details will be displayed. Fill the form accordingly and then submit. </li>
+<li>    ii. For car registration, click on register car, fill the displayed form accordingly and submit the information. The car can be wedding, safari or a self-drive kind of car. </li>
+<li>    iii. For ambulance registration; click on add ambulance, a form will be displayed, feed in the information and submit. Much emphasis is required while filling the category section to ensure that clients get exactly what they need as regards services offered while onboard. </li>
+<li><h2>g)</h2> Our customer service care team is always readily available to help, give guidance and respond to inquiries, a click on the contact button will have you all options to use to reach out to us for any inquiries.</li>
+</ul>

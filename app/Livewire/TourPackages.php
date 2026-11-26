@@ -1,87 +1,28 @@
 <?php
 
 namespace App\Livewire;
-use Livewire\Attributes\Url;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
-use App\Models\BlogModel;
-use App\Models\HotelsModel;
-use Illuminate\Http\Request;
-use App\Models\TourPackages as tourismpackages;
-use Livewire\WithPagination;
+
+use App\Livewire\Concerns\SortsListings;
+use App\Models\TourPackages as TourPackageModel;
 use Livewire\Component;
 
+/** /TourPackages: upcoming tour packages. */
 class TourPackages extends Component
 {
-    #[Url(as: 'page')]
-    public $url_page;
-    //use WithPagination;
-    protected $paginationTheme = 'bootstrap';
-    public $clientname;
-    public $clientemail;
-    public $clientjob;
-    public $clientcompany;
-    public $clientfeedback;
-    public $currencytype;
-    public $currenyvalue;
-    public $page;
+    use SortsListings;
 
-    public function updated($fields){
-        LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-            return redirect()->to('/TourPackages');
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-            $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-            return redirect()->to('/Login');
-        }
-        
+    public function sortOptions(): array
+    {
+        return ['recommended' => 'Soonest first', 'price_asc' => 'Price: low to high', 'price_desc' => 'Price: high to low', 'name' => 'Name A–Z'];
     }
-    public function mount(){
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-           
-        }
-    }
+
     public function render()
     {
-        $request = request();
-        //$tourismpackages=tourismpackages::paginate(10);
-        $parent_page_value=$this->url_page;
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        $mytime = \Carbon\Carbon::now();
-        $currentda=$mytime->toDateString();
-        $tourismpackages=tourismpackages::where('TravelDate','>',$currentda)->paginate(9);
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::where('Approved','Approved')->orderBy('TrendRank','ASC')->take(5)->get();
-        return view('livewire.tour-packages',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'tourismpackages'=>$tourismpackages,'page' => $parent_page_value])->layout('layouts.base');
+        $query = TourPackageModel::upcoming();
+        $results = ($this->sort === 'recommended' ? $query->orderBy('TravelDate') : $this->applySort($query, 'PackageFees2', 'PackageName', 'TripDays'))
+            ->paginate($this->perPage);
+
+        return view('livewire.tour-packages', ['results' => $results, 'sortOptions' => $this->sortOptions()])
+            ->layout('components.layouts.app', ['title' => 'Tour packages']);
     }
 }
