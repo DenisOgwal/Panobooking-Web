@@ -1,113 +1,30 @@
 <?php
 
 namespace App\Livewire;
-use Livewire\Attributes\Url;
-use App\Models\HotelsModel;
-use App\Models\BlogModel;
-use App\Models\AmbulanceModel;
-use Illuminate\Http\Request;
-use Livewire\Component;
-use App\Models\LoginModel;
-use App\Models\CurrencySelect;
 
-class AmbulanceListComponent extends Component
+use App\Livewire\Vehicles\VehicleResults;
+use Illuminate\Database\Eloquent\Builder;
+use Livewire\Attributes\Url;
+
+/** /AmbulanceList?ambulancecategoriesslug={category} */
+class AmbulanceListComponent extends VehicleResults
 {
     #[Url(as: 'ambulancecategoriesslug')]
-    public $url_ambulancecategoriesslug;
-    public $sorting;
-    public $pagesize;
-    public $ambulancecategoriesslug;
-    public $pickuplocations;
-    public $currencytype;
-    public $currenyvalue;
-    public function mount(){
-        $this->sorting="default";
-        $this->pagesize=24;
-        $this->pickuplocations= request()->ambulancecategoriesslug;
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-           
-        }
-    }
-    public function updated(){
-    }
-    public function updatedCurrencytype(){
-        $data =$this->validate([
-            'currencytype'=>'required|min:1',
-        ]);
-        LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-            return redirect()->to('/AmbulanceList?ambulancecategoriesslug='.$this->pickuplocations);
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-            $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-            return redirect()->to('/Login');
-        }
-        
-    }
-    public function render()
+    public $url_ambulancecategoriesslug = '';
+
+    protected function type(): string { return 'ambulance'; }
+
+    protected function activeCategory(): ?string { return $this->url_ambulancecategoriesslug ?: null; }
+
+    protected function filter(Builder $query): Builder
     {
-        $request = request();
-        $pickuplocation = $this->url_ambulancecategoriesslug;
-        
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-    if($this->sorting=="Name"){
-        if( $this->url_ambulancecategoriesslug){
-        $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$this->pickuplocations)->orderby('IDs','ASC')->paginate($this->pagesize);
-        }else{
-            $carcategories=AmbulanceModel::approved()->orderby('IDs','ASC')->paginate($this->pagesize);
-        }
-    }else if ($this->sorting=="Price"){
-        if( $this->url_ambulancecategoriesslug){
-            $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$this->pickuplocations)->orderby('Price','ASC')->paginate($this->pagesize);
-            }else{
-                $carcategories=AmbulanceModel::approved()->orderby('Price','ASC')->paginate($this->pagesize);
-            }
+        return $query->when($this->url_ambulancecategoriesslug, fn ($q, $cat) => $q->where('AmbulanceCategory', $cat));
     }
-    else if ($this->sorting=="default"){
-        if( $this->url_ambulancecategoriesslug){
-            $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$pickuplocation)->paginate($this->pagesize);
-            }else{
-                $carcategories=AmbulanceModel::approved()->paginate($this->pagesize);
-            }
-    }else{
-        if( $this->url_ambulancecategoriesslug){
-            $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$pickuplocation)->paginate($this->pagesize);
-            }else{
-                $carcategories=AmbulanceModel::approved()->paginate($this->pagesize);
-            }
-    }
-    $currencypick=$this->currencytype;
-    $currenyvalues=$this->currenyvalue;
-    $firstdestinations=AmbulanceModel::approved()->groupBy('AmbulanceCategory')->select('AmbulanceCategory', \DB::raw('COUNT(*) as cnt'))->get()->groupBy('AmbulanceCategory');
-        return view('livewire.ambulance-list-component',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'carcategories'=>$carcategories,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'firstdestinations'=>$firstdestinations])->layout('layouts.basess');
+
+    protected function heading(): array
+    {
+        $cat = $this->url_ambulancecategoriesslug;
+
+        return [$cat ? $cat . '' : 'All ambulances', 'Choose the level of care you need.', $cat ?: 'All'];
     }
 }

@@ -1,74 +1,28 @@
 <?php
 
 namespace App\Livewire;
+
+use App\Livewire\Vehicles\VehicleResults;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Url;
-use Illuminate\Http\Request;
-use Livewire\Component;
-use App\Models\HotelsModel;
-use App\Models\RentalCarModel;
-use App\Models\BlogModel;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
-class CarSearch extends Component
+
+/** /CarSearch?pickuplocation=... */
+class CarSearch extends VehicleResults
 {
     #[Url(as: 'pickuplocation')]
-    public $url_pickuplocation;
-    public $currencytype;
-    public $currenyvalue;
-    public $pickarea;
-    public function mount(Request $request){
-        $this->pickarea=$request->input('pickuplocation');
-    if(session()->has('pano_client_data')){
-        $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-        $collection=$login;
-        $plucked = $collection->pluck('SelectedCurrency')->first();
-        $this->currencytype=$plucked;
-        if($this->currencytype=="UGX"){
-            $this->currenyvalue=1;
-        }else{
-        $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-        $collections=$selectedcurrency;
-        $plucks = $collections->pluck('CurrencyValue')->first();
-        $this->currenyvalue=$plucks;
-        }
-    }else{
-        $this->currencytype="UGX";
-        $this->currenyvalue=1;
-       
-    }
-}
-public function updated($fileds){
-    LoginModel::where('Email',session()->get('pano_client_data.Email'))->update(array('SelectedCurrency' => $this->currencytype));
-    if(session()->has('pano_client_data')){
-        $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-        $collection=$login;
-        $plucked = $collection->pluck('SelectedCurrency')->first();
-        $this->currencytype=$plucked;
-        if($this->currencytype=="UGX"){
-            $this->currenyvalue=1;
-        }else{
-        $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-        $collections=$selectedcurrency;
-        $plucks = $collections->pluck('CurrencyValue')->first();
-        $this->currenyvalue=$plucks;
-        }
-    }else{
-        $this->currencytype="UGX";
-        $this->currenyvalue=1;
-        $this->dispatch('alert', type: 'success',  message: 'Please Login to Change Currency!');
-        return redirect()->to('/Login');
-    }
-    return redirect()->to('/CarSearch?pickuplocation='.$this->pickarea);
-    }
-    public function render()
+    public $url_pickuplocation = '';
+
+    protected function type(): string { return 'car'; }
+
+    protected function filter(Builder $query): Builder
     {
-        $request = request();
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        $pickuplocation = $this->url_pickuplocation;
-        $currencypick=$this->currencytype;
-        $currenyvalues=$this->currenyvalue;
-        $carsearched=RentalCarModel::approved()->search($pickuplocation, ['CurrentLocation', 'City'])->paginate(24);
-        return view('livewire.car-search',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs])->with('carsearched',$carsearched)->layout('layouts.base');
+        return $query->search($this->url_pickuplocation, ['CurrentLocation', 'City']);
+    }
+
+    protected function heading(): array
+    {
+        $where = trim((string) $this->url_pickuplocation);
+
+        return [$where !== '' ? 'Cars near ' . $where : 'Find a rental car', 'Pick-up and drop-off where it suits you.', 'Search'];
     }
 }

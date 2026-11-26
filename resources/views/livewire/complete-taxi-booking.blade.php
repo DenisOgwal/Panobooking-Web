@@ -1,221 +1,66 @@
-<div id="fh5co-page">
-    <header id="fh5co-header-section" class="sticky-banner"> 
-        <div class="container">
-            <div class="nav-header">
-                <a href="#" class="js-fh5co-nav-toggle fh5co-nav-toggle dark"><i></i></a>
-                <h1 id="fh5co-logo"><a href="/"><img src="images/panologo.png" style="height: 40px;"></a></h1>
-                <!-- START #fh5co-menu-wrap -->
-                <nav id="fh5co-menu-wrap" role="navigation">
-                    <ul class="sf-menu" id="fh5co-primary-menu">
-                        <li><a href="/">Stays</a></li>	
-                        <li><a href="/TourPackages">Tour Packages</a></li>	
-                        <li class="active"><a href="/taxis">Airport Taxi</a></li>
-                        <li><a href="/cars">Car Rental</a></li>
-                        <li><a href="/ambulance">Ambulance</a></li>
-                        <li><a href="/blog">Blog</a></li>
-                        <li><a href="/contactus">Contact</a></li>
-                        <li>
-                            @if(session()->has('pano_client_data'))
-                            
-                            <a href="#" class="fh5co-sub-ddown">{!!Str::limit(session()->get('pano_client_data.FullNames'),10)!!}</a>
-                            <ul class="fh5co-sub-menu">
-                                <li><a href="/PendingBookings">Pending Bookings</a></li>
-                                <li><a href="/Bookings">Bookings History</a></li>
-                                <a href="/clientlogout">Logout</a>
-                            </ul>
-                            @else
-                            <a href="#" class="fh5co-sub-ddown">Account</a>
-                            <ul class="fh5co-sub-menu">
-                                <li><a href="/Login">Sign in</a></li>
-                                <li><a href="/Register">Register</a></li>
-                            </ul>
-                            @endif
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-    </header>
-    
-            <div class="container mt-5 mb-5 p-2 border border-info rounded">
-                <div class="row">
-
-                  <div class="col-md-12">
-                    @foreach ($cars as $cars)
-                    <h3 class="modal-title" style="width:100%;text-align:center; margin-bottom:10px;">Specify Order Details for {{$cars->TaxiNo}}</h3>
-                    @endforeach
-                    <div class="col-xxs-12 col-xs-12 mt alternate">
-                        <form wire:submit.prevent="Submitaxirequest">
-                    
-                            <div class="col-xxs-12 col-xs-6 mt alternate">
-                                <label for="class">Pick me up</label>
-                                <select class="form-control" id="pickuppoint" name="pickuppoint" wire:model.live="pickuppoint">
-                                    <option value=" ">Select Pick up Point</option>
-                                    <option value="From Airport">From Airport</option>
-                                    <option value="To Airport">To Airport</option>
-                                </select>
-                           </div>
-        
-                            <div class="col-xxs-12 col-xs-6 mt alternate">
-                                <label for="class">Airport:</label>
-                                <select class="form-control" wire:model.live="airportfield"  id="airportfield" name="airportfield"  >
-                                    <option value=" ">Select Airport</option>
-                                    <option value="Entebbe">Entebbe</option>
-                                </select>
-                           </div>
-                           
-                           <div class="col-xxs-12 col-xs-6 mt alternate">
-                            <label for="from">Place:</label>
-                            <select class="form-control" id="Destination" name="Destination" wire:model.live="Destination">
-                            @if(!empty($datas))
-                                @foreach ($datas as $data)
-                                <option value="{{$data['Tos']}}">{{$data['Tos']}}</option>
-                                @endforeach
-                                                                
-                            @endif
-                            </select>
-                        </div>
-
-                          
-                        
-                           <div class="col-xxs-12 col-xs-6 mt alternate">
-                            <label for="class">No of People:</label>
-                            <select  class="form-control" wire:model.live="NoOfPeople" name="NoOfPeople" id="NoOfPeople">
-                                <option value=" ">Select No.Of People</option>
-                                <option value="1">1 Person</option>
-                                <option value="2">2 People</option>
-                                <option value="3">3 People</option>
-                                <option value="4">4 People</option>
-                                <option value="5">5 People</option>
-                                <option value="6">6 People</option>
-                                <option value="7">7 People</option>
-                                <option value="8">8 People</option>
-                                <option value="9">9 People</option>
-                                <option value="10">10 People</option>
-                            </select>
-                          </div>
-                          <div class="col-xxs-12 col-xs-6 mt alternate">
-                            <label for="from">Price</label>
-                            <input type="number" class="form-control" name="tripcost" id="tripcost" wire:model.live="tripcost" readonly placeholder="Price for this"/>    
+@php
+    use App\Support\Vehicles;
+    $vehicle = $this->vehicle;
+    $currency = app(\App\Support\Currency::class);
+    $loggedIn = app(\App\Support\CustomerAuth::class)->check();
+    $fare = $this->fare;
+@endphp
+<div>
+    <x-page-hero title="Book an airport taxi" :subtitle="($vehicle->CarSpec ?: $vehicle->TaxiNo) . ' with ' . $vehicle->DriverName"
+                 :crumbs="[['Airport taxi', '/taxis'], [$vehicle->CarSpec ?: $vehicle->TaxiNo, Vehicles::detailUrl('taxi', $vehicle)], ['Book']]" />
+    <section class="section-sm">
+        <div class="container-xl">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="form-card">
+                        <h2 class="h4 mb-3">Your transfer</h2>
+                        <form wire:submit="book" novalidate>
+                            <fieldset class="mb-3">
+                                <legend class="form-label">Trip</legend>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (['From Airport' => 'From the airport', 'To Airport' => 'To the airport'] as $value => $label)
+                                        <input type="radio" class="btn-check" id="trip-{{ \Illuminate\Support\Str::slug($value) }}" value="{{ $value }}" wire:model.live="pickuppoint">
+                                        <label class="btn btn-outline-primary" for="trip-{{ \Illuminate\Support\Str::slug($value) }}">{{ $label }}</label>
+                                    @endforeach
+                                </div>
+                            </fieldset>
+                            <div class="row g-3">
+                                <div class="col-sm-5">
+                                    <x-field label="Airport" name="airportfield" select wire:model.live="airportfield"><option value="Entebbe">Entebbe International</option></x-field>
+                                </div>
+                                <div class="col-sm-7">
+                                    <x-field :label="$pickuppoint === 'From Airport' ? 'Drop-off' : 'Pick-up from'" name="Destination" select wire:model.live="Destination">
+                                        @forelse ($this->destinations as $d)<option value="{{ $d }}">{{ $d }}</option>@empty<option value="">No routes available</option>@endforelse
+                                    </x-field>
+                                </div>
+                                <div class="col-sm-5"><x-field label="Date" name="checkindate" type="date" wire:model.live="checkindate" :min="now()->toDateString()" icon="bi-calendar-event" /></div>
+                                <div class="col-6 col-sm-4"><x-field label="Time" name="pickuptime" type="time" wire:model.blur="pickuptime" icon="bi-clock" /></div>
+                                <div class="col-6 col-sm-3"><x-field label="People" name="NoOfPeople" type="number" min="1" max="14" wire:model.blur="NoOfPeople" /></div>
                             </div>
-                          <div class="col-xxs-12 col-xs-6 mt alternate" style="padding: 10px">
-                            @error('bookingnotes') <span class="text-danger">{{ $message }}</span> @enderror
-                            <textarea class="form-control" placeholder="Add Other Instruction notes for this Booking" rows="2" name="bookingnotes" wire:model.live="bookingnotes"></textarea>
-                        </div>
-        
-                        <div class="col-xxs-12 col-xs-6 mt alternate">
-                        <label for="from">Pickup Date:</label>
-                        <input type="date" class="form-control" name="checkindate" id="checkindate" wire:model.live="checkindate" placeholder="mm/dd/yyyy"/>
-                        </div>
-                        <div class="col-xxs-12 col-xs-6 mt alternate">
-                        <label for="from">Pickup Time:</label>
-                        <input type="text" class="form-control" name="Pickuptime"  id="datetime" wire:model.live="datetime"  placeholder="HH/MM/SS a"/>
-                        </div>
-        
-                        
-                        <div class="col-xxs-12 col-xs-6 mt alternate">
-                        <label for="date-end">A One Hour delay or early Arrival is Acceptable for this booking.</label>
-                        </div>
-                        <div class="col-xxs-12 col-xs-6 mt alternate">
-                        <button class="btn btn-primary" type="submit"   style="color:White;">
-                            Order Now
-                        </button>
-                        </div>
+                            <x-field label="Notes (optional)" name="bookingnotes" textarea rows="2" wire:model.blur="bookingnotes" placeholder="Flight number, luggage, child seats…" />
+                            @if ($loggedIn)
+                                <button class="btn btn-accent btn-lg w-100" type="submit" @disabled($fare === null)>
+                                    <span wire:loading.remove wire:target="book">Book transfer</span>
+                                    <span wire:loading wire:target="book"><span class="spinner-border spinner-border-sm me-2"></span>Booking…</span>
+                                </button>
+                            @endif
                         </form>
-                    </div> 
-                            
-</div>
-</div>
-</div>
-
-<footer>
-    <div id="footer">
-        <div class="container">
-            <div class="row row-bottom-padded-md">
-                <div class="owl-carousel footer-carousel owl-theme">
-                    <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Property</h3>
-                    <ul>
-                        <li><a href="{{route('PropertyTypes',['propertyslug'=>'Hotel'])}}">Hotels</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Home Stays'])}}">Home Stays</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Guest Houses'])}}">Guest Houses</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Apartments'])}}">Apartments</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Country Homes'])}}">Country Homes</a></li>
-                            <li><a href="{{route('PropertyTypes',['propertyslug'=>'Villas'])}}">Villas</a></li>
-                        </ul>
+                        @unless ($loggedIn)<div class="mt-3">@include('livewire.partials.signin-card')</div>@endunless
+                    </div>
                 </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Destinations</h3>
-                    <ul>
-                        <li><a href="/Regions">Regions</a></li>
-                        <li><a href="/Cities">Cities</a></li>
-                        <li><a href="/Cities">Towns</a></li>
-                        <li><a href="/TourismSites">Tourism Sites</a></li>
-                        <li><a href="/Events">Events</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Top Propertys</h3>
-                    <ul>
-                        @foreach ($topproperties as $topproperty)
-                        <li><a href="{{route('HotelSingle',['hotelslug'=>$topproperty->IDs])}}">{{$topproperty->Place}}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-           <!-- <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Interest</h3>
-                    <ul>
-                        <li><a href="#">Beaches</a></li>
-                        <li><a href="#">Family Travel</a></li>
-                        <li><a href="#">Budget Travel</a></li>
-                        <li><a href="#">Food &amp; Drink</a></li>
-                        <li><a href="#">Honeymoon and Romance</a></li>
-                    </ul>
-                </div>
-            </div>-->
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Articles</h3>
-                    <ul>
-                        @foreach ($topblogs as $topblog)
-                        <li><a href="{{route('BlogDetail',['blogslug'=>$topblog->ID])}}">{{$topblog->BlogTitle}}</a></li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-            <div class="item">
-                <div class="col fh5co-footer-link">
-                    <h3>Help</h3>
-                    <ul>
-                        <li><a href="/privacypolicy">Privacy Policy</a></li>
-                        <li><a href="/TermsAndConditions">Terms & Conditions</a></li>
-                        <li><a href="/Faqs">FAQS</a></li>
-                        <li><a href="/HelpCenter">Help Center</a></li>
-                        <li><a href="/contactus">Contact Us</a></li>
-                    </ul>
-                </div>
-            </div>
+                <aside class="col-lg-5">
+                    @include('livewire.vehicles.booking-summary', [
+                        'vehicle' => $vehicle,
+                        'lines' => [
+                            ['Route', $pickuppoint === 'From Airport' ? "{$airportfield} Airport → {$Destination}" : "{$Destination} → {$airportfield} Airport"],
+                            ['When', \Illuminate\Support\Carbon::parse($checkindate ?: now())->format('D j M') . ($pickuptime ? ' · ' . $pickuptime : '')],
+                            ['Passengers', (int) $NoOfPeople],
+                        ],
+                        'total' => $fare,
+                        'showTotal' => true,
+                    ])
+                </aside>
             </div>
         </div>
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-md-offset-3 text-center">
-                    <p class="fh5co-social-icons">
-                        <a href="https://twitter.com/Panobooking1" target="_blank"><i class="icon-twitter2"></i></a>
-                        <a href="https://www.facebook.com/Panobooking1" target="_blank"><i class="icon-facebook2"></i></a>
-                        <a href="https://www.instagram.com/panobooking1/" target="_blank"><i class="icon-instagram" target="_blank"></i></a>
-                        <a href="https://www.youtube.com/channel/UCmjiIcgdYqeJCQn0dOb3IMA" target="_blank"><i class="icon-youtube"></i></a>
-                    </p>
-                    <p>Copyright &copy; <script>document.write(new Date().getFullYear());</script> <a href="panobooking.com">Panobooking</a>. All Rights Reserved.<!-- <br>Made with <i class="icon-heart3"></i> by <a href="http://freehtml5.co/" target="_blank">Freehtml5.co</a> --></p>
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
+    </section>
 </div>

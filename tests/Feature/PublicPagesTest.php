@@ -26,7 +26,7 @@ class PublicPagesTest extends TestCase
             '/Properties?cityslug=Jinja&countryslug=Uganda', '/PropertyTypes?propertyslug=Hotel', '/TourismSites',
             '/TourismProperties', '/TourismSiteDetails?searchslug=1', '/Events', '/EventsProperties', '/EventsDetails?searchslug=1',
             '/TourPackages', '/TourPackageDetails?searchslug=1', '/CompleteBooking?hotelfinalslug=2',
-            '/CompleteCarBooking?carrentalfinalslug=1', '/CompleteTaxiBooking', '/CompleteAmbulanceBooking?ambulancefinalslug=1',
+            '/CompleteCarBooking?carrentalfinalslug=1', '/CompleteTaxiBooking?taxifinalslug=1', '/CompleteAmbulanceBooking?ambulancefinalslug=1',
             '/CompleteHomeGuestBooking?homeguestfinalslug=1', '/BookingSuccess', '/Login', '/Register', '/RegisterProperty',
             '/RegisterCars', '/RegisterAmbulance', '/privacypolicy', '/TermsAndConditions', '/Faqs', '/HelpCenter',
         ];

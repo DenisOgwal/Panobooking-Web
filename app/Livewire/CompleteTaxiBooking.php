@@ -1,150 +1,104 @@
 <?php
 
 namespace App\Livewire;
-use App\Support\ProviderNotifier;
-use Livewire\Attributes\Url;
-use Illuminate\Support\Facades\Mail;
-use App\Models\BlogModel;
-use App\Models\CartModel;
-use App\Models\HotelsModel;
-use App\Models\TaxiModel;
-use App\Models\TaxiTripModel;
-use Illuminate\Http\Request;
-use Livewire\Component;
-use App\Models\CurrencySelect;
-use App\Models\LoginModel;
-use PhpParser\Builder\Function_;
 
-class CompleteTaxiBooking extends Component
+use App\Livewire\Vehicles\VehicleBooking;
+use App\Models\TaxiTripModel;
+use Illuminate\Support\Carbon;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
+
+/** /CompleteTaxiBooking?taxifinalslug={IDs}&Destination=… */
+class CompleteTaxiBooking extends VehicleBooking
 {
     #[Url(as: 'taxifinalslug')]
     public $url_taxifinalslug;
-    public $taxifinalslug;
-    public $email;
-    public $fullnames;
-    public $facilityname;
-    public $carno;
-    public $pickuppoint;
-    public $pickupdescription;
-    public $airportfield;
-    public $Destination;
-    public $Destinations;
-    public $NoOfPeople;
-    public $tripcost;
-    public $datetime;
-    public $bookingnotes;
-    public $checkindate;
-    public $roomids;
-    public $datas;
-    public $caremail;
-    public $mynotesbook;
-    public $currencytype;
-    public $currenyvalue;
-    public $tripcosts;
-    public function mount(Request $request){
-        $this->checkindate = now()->addYear();
-        $this->roomids = $request->input('taxifinalslug');
-        $this->facilityname=TaxiModel::where('IDs',$this->roomids)->value('DriverName');
-        $this->carno=TaxiModel::where('IDs',$this->roomids)->value('TaxiNo');
-        $this->email=session()->get('pano_client_data.Email');
-        $this->caremail=TaxiModel::where('IDs',$this->roomids)->value('EmailAddress');
-        $this->fullnames=session()->get('pano_client_data.FullNames');
-        $this->datas=TaxiTripModel::where('Tos','LIKE','%'.$this->Destination.'%')->get()->toArray();
-        if(session()->has('pano_client_data')){
-            $login=LoginModel::where('Email',session()->get('pano_client_data.Email'));
-            $collection=$login;
-            $plucked = $collection->pluck('SelectedCurrency')->first();
-            $this->currencytype=$plucked;
-            if($this->currencytype=="UGX"){
-                $this->currenyvalue=1;
-            }else{
-            $selectedcurrency=CurrencySelect::where('CurrencyName',$this->currencytype);
-            $collections=$selectedcurrency;
-            $plucks = $collections->pluck('CurrencyValue')->first();
-            $this->currenyvalue=$plucks;
-            }
-        }else{
-            $this->currencytype="UGX";
-            $this->currenyvalue=1;
-           
-        }
-    }
-    public function updatedReminder()
+
+    #[Url(as: 'Destination', except: '')]
+    public string $Destination = '';
+
+    public string $pickuppoint = 'From Airport';
+    public string $airportfield = 'Entebbe';
+    public $NoOfPeople = 1;
+    public string $checkindate = '';
+    public string $pickuptime = '';
+    public string $bookingnotes = '';
+
+    protected function type(): string { return 'taxi'; }
+
+    protected function vehicleId() { return $this->url_taxifinalslug; }
+
+    protected function viewName(): string { return 'livewire.complete-taxi-booking'; }
+
+    protected function prepare(): void
     {
-    $this->checkindate->addYear();
-    }
-    public function updatedQuery(){
-
-    }
-
-    public function updated($fields){
-        $this->validateOnly($fields,[
-            'pickuppoint'=>'required',
-            'airportfield'=>'required',
-            'Destination'=>'required',
-            'NoOfPeople'=>'required',
-            'tripcost'=>'required',
-            'bookingnotes'=>'required',
-        ]);
-        $this->tripcosts=TaxiTripModel::where('Tos',$this->Destination)->where('Froms',$this->airportfield)->Value('Price');
-        $this->tripcost=ceil((TaxiTripModel::where('Tos',$this->Destination)->where('Froms',$this->airportfield)->Value('Price'))/$this->currenyvalue);
-        if($this->pickuppoint=="From Airport"){
-            $this->pickupdescription="Pick Me up from ".$this->airportfield." Airport to ".$this->Destination;
-        }else{
-            $this->pickupdescription="Pick Me up from ".$this->Destination." to ".$this->airportfield." Airport";
+        $this->checkindate = now()->addDay()->toDateString();
+        $this->pickuptime = '10:00';
+        if ($this->Destination === '' || ! $this->destinations->contains($this->Destination)) {
+            $this->Destination = (string) $this->destinations->first();
         }
     }
 
-public function Submitaxirequest(Request $request){
-    $data =$this->validate([
-            'pickuppoint'=>'required',
-            'airportfield'=>'required',
-            'Destination'=>'required',
-            'NoOfPeople'=>'required',
-            'tripcost'=>'required',
-            'bookingnotes'=>'required',
-    ]);
-    if(session()->has('pano_client_data')){
-        $cartmodel= new CartModel();
-        $cartmodel->Facility = $this->facilityname;
-        $cartmodel->ProductName = $this->carno;
-        $cartmodel->User = $this->email;
-        $cartmodel->UserNames = $this->fullnames;
-        $cartmodel->Quantity =1;
-        $cartmodel->Cost =$this->tripcosts;
-        $cartmodel->OrderCode = "N/A";
-        $cartmodel->DatesFrom = $this->checkindate;
-        $cartmodel->DatesTo = "N/A";
-        $cartmodel->BookingType = "Airport Taxi";
-        $cartmodel->Currency = $this->currencytype;
-        $cartmodel->CurrencyAmount  = ceil($this->tripcost);
-        $cartmodel->Descriptions =$this->pickupdescription.' NO. OF PEOPLE:'.$this->NoOfPeople.'. NOTES: '.$this->bookingnotes;
-        $cartmodel->save();
-        $this->mynotesbook='Please Reserve for '.$this->fullnames.' '.$this->carno.'. '.$this->pickupdescription.'. TOTAL PAYABLE: '.$this->currencytype.' '.$this->tripcost.' NO. OF PEOPLE:'.$this->NoOfPeople.'. NOTES: '.$this->bookingnotes;
-        app(ProviderNotifier::class)->send('SendTaxi.php', ['hotelemail' => $this->caremail, 'bookingnotes' => $this->mynotesbook]);
-        
-        $this->dispatch('alert', type: 'success',  message: 'Taxi Request Submitted, Wait for response in minimal Time possible');
-        return redirect()->to('/BookingSuccess');
-        }else{
-            $this->dispatch('alert', type: 'error',  message: 'Request Faied!');  
-        }
-
-
-        }
-    public function isOnline($site='https://www.youtube.com/'){
-    if(@fopen($site,"r")){
-        return true;
-    }else{
-        return false;
-    }
-    }
-    public function render()
+    /** Destinations served from the chosen airport. */
+    #[Computed]
+    public function destinations()
     {
-        $request = request();
-        $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
-        $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
-        $carnumber = $this->url_taxifinalslug;
-        $cars=TaxiModel::where('IDs',$carnumber)->get();
-        return view('livewire.complete-taxi-booking',['topproperties'=>$topproperties,'topblogs'=>$topblogs,'cars'=>$cars])->layout('layouts.basessss');
+        return TaxiTripModel::where('Froms', 'like', $this->airportfield . '%')->orderBy('Tos')->pluck('Tos')->unique()->values();
+    }
+
+    /** Fixed fare (UGX) for the chosen route. */
+    #[Computed]
+    public function fare(): ?float
+    {
+        $price = TaxiTripModel::where('Froms', 'like', $this->airportfield . '%')->where('Tos', $this->Destination)->value('Price');
+
+        return $price !== null ? (float) $price : null;
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'pickuppoint' => 'required|in:From Airport,To Airport',
+            'airportfield' => 'required|string',
+            'Destination' => 'required|string',
+            'NoOfPeople' => 'required|integer|min:1|max:14',
+            'checkindate' => 'required|date|after_or_equal:today',
+            'pickuptime' => 'required|date_format:H:i',
+            'bookingnotes' => 'nullable|string|max:1000',
+        ];
+    }
+
+    protected function validationAttributes(): array
+    {
+        return ['pickuppoint' => 'trip', 'airportfield' => 'airport', 'NoOfPeople' => 'passengers', 'checkindate' => 'date', 'pickuptime' => 'time', 'bookingnotes' => 'notes'];
+    }
+
+    private function routeDescription(): string
+    {
+        return $this->pickuppoint === 'From Airport'
+            ? "Pick Me up from {$this->airportfield} Airport to {$this->Destination}"
+            : "Pick Me up from {$this->Destination} to {$this->airportfield} Airport";
+    }
+
+    protected function cartAttributes(): array
+    {
+        return [
+            'Quantity' => 1,
+            'Cost' => $this->fare ?? 0,
+            'DatesFrom' => Carbon::parse($this->checkindate)->toDateString() . ' ' . $this->pickuptime,
+            'DatesTo' => 'N/A',
+            'BookingType' => 'Airport Taxi',
+            'Descriptions' => $this->routeDescription() . '. NO. OF PEOPLE: ' . (int) $this->NoOfPeople . '. NOTES: ' . $this->bookingnotes,
+        ];
+    }
+
+    protected function notification(): array
+    {
+        return ['SendTaxi.php', [
+            'hotelemail' => $this->vehicle->EmailAddress,
+            'bookingnotes' => sprintf('%s for %s on %s at %s. Taxi %s. People: %d. FARE: %s. NOTES: %s',
+                $this->routeDescription(), app(\App\Support\CustomerAuth::class)->name(), $this->checkindate, $this->pickuptime,
+                $this->vehicle->TaxiNo, $this->NoOfPeople, app(\App\Support\Currency::class)->format($this->fare ?? 0), $this->bookingnotes),
+        ]];
     }
 }
