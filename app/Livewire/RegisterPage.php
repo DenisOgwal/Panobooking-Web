@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\ProviderNotifier;
+use App\Support\CustomerAuth;
 use App\Models\UserRegistrationModel;
 use Livewire\Component;
 use Illuminate\Support\Facades\Mail;
@@ -38,12 +40,11 @@ class RegisterPage extends Component
         $UserRegistrationModel= new UserRegistrationModel();
         $UserRegistrationModel->FullNames = $this->name;
         $UserRegistrationModel->Email = $this->email;
-        $UserRegistrationModel->Password = md5($this->password);
+        $UserRegistrationModel->Password = CustomerAuth::hash($this->password);
         $UserRegistrationModel->Telephone = $this->code.$this->phonenum;
         $UserRegistrationModel->ApprovalStatus = 'Not Approved';
         $UserRegistrationModel->save();
-        $sites='https://www.panobooking.com/SendEmails/checkreg.php?emails='.$this->email;
-        @fopen($sites,"r");
+        app(ProviderNotifier::class)->send('checkreg.php', ['emails' => $this->email]);
         $this->name='';
         $this->email='';
         $this->code='';

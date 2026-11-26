@@ -64,7 +64,7 @@ class CompleteHomeGuestBooking extends Component
             'checkindate' => 'required',
             'BookingDescription'=>'required',
         ]);
-        if($request->session()->has('pano_client_data')){
+        if(session()->has('pano_client_data')){
             $cartmodel= new CartModel();
             $cartmodel->Facility = $this->facilityname;
             $cartmodel->ProductName = $this->roomname;

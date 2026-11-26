@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\CustomerAuth;
 use App\Models\LoginModel;
 use Illuminate\Http\Request;
 use Livewire\Component;
@@ -17,42 +18,35 @@ class LoginPage extends Component
             'password' => 'required|min:8',
         ]);
     }
-    public function signin(Request $request)
-    {
+    public function signin() {
        
        $this->validate([
             'email' => 'required|email',
             'password' => 'required|min:8',
         ]);
-        $login=LoginModel::where('Email',$this->email)->where('ApprovalStatus', 'Approved');
-        $collection=$login;
-        if($login->first()){
-             $plucked = $collection->pluck('Password')->first();
-            if($plucked==md5($this->password)){
-            $request->session()->put('pano_client_data',$login->first());
-            $this->dispatch('alert', type: 'success',  message: 'User Login Successfully!');
+
+        $result = app(CustomerAuth::class)->attempt($this->email, $this->password);
+
+        if ($result === CustomerAuth::RESULT_OK) {
+            session()->flash('alert', ['type' => 'success', 'message' => 'Welcome back, ' . app(CustomerAuth::class)->name() . '!']);
             return redirect()->to('/');
-            }else{
-                $this->dispatch('alert', type: 'error', message: 'Login Password Does not Match Registered Password');  
-            }
-        }else{
-            $this->dispatch('alert', type: 'error',  message: 'Account Does not Exist OR Account Not Approved!');  
+        }
+
+        $message = $result === CustomerAuth::RESULT_BAD_PASSWORD
+            ? 'That password is incorrect.'
+            : 'No approved account exists for that email address.';
+        $this->dispatch('alert', type: 'error', message: $message);
     }
-        //dd($this->name,$this->email,$this->password,$this->phonenum,'Progress');
-    }
-    public function logouts(Request $request){
-        if($request->session()->has('pano_client_data')){
-        $request->session()->forget('pano_client_data');
-        $this->dispatch('alert', type: 'success',  message: 'User Logout Successful!');
-        return redirect()->to('/');
+
+    public function mount()
+    {
+        if (app(CustomerAuth::class)->check()) {
+            return redirect()->to('/');
         }
     }
+
     public function render()
     {
-        $request = request();
-        if($request->session()->has('pano_client_data')){
-            redirect()->to('/');
-        }
         return view('livewire.login-page')->layout('layouts.bases');
     }
 }

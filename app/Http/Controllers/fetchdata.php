@@ -15,7 +15,7 @@ class fetchdata extends BaseController
     function fetch_data(Request $request){
         if($request->ajax()){
             $from_city = $request->input('from_city');
-            $hotelsearched=HotelsModel::where('City', 'LIKE',"%$from_city%")->paginate(3);
+            $hotelsearched=HotelsModel::approved()->search($from_city, ['City'])->paginate(3);
             return view('livewire.hotelpagination',compact('hotelsearched'))->render();
         }
     }

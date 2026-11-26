@@ -75,15 +75,15 @@ class GeneralSearch extends Component
         $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
         $currencypick=$this->currencytype;
         $currenyvalues=$this->currenyvalue;
-        $hotelsearched=HotelsModel::where('Approved','Approved')->where('SearchTerms', 'LIKE',"%$salessearch%")->orwhere('City', 'LIKE',"%$salessearch%")->orWhere('PlaceType', 'LIKE',"%$salessearch%")->orWhere('Place', 'LIKE',"%$salessearch%")->orderBy('FaturedRank','ASC')->get();
-        $carsearched=RentalCarModel::where('Approved','Approved')->where('SearchTerms', 'LIKE',"%$salessearch%")->orWhere('CurrentLocation', 'like',"%$salessearch%")->orWhere('City', 'like',"%$salessearch%")->orWhere('DriverName', 'like',"%$salessearch%")->orWhere('TaxiNo', 'like',"%$salessearch%")->orWhere('Company', 'like',"%$salessearch%")->orWhere('CarCategory', 'like',"%$salessearch%")->orWhere('CarSpec', 'like',"%$salessearch%")->orderBy('updated_at','ASC')->get();
-        $taxisearched=TaxiModel::Where('CurrentLocation', 'like',"%$salessearch%")->where('SearchTerms', 'LIKE',"%$salessearch%")->orWhere('DriverName', 'like',"%$salessearch%")->orWhere('TaxiNo', 'like',"%$salessearch%")->orWhere('CarCategory', 'like',"%$salessearch%")->orWhere('CarSpec', 'like',"%$salessearch%")->orWhere('CurrentLocation', 'like',"%Entebbe%")->orWhere('CurrentLocation', 'like',"%Airport%")->orderBy('updated_at','ASC')->get();
-        $ambulancesearched=AmbulanceModel::where('Approved','Approved')->where('SearchTerms', 'LIKE',"%$salessearch%")->orwhere('CurrentLocation', 'like',"%$salessearch%")->orWhere('City', 'like',"%$salessearch%")->orWhere('DriverName', 'like',"%$salessearch%")->orWhere('TaxiNo', 'like',"%$salessearch%")->orWhere('AmbulanceCategory', 'like',"%$salessearch%")->orWhere('CarSpec', 'like',"%$salessearch%")->orderBy('updated_at','ASC')->get();
+        $hotelsearched=HotelsModel::approved()->search($salessearch, HotelsModel::SEARCH_COLUMNS)->orderBy('FaturedRank','ASC')->get();
+        $carsearched=RentalCarModel::approved()->search($salessearch, RentalCarModel::SEARCH_COLUMNS)->orderBy('updated_at','ASC')->get();
+        $taxisearched=TaxiModel::when(! TaxiModel::servesDestination($salessearch), fn ($q) => $q->search($salessearch, TaxiModel::SEARCH_COLUMNS))->orderBy('updated_at','ASC')->get();
+        $ambulancesearched=AmbulanceModel::approved()->search($salessearch, AmbulanceModel::SEARCH_COLUMNS)->orderBy('updated_at','ASC')->get();
         $mytime = \Carbon\Carbon::now();
         $currentda=$mytime->toDateString();
-        $tourpackagesearched=TourPackages::where('TravelDate','>',$currentda)->where('SearchTerms', 'LIKE',"%$salessearch%")->orwhere('PackageName', 'like',"%$salessearch%")->orWhere('City', 'like',"%$salessearch%")->orderBy('IDs','ASC')->get();
-        $tourismsites=TourismSite::where('SearchKeyWords', 'LIKE',"%$salessearch%")->orwhere('SiteName', 'like',"%$salessearch%")->orWhere('City', 'like',"%$salessearch%")->orderBy('ID','ASC')->get();
-        $eventss=ModelsEvents::where('EndDate','>=',$currentda)->where('SearchKeyWords', 'LIKE',"%$salessearch%")->orwhere('EventName', 'like',"%$salessearch%")->orWhere('City', 'like',"%$salessearch%")->orderBy('ID','ASC')->get();
+        $tourpackagesearched=TourPackages::upcoming()->search($salessearch, TourPackages::SEARCH_COLUMNS)->orderBy('IDs','ASC')->get();
+        $tourismsites=TourismSite::search($salessearch, TourismSite::SEARCH_COLUMNS)->orderBy('ID','ASC')->get();
+        $eventss=ModelsEvents::upcoming()->search($salessearch, ModelsEvents::SEARCH_COLUMNS)->orderBy('ID','ASC')->get();
         return view('livewire.general-search',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'hotelsearched'=>$hotelsearched,'carsearched'=>$carsearched,'taxisearched'=>$taxisearched,'ambulancesearched'=>$ambulancesearched,'tourpackagesearched'=>$tourpackagesearched,'tourismsites'=>$tourismsites,'eventss'=>$eventss])->layout('layouts.base');
     }
 }

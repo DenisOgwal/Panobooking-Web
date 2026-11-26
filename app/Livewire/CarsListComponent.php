@@ -79,33 +79,33 @@ class CarsListComponent extends Component
         $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
     if($this->sorting=="Name"){
         if( $this->url_carcategoriesslug){
-        $carcategories=RentalCarModel::where('CarCategory',$pickuplocation)->orderby('TaxiNo','ASC')->paginate($this->pagesize);
+        $carcategories=RentalCarModel::approved()->where('CarCategory',$pickuplocation)->orderby('TaxiNo','ASC')->paginate($this->pagesize);
         }else{
-            $carcategories=RentalCarModel::orderby('TaxiNo','ASC')->paginate($this->pagesize);
+            $carcategories=RentalCarModel::approved()->orderby('TaxiNo','ASC')->paginate($this->pagesize);
         }
     }else if ($this->sorting=="Price"){
         if( $this->url_carcategoriesslug){
-            $carcategories=RentalCarModel::where('CarCategory',$pickuplocation)->orderby('Price','ASC')->paginate($this->pagesize);
+            $carcategories=RentalCarModel::approved()->where('CarCategory',$pickuplocation)->orderby('Price','ASC')->paginate($this->pagesize);
             }else{
-                $carcategories=RentalCarModel::orderby('Price','ASC')->paginate($this->pagesize);
+                $carcategories=RentalCarModel::approved()->orderby('Price','ASC')->paginate($this->pagesize);
             }
     }
     else if ($this->sorting=="default"){
         if( $this->url_carcategoriesslug){
-            $carcategories=RentalCarModel::where('CarCategory',$pickuplocation)->paginate($this->pagesize);
+            $carcategories=RentalCarModel::approved()->where('CarCategory',$pickuplocation)->paginate($this->pagesize);
             }else{
-                $carcategories=RentalCarModel::paginate($this->pagesize);
+                $carcategories=RentalCarModel::approved()->paginate($this->pagesize);
             }
     }else{
         if( $this->url_carcategoriesslug){
-            $carcategories=RentalCarModel::where('CarCategory',$pickuplocation)->paginate($this->pagesize);
+            $carcategories=RentalCarModel::approved()->where('CarCategory',$pickuplocation)->paginate($this->pagesize);
             }else{
-                $carcategories=RentalCarModel::paginate($this->pagesize);
+                $carcategories=RentalCarModel::approved()->paginate($this->pagesize);
             }
     }
     $currencypick=$this->currencytype;
     $currenyvalues=$this->currenyvalue;
-    $firstdestinations=RentalCarModel::groupBy('CarCategory')->select('CarCategory', \DB::raw('COUNT(*) as cnt'))->get()->groupBy('CarCategory');
+    $firstdestinations=RentalCarModel::approved()->groupBy('CarCategory')->select('CarCategory', \DB::raw('COUNT(*) as cnt'))->get()->groupBy('CarCategory');
         return view('livewire.cars-list-component',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'carcategories'=>$carcategories,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'firstdestinations'=>$firstdestinations])->layout('layouts.basess');
     }
 }

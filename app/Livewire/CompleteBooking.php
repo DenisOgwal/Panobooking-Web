@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\ProviderNotifier;
 use Livewire\Attributes\Url;
 use App\Models\BlogModel;
 use App\Models\CartModel;
@@ -102,7 +103,7 @@ class CompleteBooking extends Component
             'Destinationquantity' => 'required',
             //'BookingDescription'=>'min:0',
         ]);
-        if($request->session()->has('pano_client_data')){
+        if(session()->has('pano_client_data')){
             $cartmodel= new CartModel();
             $cartmodel->Facility = $this->facilityname;
             $cartmodel->ProductName = $this->roomname;
@@ -119,9 +120,7 @@ class CompleteBooking extends Component
             $cartmodel->Descriptions ='Has '.$this->Childrenno.' Children';//. $this->BookingDescription;
             $cartmodel->save();
             $this->mynotesbook='Please Reserve for '.$this->fullnames.' '.$this->Destinationquantity.' '.$this->roomname.' Rooms for a Period: From '.$this->checkindate.'. To: '.$this->checkoutdate.'. TOTAL PAYABLE: '.$this->currencytype.' '.$this->DestinationPrice.'. Client Has '.$this->Childrenno.' Children';// Booking Notes: '. $this->BookingDescription;
-            $mynotesbooks = urlencode ( $this->mynotesbook );
-            $sites='https://www.panobooking.com/SendEmails/SendHotel.php?hotelemail='.$this->hotelemail.'&bookingnotes='.$mynotesbooks;
-            @fopen( $sites,"r");
+            app(ProviderNotifier::class)->send('SendHotel.php', ['hotelemail' => $this->hotelemail, 'bookingnotes' => $this->mynotesbook]);
             
             $this->dispatch('alert', type: 'success',  message: 'Booking Successful');//Booking Successful
             return redirect()->to('/BookingSuccess');

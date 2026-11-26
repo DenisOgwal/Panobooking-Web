@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\ProviderNotifier;
+use App\Support\CustomerAuth;
 use Livewire\Attributes\Url;
 use App\Models\LoginModel;
 use App\Models\CurrencySelect;
@@ -93,7 +95,7 @@ class TourPackageDetails extends Component
         }
     }
     public function submitbooking(Request $request){
-        if($request->session()->has('pano_client_data')){
+        if(session()->has('pano_client_data')){
             $this->packageprices=ceil((int)ceil($this->packageprice) / $this->currenyvalue);
             $cartmodel= new CartModel();
             $cartmodel->Facility = $this->tourcompany;
@@ -111,9 +113,7 @@ class TourPackageDetails extends Component
             $cartmodel->Descriptions ='Please Reserve '.$this->tourpckage.'Package for '.$this->fullnames;
             $cartmodel->save();
             $this->mynotesbook='Please Reserve for '.$this->fullnames.' '.$this->tourpckage.' Package';
-            $mynotesbooks = urlencode ( $this->mynotesbook );
-            $sites='https://www.panobooking.com/SendEmails/SendPackage.php?packageemail='.$this->packageemail.'&bookingnotes='.$mynotesbooks;
-            @fopen( $sites,"r");
+            app(ProviderNotifier::class)->send('SendPackage.php', ['packageemail' => $this->packageemail, 'bookingnotes' => $this->mynotesbook]);
             
             $this->dispatch('alert', type: 'success',  message: 'Reservation Successful');//Booking Successful
             return redirect()->to('/BookingSuccess');
@@ -121,29 +121,25 @@ class TourPackageDetails extends Component
                 $this->dispatch('alert', type: 'error',  message: 'Booking Faied!');  
             }
     }
-    public function signin(Request $request)
-    {
+    public function signin() {
        
        $this->validate([
             'clientemail' => 'required|email',
             'password' => 'required|min:8',
         ]);
-        $login=LoginModel::where('Email',$this->clientemail)->where('ApprovalStatus', 'Approved');
-        $collection=$login;
-        if($login->first()){
-             $plucked = $collection->pluck('Password')->first();
-            if($plucked==md5($this->password)){
-            $request->session()->put('pano_client_data',$login->first());
-            $this->dispatch('alert', type: 'success',  message: 'User Login Successfully!');
-            return redirect()->route('TourPackageDetails',['searchslug'=> $this->newsearchslug]);
-            }else{
-                $this->dispatch('alert', type: 'error', message: 'Login Password Does not Match Registered Password');  
-                return redirect()->route('TourPackageDetails',['searchslug'=> $this->newsearchslug]);
-            }
-        }else{
-            $this->dispatch('alert', type: 'error',  message: 'Account Does not Exist OR Account Not Approved!');  
+
+        $result = app(CustomerAuth::class)->attempt($this->clientemail, $this->password);
+
+        if ($result === CustomerAuth::RESULT_OK) {
+            session()->flash('alert', ['type' => 'success', 'message' => 'Welcome back, ' . app(CustomerAuth::class)->name() . '!']);
             return redirect()->route('TourPackageDetails',['searchslug'=> $this->newsearchslug]);
         }
+
+        $message = $result === CustomerAuth::RESULT_BAD_PASSWORD
+            ? 'That password is incorrect.'
+            : 'No approved account exists for that email address.';
+        session()->flash('alert', ['type' => 'error', 'message' => $message]);
+        return redirect()->route('TourPackageDetails',['searchslug'=> $this->newsearchslug]);
     }
     public function render()
     {

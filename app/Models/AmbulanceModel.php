@@ -2,15 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasListingScopes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class AmbulanceModel extends Model
 {
-    use HasFactory;
-    protected $table="ambulances";
-    public function Ambulancedetails()
+    use HasFactory, HasListingScopes;
+
+    protected $table = 'ambulances';
+    protected $primaryKey = 'IDs';
+
+    public const SEARCH_COLUMNS = ['SearchTerms', 'CurrentLocation', 'City', 'DriverName', 'TaxiNo', 'AmbulanceCategory', 'CarSpec'];
+
+    public function Ambulancedetails(): HasOne
     {
-        return $this->hasOne('App\Models\AmbulanceAccessoriesModel','Ambulance','TaxiNo');
+        return $this->hasOne(AmbulanceAccessoriesModel::class, 'Ambulance', 'TaxiNo');
     }
 }

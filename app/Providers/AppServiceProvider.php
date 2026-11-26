@@ -1,32 +1,25 @@
 <?php
 
 namespace App\Providers;
-use Illuminate\Support\Facades\Schema;
+
+use App\Support\Currency;
+use App\Support\CustomerAuth;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
-        //
+        // One instance per request (Livewire update requests included).
+        $this->app->scoped(Currency::class);
+        $this->app->scoped(CustomerAuth::class);
     }
-   /**
- * Bootstrap any application services.
- *
- * @return void
- */
-public function boot()
-{
-    Schema::defaultStringLength(191);
-    Paginator::useBootstrap();
-    //Paginator::useBootstrapFive();
-    //Paginator::useTailwind();
-}
-   
+
+    public function boot(): void
+    {
+        Schema::defaultStringLength(191);
+        Paginator::useBootstrapFive();
+    }
 }

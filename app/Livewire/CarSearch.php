@@ -68,7 +68,7 @@ public function updated($fileds){
         $pickuplocation = $this->url_pickuplocation;
         $currencypick=$this->currencytype;
         $currenyvalues=$this->currenyvalue;
-        $carsearched=RentalCarModel::where('Approved','Approved')->where('CurrentLocation', 'like',"%$pickuplocation%")->orWhere('City', 'like',"%$pickuplocation%")->paginate(24);
+        $carsearched=RentalCarModel::approved()->search($pickuplocation, ['CurrentLocation', 'City'])->paginate(24);
         return view('livewire.car-search',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs])->with('carsearched',$carsearched)->layout('layouts.base');
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\CustomerAuth;
 
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -80,44 +81,39 @@ class TaxiDetails extends Component
             return redirect()->to('/Login');
         }    
     }
-    public function signin(Request $request)
-    {
+    public function signin() {
        
        $this->validate([
             'clientemail' => 'required|email',
             'password' => 'required|min:8',
         ]);
-        $login=LoginModel::where('Email',$this->clientemail)->where('ApprovalStatus', 'Approved');
-        $collection=$login;
-        if($login->first()){
-             $plucked = $collection->pluck('Password')->first();
-            if($plucked==md5($this->password)){
-            $request->session()->put('pano_client_data',$login->first());
-            $this->dispatch('alert', type: 'success',  message: 'User Login Successfully!');
-            //redirect()->getUrlGenerator()->previous();
-            return redirect()->route('TaxiDetails',['taxislug'=> $this->newtaxislug]);//->to('/ambulance');
-            }else{
-                $this->dispatch('alert', type: 'error', message: 'Login Password Does not Match Registered Password');  
-                return redirect()->route('TaxiDetails',['taxislug'=> $this->newtaxislug]);
-            }
-        }else{
-            $this->dispatch('alert', type: 'error',  message: 'Account Does not Exist OR Account Not Approved!');  
+
+        $result = app(CustomerAuth::class)->attempt($this->clientemail, $this->password);
+
+        if ($result === CustomerAuth::RESULT_OK) {
+            session()->flash('alert', ['type' => 'success', 'message' => 'Welcome back, ' . app(CustomerAuth::class)->name() . '!']);
             return redirect()->route('TaxiDetails',['taxislug'=> $this->newtaxislug]);
         }
-        //dd($this->name,$this->email,$this->password,$this->phonenum,'Progress');
+
+        $message = $result === CustomerAuth::RESULT_BAD_PASSWORD
+            ? 'That password is incorrect.'
+            : 'No approved account exists for that email address.';
+        session()->flash('alert', ['type' => 'error', 'message' => $message]);
+        return redirect()->route('TaxiDetails',['taxislug'=> $this->newtaxislug]);
     }
     public function render()
     {
         $request = request();
         $carnumber = $this->url_taxislug;
         $cars=TaxiModel::where('IDs',$carnumber)->get();
+        abort_if($cars->isEmpty(), 404);
         $collection=$cars;
         $currencypick=$this->currencytype;
         $currenyvalues=$this->currenyvalue;
-        $plucked = $collection->pluck('DriverName');
-        $plucked1 = $collection->pluck('TaxiNo');
-        $plucked2 = $collection->pluck('CarCategory');
-        $carCat=TaxiModel::where('CarCategory',$plucked2)->get();
+        $plucked = $collection->first()->DriverName;
+        $plucked1 = $collection->first()->TaxiNo;
+        $plucked2 = $collection->first()->CarCategory;
+        $carCat=TaxiModel::where('CarCategory',$plucked2)->where('IDs','!=',$carnumber)->limit(10)->get();
         $carincludes=CarIncludes::where('Car',$plucked1)->where('Company',$plucked)->get();
         $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
         $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();

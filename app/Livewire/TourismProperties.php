@@ -82,10 +82,10 @@ class TourismProperties extends Component
         $cityname = $this->url_cityslug;
         $searchname = $this->url_searchslug;
         $sitename = $this->url_siteslug;
-        $hotelsearched=HotelsModel::where('Approved','Approved')->where('City',$cityname)->orWhere('SearchTerms','LIKE',"%$searchname%")->orWhere('SearchTerms','LIKE',"%$sitename%")->orWhere('SearchTerms','LIKE',"%$cityname%")->get();
-        $carsearched=RentalCarModel::where('Approved','Approved')->where('City',$cityname)->orWhere('SearchTerms','LIKE',"%$searchname%")->orWhere('SearchTerms','LIKE',"%$sitename%")->orWhere('SearchTerms','LIKE',"%$cityname%")->get();
-        $taxisearched=TaxiModel::Where('CurrentLocation', 'like',"%$cityname%")->orWhere('SearchTerms','LIKE',"%$searchname%")->orWhere('SearchTerms','LIKE',"%$sitename%")->orWhere('CurrentLocation', 'like',"%Entebbe%")->orWhere('CurrentLocation', 'like',"%Airport%")->get();
-        $ambulancesearched=AmbulanceModel::where('Approved','Approved')->where('City',$cityname)->orWhere('SearchTerms','LIKE',"%$searchname%")->orWhere('SearchTerms','LIKE',"%$sitename%")->orWhere('SearchTerms','LIKE',"%$cityname%")->get();
+        $hotelsearched=HotelsModel::approved()->where(fn ($q) => $q->where('City', $cityname)->orWhere(fn ($q) => $q->searchAny([$searchname, $sitename, $cityname], ['SearchTerms'])))->get();
+        $carsearched=RentalCarModel::approved()->where(fn ($q) => $q->where('City', $cityname)->orWhere(fn ($q) => $q->searchAny([$searchname, $sitename, $cityname], ['SearchTerms'])))->get();
+        $taxisearched=TaxiModel::forDestination($cityname, [$searchname, $sitename])->get();
+        $ambulancesearched=AmbulanceModel::approved()->where(fn ($q) => $q->where('City', $cityname)->orWhere(fn ($q) => $q->searchAny([$searchname, $sitename, $cityname], ['SearchTerms'])))->get();
         $currencypick=$this->currencytype;
         $currenyvalues=$this->currenyvalue;
         $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();

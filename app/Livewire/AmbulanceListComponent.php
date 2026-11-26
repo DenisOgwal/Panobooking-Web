@@ -81,33 +81,33 @@ class AmbulanceListComponent extends Component
         $topproperties=HotelsModel::orderBy('IDs','DESC')->take(5)->get();
     if($this->sorting=="Name"){
         if( $this->url_ambulancecategoriesslug){
-        $carcategories=AmbulanceModel::where('AmbulanceCategory',$this->pickuplocations)->orderby('IDs','ASC')->paginate($this->pagesize);
+        $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$this->pickuplocations)->orderby('IDs','ASC')->paginate($this->pagesize);
         }else{
-            $carcategories=AmbulanceModel::orderby('IDs','ASC')->paginate($this->pagesize);
+            $carcategories=AmbulanceModel::approved()->orderby('IDs','ASC')->paginate($this->pagesize);
         }
     }else if ($this->sorting=="Price"){
         if( $this->url_ambulancecategoriesslug){
-            $carcategories=AmbulanceModel::where('AmbulanceCategory',$this->pickuplocations)->orderby('Price','ASC')->paginate($this->pagesize);
+            $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$this->pickuplocations)->orderby('Price','ASC')->paginate($this->pagesize);
             }else{
-                $carcategories=AmbulanceModel::orderby('Price','ASC')->paginate($this->pagesize);
+                $carcategories=AmbulanceModel::approved()->orderby('Price','ASC')->paginate($this->pagesize);
             }
     }
     else if ($this->sorting=="default"){
         if( $this->url_ambulancecategoriesslug){
-            $carcategories=AmbulanceModel::where('AmbulanceCategory',$pickuplocation)->paginate($this->pagesize);
+            $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$pickuplocation)->paginate($this->pagesize);
             }else{
-                $carcategories=AmbulanceModel::paginate($this->pagesize);
+                $carcategories=AmbulanceModel::approved()->paginate($this->pagesize);
             }
     }else{
         if( $this->url_ambulancecategoriesslug){
-            $carcategories=AmbulanceModel::where('AmbulanceCategory',$pickuplocation)->paginate($this->pagesize);
+            $carcategories=AmbulanceModel::approved()->where('AmbulanceCategory',$pickuplocation)->paginate($this->pagesize);
             }else{
-                $carcategories=AmbulanceModel::paginate($this->pagesize);
+                $carcategories=AmbulanceModel::approved()->paginate($this->pagesize);
             }
     }
     $currencypick=$this->currencytype;
     $currenyvalues=$this->currenyvalue;
-    $firstdestinations=AmbulanceModel::groupBy('AmbulanceCategory')->select('AmbulanceCategory', \DB::raw('COUNT(*) as cnt'))->get()->groupBy('AmbulanceCategory');
+    $firstdestinations=AmbulanceModel::approved()->groupBy('AmbulanceCategory')->select('AmbulanceCategory', \DB::raw('COUNT(*) as cnt'))->get()->groupBy('AmbulanceCategory');
         return view('livewire.ambulance-list-component',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'carcategories'=>$carcategories,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'firstdestinations'=>$firstdestinations])->layout('layouts.basess');
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\ProviderNotifier;
 use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Mail;
 use App\Models\BlogModel;
@@ -117,7 +118,7 @@ public function Submitrentalcarrequest(Request $request){
         'Duration'=>'required',
         'bookingnotes'=>'required',
     ]);
-    if($request->session()->has('pano_client_data')){
+    if(session()->has('pano_client_data')){
         $cartmodel= new CartModel();
         $cartmodel->Facility = $this->facilityname;
         $cartmodel->ProductName = $this->carno;
@@ -134,9 +135,7 @@ public function Submitrentalcarrequest(Request $request){
         $cartmodel->Descriptions ='I will Pick the Car at '.$this->pickuppoint.'. NOTES: '.$this->bookingnotes;
         $cartmodel->save();
         $this->mynotesbook='Please Reserve for '.$this->fullnames.' '.$this->Carsquantity.' '.$this->carno.' for a Period: From '.$this->checkindate.'. To: '.$this->finish_time.'. TOTAL PAYABLE: '.$this->currencytype.' '.$this->driveprice.' I will Pick the Car at '.$this->pickuppoint.'. Booking Notes: '.$this->bookingnotes;
-        $mynotesbooks = urlencode ( $this->mynotesbook );
-        $sites='https://www.panobooking.com/SendEmails/SendCar.php?hotelemail='.$this->caremail.'&bookingnotes='.$mynotesbooks;
-        @fopen( $sites,"r");
+        app(ProviderNotifier::class)->send('SendCar.php', ['hotelemail' => $this->caremail, 'bookingnotes' => $this->mynotesbook]);
        
         $this->dispatch('alert', type: 'success',  message: 'Car Request Submitted, Wait for response in minimal Time possible');
         return redirect()->to('/BookingSuccess');

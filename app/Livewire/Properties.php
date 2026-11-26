@@ -87,7 +87,7 @@ class Properties extends Component
         $countryname = $this->url_countryslug;
         $hotelsearched=HotelsModel::where('Approved','Approved')->where('City',$cityname)->Where('Country',$countryname)->get();
         $carsearched=RentalCarModel::where('Approved','Approved')->where('City',$cityname)->get();
-        $taxisearched=TaxiModel::Where('CurrentLocation', 'like',"%$cityname%")->orwhere('SearchTerms', 'LIKE',"%$cityname%")->get();
+        $taxisearched=TaxiModel::forDestination($cityname)->get();
         $ambulancesearched=AmbulanceModel::where('Approved','Approved')->where('City',$cityname)->get();
         $currencypick=$this->currencytype;
         $currenyvalues=$this->currenyvalue;

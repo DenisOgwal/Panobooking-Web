@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\CustomerAuth;
 use Livewire\Attributes\Url;
 use Illuminate\Http\Request;
 use App\Models\HotelsModel;
@@ -29,31 +30,26 @@ class GuestHouseDetails extends Component
             'password' => 'required|min:8',
         ]);
     }
-    public function signin(Request $request)
+    public function signin()
     {
-       
-       $this->validate([
+        $this->validate([
             'clientemail' => 'required|email',
             'password' => 'required|min:8',
         ]);
-        $login=LoginModel::where('Email',$this->clientemail);
-        $collection=$login;
-        if($login->first()){
-             $plucked = $collection->pluck('Password')->first();
-            if($plucked==md5($this->password)){
-            $request->session()->put('pano_client_data',$login->first());
-            $this->dispatch('alert', type: 'success',  message: 'User Login Successfully!');
-            //redirect()->getUrlGenerator()->previous();
-            return redirect()->route('HomeGuestSingle',['homeguestslug'=> $this->newhomeguestslug]);//->to('/ambulance');
-            }else{
-                $this->dispatch('alert', type: 'error', message: 'Login Password Does not Match Registered Password');  
-                return redirect()->route('HomeGuestSingle',['homeguestslug'=> $this->newhomeguestslug]);
-            }
-        }else{
-            $this->dispatch('alert', type: 'error',  message: 'Account Does not Exist!');  
-            return redirect()->route('HomeGuestSingle',['homeguestslug'=> $this->newhomeguestslug]);
+
+        // Previously this page skipped the ApprovalStatus check; CustomerAuth enforces it.
+        $result = app(CustomerAuth::class)->attempt($this->clientemail, $this->password);
+        $back = redirect()->route('HomeGuestSingle', ['homeguestslug' => $this->newhomeguestslug]);
+
+        if ($result === CustomerAuth::RESULT_OK) {
+            session()->flash('alert', ['type' => 'success', 'message' => 'Welcome back, ' . app(CustomerAuth::class)->name() . '!']);
+            return $back;
         }
-        //dd($this->name,$this->email,$this->password,$this->phonenum,'Progress');
+
+        session()->flash('alert', ['type' => 'error', 'message' => $result === CustomerAuth::RESULT_BAD_PASSWORD
+            ? 'That password is incorrect.'
+            : 'No approved account exists for that email address.']);
+        return $back;
     }
     public function render()
     {
@@ -62,7 +58,8 @@ class GuestHouseDetails extends Component
         $topblogs=BlogModel::orderBy('ID','DESC')->take(5)->get();
         $topproperties=HomeGuestModel::orderBy('IDs','DESC')->take(5)->get();
         $hotels=HomeGuestModel::where('IDs',$pickuplocation)->with('roomwith','popularamenities','propertydescription','bathroomdetail','bedroomdetail','viewdetail','outdoordetail','mediaandtechdetail','fooddetail','parkingdetail','transportationdetail','cleaningdetail','businessfacilitydetail','safetyandsecuritydetail','spadetail','kitchendetail','accessibilitydetail','houserulesdetail','childrenpolicydetail','childrenextrabeddetail','nearbyplacesdetail','topattractionsdetail','nearbyrestaurantsdetail','closestairportdetail','publictransportdetail','naturalbeautydetail','nearbymarketsdetail','nearbysupermarketsdetail','reasonsforstaydetail','restaurantsonsitedetail')->get();
-        $hotelCat=HomeGuestModel::orderBy('IDs','DESC')->get();
+        abort_if($hotels->isEmpty(), 404);
+        $hotelCat=HomeGuestModel::where('IDs','!=',$pickuplocation)->orderBy('IDs','DESC')->limit(10)->get();
         return view('livewire.guest-house-details',['hotelCat'=>$hotelCat,'hotels'=>$hotels,'topproperties'=>$topproperties,'topblogs'=>$topblogs])->layout('layouts.basess');
     }
 }

@@ -69,7 +69,7 @@ class HotelSearch extends Component
         $from_city = $this->url_from_city;
         $currencypick=$this->currencytype;
         $currenyvalues=$this->currenyvalue;
-        $hotelsearched=HotelsModel::where('City', 'LIKE',"%$from_city%")->where('Approved','Approved')->paginate(24);
+        $hotelsearched=HotelsModel::approved()->search($from_city, ['City'])->paginate(24);
         $hotelsfeatured=HotelsModel::where('Featured','Yes')->where('Approved','Approved')->orderBy('FaturedRank','ASC')->get();
         $hotels=HotelsModel::where('Trending','Yes')->where('Approved','Approved')->orderBy('TrendRank','ASC')->get();
         return view('livewire.hotel-search',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'hotelsfeatured'=>$hotelsfeatured,'hotels'=>$hotels,'topproperties'=>$topproperties,'topblogs'=>$topblogs,'hotelsearched'=>$hotelsearched])->layout('layouts.base');
@@ -77,7 +77,7 @@ class HotelSearch extends Component
     /*function fetch_data(Request $request){
         if($request->ajax()){
             $from_city = $this->url_from_city;
-            $hotelsearched=HotelsModel::where('City', 'LIKE',"%$from_city%")->paginate(24);
+            $hotelsearched=HotelsModel::approved()->search($from_city, ['City'])->paginate(24);
             return view('livewire.hotelpagination',compact('hotelsearched'))->render();
         }
     }*/

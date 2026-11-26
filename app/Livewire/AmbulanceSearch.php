@@ -70,7 +70,7 @@ class AmbulanceSearch extends Component
         $pickupArea = $this->url_Area;
         $currencypick=$this->currencytype;
         $currenyvalues=$this->currenyvalue;
-        $ambulancesearched=AmbulanceModel::where('CurrentLocation', 'like',"%$pickupArea%")->paginate(24);
+        $ambulancesearched=AmbulanceModel::approved()->search($pickupArea, ['CurrentLocation', 'City'])->paginate(24);
         return view('livewire.ambulance-search',['currenyvalue'=>$currenyvalues,'currencypick'=>$currencypick,'topproperties'=>$topproperties,'topblogs'=>$topblogs])->with('ambulancesearched',$ambulancesearched)->layout('layouts.base');
     }
 }

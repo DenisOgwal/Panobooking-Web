@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\ProviderNotifier;
 use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Mail;
 use App\Models\BlogModel;
@@ -103,7 +104,7 @@ public function Submitaxirequest(Request $request){
             'tripcost'=>'required',
             'bookingnotes'=>'required',
     ]);
-    if($request->session()->has('pano_client_data')){
+    if(session()->has('pano_client_data')){
         $cartmodel= new CartModel();
         $cartmodel->Facility = $this->facilityname;
         $cartmodel->ProductName = $this->carno;
@@ -120,9 +121,7 @@ public function Submitaxirequest(Request $request){
         $cartmodel->Descriptions =$this->pickupdescription.' NO. OF PEOPLE:'.$this->NoOfPeople.'. NOTES: '.$this->bookingnotes;
         $cartmodel->save();
         $this->mynotesbook='Please Reserve for '.$this->fullnames.' '.$this->carno.'. '.$this->pickupdescription.'. TOTAL PAYABLE: '.$this->currencytype.' '.$this->tripcost.' NO. OF PEOPLE:'.$this->NoOfPeople.'. NOTES: '.$this->bookingnotes;
-        $mynotesbooks = urlencode ( $this->mynotesbook );
-        $sites='https://www.panobooking.com/SendEmails/SendTaxi.php?hotelemail='.$this->caremail.'&bookingnotes='.$mynotesbooks;
-        @fopen( $sites,"r");
+        app(ProviderNotifier::class)->send('SendTaxi.php', ['hotelemail' => $this->caremail, 'bookingnotes' => $this->mynotesbook]);
         
         $this->dispatch('alert', type: 'success',  message: 'Taxi Request Submitted, Wait for response in minimal Time possible');
         return redirect()->to('/BookingSuccess');

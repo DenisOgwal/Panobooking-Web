@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Livewire;
+use App\Support\ProviderNotifier;
 use Livewire\Attributes\Url;
 use Illuminate\Http\Request;
 use App\Models\AmbulanceModel;
@@ -57,7 +58,7 @@ public function submitaxirequest(Request $request){
             'reason'=>'required|min:10',
             'bookingnotes'=>'required|min:2',
     ]);
-    if($request->session()->has('pano_client_data')){
+    if(session()->has('pano_client_data')){
         $mytime = \Carbon\Carbon::now();
         
         $cartmodel= new CartModel();
@@ -74,9 +75,7 @@ public function submitaxirequest(Request $request){
         $cartmodel->Descriptions ='Please Pick me up from '.$this->Area.'. EXACT PICKUPPOINT: '.$this->pickuppoint.'. REASON: '.$this->reason.'. NOTES: '.$this->bookingnotes;
         $cartmodel->save();
         $this->mynotesbook='Please Help '.$this->fullnames.', Ambulance No. '.$this->ambulanceno.'. Pickup Date: '.$this->checkindate .'. Pickup Time:  '.$this->Pickuptime.' '.'Please Pick me up from '.$this->Area.'. EXACT PICKUPPOINT: '.$this->pickuppoint.'. REASON: '.$this->reason.'. NOTES: '.$this->bookingnotes;
-        $mynotesbooks = urlencode ( $this->mynotesbook );
-        $sites='https://www.panobooking.com/SendEmails/SendAmbulance.php?hotelemail='.$this->caremail.'&bookingnotes='.$mynotesbooks;
-        @fopen( $sites,"r");
+        app(ProviderNotifier::class)->send('SendAmbulance.php', ['hotelemail' => $this->caremail, 'bookingnotes' => $this->mynotesbook]);
         /*if($this-> isOnline()){
             $mail_data=[
                 'recipient'=>$this->caremail,
