@@ -1,0 +1,86 @@
+// Home hero, page heroes and the tabbed search panel.
+
+.hero {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    padding-block: 3rem 4rem;
+    background:
+        radial-gradient(1200px 500px at 85% -10%, rgba($pb-sky, .55), transparent 60%),
+        radial-gradient(900px 400px at -10% 110%, rgba($pb-red, .35), transparent 60%),
+        linear-gradient(135deg, $pb-navy 0%, $pb-navy-800 45%, $pb-blue-700 100%);
+    overflow: hidden;
+
+    @include media-breakpoint-up(lg) { padding-block: 5rem 6rem; }
+
+    h1 {
+        color: #fff;
+        font-size: clamp(2rem, 1.2rem + 3vw, 3.4rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        line-height: 1.1;
+    }
+    .lead { color: rgba(255, 255, 255, .82); max-width: 34rem; }
+
+    .hero-offer {
+        display: inline-flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .5rem .75rem .5rem .5rem;
+        border-radius: $border-radius-pill;
+        background: rgba(255, 255, 255, .1);
+        border: 1px solid rgba(255, 255, 255, .18);
+        color: #fff;
+        font-size: .9375rem;
+        &:hover { background: rgba(255, 255, 255, .16); text-decoration: none; color: #fff; }
+        .badge { background: $pb-red; }
+    }
+
+    .hero-stats {
+        display: flex; gap: 2rem; flex-wrap: wrap;
+        strong { display: block; font-size: 1.5rem; color: #fff; }
+        span { font-size: .875rem; color: rgba(255, 255, 255, .7); }
+    }
+}
+
+.page-hero {
+    background:
+        radial-gradient(800px 300px at 90% -20%, rgba($pb-sky, .35), transparent 60%),
+        linear-gradient(135deg, $pb-navy 0%, $pb-blue-700 100%);
+    color: #fff;
+    padding-block: 2.5rem;
+    h1 { color: #fff; font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem); font-weight: 800; margin-bottom: .35rem; }
+    p { color: rgba(255, 255, 255, .8); margin: 0; }
+    .breadcrumb { --bs-breadcrumb-divider-color: rgba(255,255,255,.5); margin-bottom: .75rem; font-size: .875rem; }
+    .breadcrumb-item, .breadcrumb-item a { color: rgba(255, 255, 255, .75); }
+    .breadcrumb-item.active { color: #fff; }
+}
+
+.search-panel {
+    background: #fff;
+    color: $pb-ink;
+    border-radius: $border-radius-xl;
+    box-shadow: $box-shadow-lg;
+    padding: .5rem;
+
+    .nav-pills {
+        gap: .25rem;
+        padding: .25rem;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        .nav-link {
+            color: $pb-muted;
+            font-weight: 600;
+            font-size: .9375rem;
+            border-radius: .7rem;
+            white-space: nowrap;
+            display: inline-flex; align-items: center; gap: .45rem;
+            &.active { background: $pb-blue-50; color: $pb-blue-700; }
+        }
+    }
+    .tab-content { padding: 1rem; }
+    .form-label { color: $pb-muted; }
+}
+
+.search-panel-compact { box-shadow: $box-shadow; margin-top: -2rem; position: relative; z-index: 2; }

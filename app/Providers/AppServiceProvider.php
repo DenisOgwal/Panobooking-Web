@@ -6,6 +6,8 @@ use App\Support\Currency;
 use App\Support\CustomerAuth;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
+use App\View\Composers\FooterComposer;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,5 +23,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
         Paginator::useBootstrapFive();
+
+        View::composer('components.site-footer', FooterComposer::class);
     }
 }

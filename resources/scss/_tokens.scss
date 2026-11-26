@@ -1,0 +1,124 @@
+// ---------------------------------------------------------------------------
+// Panobooking design tokens
+// Brand: Pano blue + logo red accent, deep navy for contrast surfaces.
+// These override Bootstrap defaults and are also exposed as CSS custom
+// properties (--pb-*) for component styles.
+// ---------------------------------------------------------------------------
+
+// Colour
+$pb-blue:        #1e90ff;
+$pb-blue-600:    #1279e0;
+$pb-blue-700:    #0d5fb3;
+$pb-blue-50:     #eaf4ff;
+$pb-sky:         #32b5f3;
+$pb-red:         #ff3333;
+$pb-red-600:     #e02424;
+$pb-navy:        #0f1b2d;
+$pb-navy-800:    #16253b;
+$pb-ink:         #17212e;   // body text
+$pb-muted:       #5b6b7f;   // secondary text
+$pb-line:        #e3e8ef;   // borders
+$pb-surface:     #ffffff;
+$pb-canvas:      #f5f7fb;   // page background
+$pb-success:     #13a36e;
+$pb-warning:     #f2a516;
+
+// Bootstrap theme map
+$primary:   $pb-blue;
+$secondary: $pb-muted;
+$info:      $pb-sky;
+$danger:    $pb-red;
+$success:   $pb-success;
+$warning:   $pb-warning;
+$dark:      $pb-navy;
+$light:     $pb-canvas;
+
+$body-bg:             $pb-canvas;
+$body-color:          $pb-ink;
+$body-secondary-color: $pb-muted;
+$border-color:        $pb-line;
+$link-color:          $pb-blue-600;
+$link-hover-color:    $pb-blue-700;
+$link-decoration:     none;
+$link-hover-decoration: underline;
+
+// Typography
+$font-family-sans-serif: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-size-base:     1rem;
+$line-height-base:   1.6;
+$headings-font-weight: 700;
+$headings-line-height: 1.25;
+$headings-color:     $pb-ink;
+$h1-font-size:       2.5rem;
+$h2-font-size:       2rem;
+$h3-font-size:       1.5rem;
+$h4-font-size:       1.25rem;
+$h5-font-size:       1.0625rem;
+$h6-font-size:       .9375rem;
+$lead-font-size:     1.15rem;
+$small-font-size:    .875rem;
+
+// Shape
+$border-radius:      .75rem;
+$border-radius-sm:   .5rem;
+$border-radius-lg:   1rem;
+$border-radius-xl:   1.25rem;
+$border-radius-pill: 50rem;
+
+// Elevation
+$box-shadow-sm: 0 1px 2px rgba(15, 27, 45, .06), 0 1px 3px rgba(15, 27, 45, .05);
+$box-shadow:    0 4px 12px rgba(15, 27, 45, .08), 0 2px 4px rgba(15, 27, 45, .04);
+$box-shadow-lg: 0 18px 40px rgba(15, 27, 45, .14), 0 4px 10px rgba(15, 27, 45, .06);
+
+// Spacing rhythm (8px)
+$spacer: 1rem;
+$spacers: (
+    0: 0,
+    1: $spacer * .25,
+    2: $spacer * .5,
+    3: $spacer,
+    4: $spacer * 1.5,
+    5: $spacer * 3,
+    6: $spacer * 4.5,
+);
+
+// Components
+$btn-font-weight:        600;
+$btn-padding-y:          .6rem;
+$btn-padding-x:          1.15rem;
+$btn-border-radius:      .65rem;
+$btn-border-radius-lg:   .8rem;
+$btn-border-radius-sm:   .5rem;
+$btn-focus-width:        .2rem;
+
+$input-padding-y:        .65rem;
+$input-padding-x:        .9rem;
+$input-border-color:     $pb-line;
+$input-border-radius:    .65rem;
+$input-focus-border-color: $pb-blue;
+$input-placeholder-color: #94a1b2;
+$form-label-font-weight: 600;
+$form-label-font-size:   .875rem;
+
+$card-border-color:      $pb-line;
+$card-border-radius:     $border-radius-lg;
+$card-cap-bg:            $pb-surface;
+$card-spacer-y:          1.15rem;
+$card-spacer-x:          1.15rem;
+
+$navbar-padding-y:       .75rem;
+$nav-link-font-weight:   600;
+$dropdown-border-color:  $pb-line;
+$dropdown-border-radius: $border-radius;
+$dropdown-box-shadow:    $box-shadow-lg;
+$dropdown-link-active-bg: $pb-blue-50;
+$dropdown-link-active-color: $pb-blue-700;
+
+$badge-font-weight:      600;
+$badge-border-radius:    $border-radius-pill;
+
+$toast-border-radius:    $border-radius;
+$toast-box-shadow:       $box-shadow-lg;
+
+$pagination-border-radius: .55rem;
+$pagination-color:       $pb-ink;

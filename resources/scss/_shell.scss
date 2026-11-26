@@ -1,0 +1,107 @@
+// Site header and footer.
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid $pb-line;
+
+    .navbar { min-height: var(--pb-header-h); padding-block: .5rem; }
+    .navbar-brand img { height: 2.25rem; width: auto; display: block; }
+
+    .nav-link, .btn { white-space: nowrap; }
+
+    // On desktop the bar is tight until very wide screens: drop nav icons, keep the search usable.
+    @include media-breakpoint-up(xl) {
+        .header-search { min-width: 12rem; flex-shrink: 0; }
+    }
+    @media (min-width: 1200px) and (max-width: 1599.98px) {
+        .nav-link .bi { display: none; }
+        .nav-link { padding-inline: .6rem !important; }
+    }
+
+    .nav-link {
+        color: $pb-ink;
+        font-size: .9375rem;
+        padding: .5rem .8rem !important;
+        border-radius: .55rem;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        .bi { color: $pb-muted; font-size: 1rem; }
+        &:hover { color: $pb-blue-700; background: $pb-blue-50; .bi { color: $pb-blue; } }
+        &.active { color: $pb-blue-700; background: $pb-blue-50; .bi { color: $pb-blue; } }
+    }
+
+    .header-search {
+        width: 100%;
+        .form-control { border-radius: $border-radius-pill; background: $pb-canvas; border-color: transparent; padding-block: .5rem; }
+        .form-control:focus { background: #fff; border-color: $pb-blue; }
+        @include media-breakpoint-up(xl) { max-width: 17rem; }
+    }
+
+    .currency-select {
+        width: auto;
+        border-radius: $border-radius-pill;
+        padding: .4rem 2rem .4rem .85rem;
+        font-size: .875rem;
+        font-weight: 600;
+        background-color: $pb-canvas;
+        border-color: transparent;
+    }
+
+    .account-btn {
+        border-radius: $border-radius-pill;
+        padding: .35rem .85rem .35rem .4rem;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .9375rem;
+        .account-name { max-width: 9rem; }
+        .avatar {
+            width: 2rem; height: 2rem; border-radius: 50%;
+            display: grid; place-items: center;
+            background: $pb-blue; color: #fff; font-weight: 700; font-size: .8rem;
+        }
+    }
+
+    @include media-breakpoint-down(xl) {
+        .navbar-collapse { padding-block: .75rem 1rem; }
+        .navbar-nav { gap: .15rem; }
+    }
+}
+
+.site-footer {
+    background: $pb-navy;
+    color: rgba(255, 255, 255, .72);
+    padding-top: 3.5rem;
+    margin-top: auto;
+    font-size: .9375rem;
+
+    .footer-logo { height: 2.25rem; width: auto; }
+    h3 {
+        color: #fff;
+        font-size: .8125rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li + li { margin-top: .5rem; }
+    a { color: rgba(255, 255, 255, .72); &:hover { color: #fff; text-decoration: none; } }
+    .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, .1);
+        margin-top: 2.5rem;
+        padding-block: 1.25rem;
+        font-size: .875rem;
+    }
+    .social a {
+        width: 2.25rem; height: 2.25rem;
+        display: inline-grid; place-items: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .08);
+        &:hover { background: $pb-blue; }
+    }
+}

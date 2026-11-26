@@ -1,2 +1,11 @@
-// Panobooking design system (filled in during phase 2).
-@use "bootstrap/scss/bootstrap";
+// Panobooking styles: Bootstrap 5.3 + design tokens + site components.
+// All styling lives here; views use Bootstrap utilities and these classes, not inline styles.
+
+@import 'tokens';
+@import 'bootstrap/scss/bootstrap';
+
+@import 'base';
+@import 'shell';
+@import 'hero';
+@import 'cards';
+@import 'listing';

@@ -1,0 +1,130 @@
+// Listing detail pages: gallery, facts, amenities, booking box.
+
+.gallery-grid {
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: 1fr;
+    border-radius: $border-radius-lg;
+    overflow: hidden;
+    a { display: block; position: relative; background: $pb-canvas; overflow: hidden; }
+    img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4 / 3; transition: transform .3s ease; }
+    a:hover img { transform: scale(1.03); }
+    .more {
+        position: absolute; inset: 0; display: grid; place-items: center;
+        background: rgba($pb-navy, .55); color: #fff; font-weight: 700;
+    }
+    @include media-breakpoint-up(md) {
+        grid-template-columns: 2fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        height: 26rem;
+        a:first-child { grid-row: span 2; }
+        img { aspect-ratio: auto; }
+        a:nth-child(n + 6) { display: none; }
+    }
+}
+
+.listing-header {
+    h1 { font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.25rem); font-weight: 800; letter-spacing: -.03em; }
+    .meta { color: $pb-muted; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
+}
+
+.detail-section {
+    background: #fff;
+    border: 1px solid $pb-line;
+    border-radius: $border-radius-lg;
+    padding: 1.5rem;
+    & + & { margin-top: 1.25rem; }
+    > h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+}
+
+.fact-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: .75rem;
+    .fact {
+        display: flex; align-items: center; gap: .6rem;
+        padding: .75rem; border-radius: $border-radius;
+        background: $pb-canvas;
+        font-size: .9375rem; font-weight: 600;
+        .bi { color: $pb-blue; font-size: 1.15rem; }
+        small { display: block; font-weight: 500; color: $pb-muted; font-size: .75rem; }
+    }
+}
+
+.amenity-list {
+    list-style: none; padding: 0; margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: .5rem 1.25rem;
+    li { display: flex; gap: .5rem; align-items: baseline; font-size: .9375rem; }
+    .bi { color: $pb-success; }
+    li.is-off { color: $pb-muted; text-decoration: line-through; .bi { color: $pb-muted; } }
+}
+
+.amenity-groups {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    h3 { font-size: .9375rem; display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; .bi { color: $pb-blue; } }
+    ul { list-style: none; padding: 0; margin: 0; font-size: .9375rem; color: #2c3a4b; }
+    li + li { margin-top: .25rem; }
+}
+
+.rule-list {
+    > div { display: grid; grid-template-columns: 11rem 1fr; gap: 1rem; padding-block: .85rem; border-bottom: 1px solid $pb-line; }
+    > div:last-child { border-bottom: 0; }
+    dt { font-weight: 600; display: flex; gap: .5rem; .bi { color: $pb-blue; } }
+    dd { margin: 0; color: #2c3a4b; }
+    @include media-breakpoint-down(sm) { > div { grid-template-columns: 1fr; gap: .25rem; } }
+}
+
+.room-card {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: 1fr;
+    background: #fff;
+    border: 1px solid $pb-line;
+    border-radius: $border-radius-lg;
+    padding: 1rem;
+    & + & { margin-top: 1rem; }
+    .room-media { border-radius: $border-radius; overflow: hidden; aspect-ratio: 4 / 3; background: $pb-canvas; img { width: 100%; height: 100%; object-fit: cover; } }
+    h3 { font-size: 1.125rem; margin-bottom: .25rem; }
+    .room-aside { display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; }
+    @include media-breakpoint-up(md) {
+        grid-template-columns: 14rem 1fr 12rem;
+        .room-aside { text-align: right; align-items: flex-end; border-left: 1px solid $pb-line; padding-left: 1.25rem; }
+    }
+}
+
+.tag-list { display: flex; flex-wrap: wrap; gap: .35rem; }
+.tag {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .25rem .6rem; border-radius: $border-radius-pill;
+    background: $pb-canvas; font-size: .8125rem; color: #2c3a4b;
+    .bi { color: $pb-blue; }
+}
+
+.booking-box {
+    position: sticky;
+    top: calc(var(--pb-header-h) + 1rem);
+    background: #fff;
+    border: 1px solid $pb-line;
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow;
+    padding: 1.5rem;
+    .total { display: flex; justify-content: space-between; align-items: baseline; padding-top: 1rem; margin-top: 1rem; border-top: 1px solid $pb-line; font-weight: 700; }
+}
+
+.summary-line { display: flex; justify-content: space-between; gap: 1rem; font-size: .9375rem; color: #2c3a4b; & + & { margin-top: .35rem; } }
+
+.nearby-list {
+    list-style: none; padding: 0; margin: 0;
+    li { display: flex; justify-content: space-between; gap: 1rem; padding-block: .45rem; border-bottom: 1px dashed $pb-line; font-size: .9375rem; }
+    li:last-child { border-bottom: 0; }
+    span:last-child { color: $pb-muted; white-space: nowrap; }
+}
+
+.success-panel {
+    max-width: 36rem; margin-inline: auto; text-align: center;
+    .check { width: 4.5rem; height: 4.5rem; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 1.25rem; background: rgba($pb-success, .12); color: $pb-success; font-size: 2.25rem; }
+}
