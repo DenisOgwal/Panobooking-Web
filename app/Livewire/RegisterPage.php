@@ -2,12 +2,13 @@
 
 namespace App\Livewire;
 
-use App\Models\UserRegistrationModel;
-use App\Support\CustomerAuth;
-use App\Support\ProviderNotifier;
+use App\Support\CustomerAccounts;
 use Livewire\Component;
 
-/** /Register: new customer accounts start as "Not Approved" until an admin approves them. */
+/**
+ * /Register: new accounts start "Not Approved" and are approved when the customer verifies
+ * their email (code or link, see /VerifyEmail) or when an admin approves them.
+ */
 class RegisterPage extends Component
 {
     public string $name = '';
@@ -22,11 +23,11 @@ class RegisterPage extends Component
     protected function rules(): array
     {
         return [
-            'name' => 'required|string|min:3|max:120',
-            'email' => 'required|email|max:190|unique:registration,Email',
-            'code' => ['required', 'regex:/^\+\d{1,4}$/'],
-            'phonenum' => ['required', 'regex:/^[0-9 ]{6,15}$/'],
-            'password' => 'required|string|min:8|max:100',
+            'name' => CustomerAccounts::RULES['name'],
+            'email' => CustomerAccounts::RULES['email'],
+            'code' => CustomerAccounts::RULES['phone_code'],
+            'phonenum' => CustomerAccounts::RULES['phone'],
+            'password' => CustomerAccounts::RULES['password'],
             'confirmpassword' => 'required|same:password',
         ];
     }
@@ -34,9 +35,9 @@ class RegisterPage extends Component
     protected function messages(): array
     {
         return [
-            'email.unique' => 'An account with this email already exists. Try signing in instead.',
+            'email.unique' => CustomerAccounts::MESSAGES['email.unique'],
             'confirmpassword.same' => 'The passwords do not match.',
-            'phonenum.regex' => 'Enter digits only, e.g. 700 123456.',
+            'phonenum.regex' => CustomerAccounts::MESSAGES['phone.regex'],
         ];
     }
 
@@ -56,15 +57,13 @@ class RegisterPage extends Component
     {
         $this->validate();
 
-        UserRegistrationModel::create([
-            'FullNames' => $this->name,
-            'Email' => $this->email,
-            'Password' => CustomerAuth::hash($this->password),
-            'Telephone' => $this->code . preg_replace('/\s+/', '', $this->phonenum),
-            'ApprovalStatus' => 'Not Approved',
+        app(CustomerAccounts::class)->register([
+            'name' => $this->name,
+            'email' => $this->email,
+            'telephone' => CustomerAccounts::phone($this->code, $this->phonenum),
+            'password' => $this->password,
         ]);
-
-        app(ProviderNotifier::class)->send('checkreg.php', ['emails' => $this->email]);
+        session()->put(VerifyEmailPage::SESSION_KEY, $this->email);
 
         $this->reset('password', 'confirmpassword');
         $this->registered = true;

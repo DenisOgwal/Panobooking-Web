@@ -25,6 +25,7 @@ final class RecordActions
         }
 
         $count = $resource::query()->whereKey($ids)->update([$approval['column'] => $on ? $approval['on'] : $approval['off']]);
+        $resource::afterApprove($ids, $on);
         CacheBuster::flush($resource::cacheKeys());
 
         return $count;

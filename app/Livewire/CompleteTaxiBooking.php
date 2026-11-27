@@ -2,13 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Bookings\Types\TaxiBooking;
 use App\Livewire\Vehicles\VehicleBooking;
-use App\Models\TaxiTripModel;
-use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 
-/** /CompleteTaxiBooking?taxifinalslug={IDs}&Destination=… */
+/** /CompleteTaxiBooking?taxifinalslug={IDs}&Destination=… (rules: App\Bookings\Types\TaxiBooking) */
 class CompleteTaxiBooking extends VehicleBooking
 {
     #[Url(as: 'taxifinalslug')]
@@ -30,10 +29,19 @@ class CompleteTaxiBooking extends VehicleBooking
 
     protected function viewName(): string { return 'livewire.complete-taxi-booking'; }
 
+    protected function bookingFields(): array
+    {
+        return ['trip' => 'pickuppoint', 'airport' => 'airportfield', 'destination' => 'Destination', 'passengers' => 'NoOfPeople',
+            'date' => 'checkindate', 'time' => 'pickuptime', 'notes' => 'bookingnotes'];
+    }
+
+    protected function keepOnMount(): array
+    {
+        return ['destination'];
+    }
+
     protected function prepare(): void
     {
-        $this->checkindate = now()->addDay()->toDateString();
-        $this->pickuptime = '10:00';
         if ($this->Destination === '' || ! $this->destinations->contains($this->Destination)) {
             $this->Destination = (string) $this->destinations->first();
         }
@@ -43,62 +51,13 @@ class CompleteTaxiBooking extends VehicleBooking
     #[Computed]
     public function destinations()
     {
-        return TaxiTripModel::where('Froms', 'like', $this->airportfield . '%')->orderBy('Tos')->pluck('Tos')->unique()->values();
+        return TaxiBooking::destinations($this->airportfield);
     }
 
     /** Fixed fare (UGX) for the chosen route. */
     #[Computed]
     public function fare(): ?float
     {
-        $price = TaxiTripModel::where('Froms', 'like', $this->airportfield . '%')->where('Tos', $this->Destination)->value('Price');
-
-        return $price !== null ? (float) $price : null;
-    }
-
-    protected function rules(): array
-    {
-        return [
-            'pickuppoint' => 'required|in:From Airport,To Airport',
-            'airportfield' => 'required|string',
-            'Destination' => 'required|string',
-            'NoOfPeople' => 'required|integer|min:1|max:14',
-            'checkindate' => 'required|date|after_or_equal:today',
-            'pickuptime' => 'required|date_format:H:i',
-            'bookingnotes' => 'nullable|string|max:1000',
-        ];
-    }
-
-    protected function validationAttributes(): array
-    {
-        return ['pickuppoint' => 'trip', 'airportfield' => 'airport', 'NoOfPeople' => 'passengers', 'checkindate' => 'date', 'pickuptime' => 'time', 'bookingnotes' => 'notes'];
-    }
-
-    private function routeDescription(): string
-    {
-        return $this->pickuppoint === 'From Airport'
-            ? "Pick Me up from {$this->airportfield} Airport to {$this->Destination}"
-            : "Pick Me up from {$this->Destination} to {$this->airportfield} Airport";
-    }
-
-    protected function cartAttributes(): array
-    {
-        return [
-            'Quantity' => 1,
-            'Cost' => $this->fare ?? 0,
-            'DatesFrom' => Carbon::parse($this->checkindate)->toDateString() . ' ' . $this->pickuptime,
-            'DatesTo' => 'N/A',
-            'BookingType' => 'Airport Taxi',
-            'Descriptions' => $this->routeDescription() . '. NO. OF PEOPLE: ' . (int) $this->NoOfPeople . '. NOTES: ' . $this->bookingnotes,
-        ];
-    }
-
-    protected function notification(): array
-    {
-        return ['SendTaxi.php', [
-            'hotelemail' => $this->vehicle->EmailAddress,
-            'bookingnotes' => sprintf('%s for %s on %s at %s. Taxi %s. People: %d. FARE: %s. NOTES: %s',
-                $this->routeDescription(), app(\App\Support\CustomerAuth::class)->name(), $this->checkindate, $this->pickuptime,
-                $this->vehicle->TaxiNo, $this->NoOfPeople, app(\App\Support\Currency::class)->format($this->fare ?? 0), $this->bookingnotes),
-        ]];
+        return TaxiBooking::fare($this->airportfield, $this->Destination);
     }
 }

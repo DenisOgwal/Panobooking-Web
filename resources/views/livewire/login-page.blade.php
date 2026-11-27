@@ -12,6 +12,12 @@
                         <form wire:submit="signin" novalidate>
                             <x-field label="Email" name="email" type="email" wire:model="email" autocomplete="email" icon="bi-envelope" autofocus />
                             <x-field label="Password" name="password" type="password" wire:model="password" autocomplete="current-password" icon="bi-key" />
+                            @if ($unverified)
+                                <div class="alert alert-warning small" role="alert">
+                                    <a href="{{ route('VerifyEmail') }}" class="alert-link">Enter your verification code</a> or ask for a new one.
+                                </div>
+                            @endif
+                            <p class="text-end small mt-n2"><a href="{{ route('ForgotPassword') }}">Forgot your password?</a></p>
                             <button class="btn btn-primary btn-lg w-100" type="submit">
                                 <span wire:loading.remove wire:target="signin">Sign in</span>
                                 <span wire:loading wire:target="signin"><span class="spinner-border spinner-border-sm me-2"></span>Signing in…</span>

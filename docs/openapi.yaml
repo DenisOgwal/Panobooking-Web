@@ -1,0 +1,1174 @@
+openapi: 3.1.0
+info:
+  title: Panobooking mobile API
+  version: 1.0.0
+  description: |
+    JSON API for the Panobooking mobile app: everything the website does (stays, rental cars,
+    airport taxis, ambulances, tour packages, tourism sites, events, blog, bookings, accounts).
+
+    **Base URL**: `/api/v1`. Every response is JSON.
+
+    **Sign-in**: `POST /auth/login` returns a Sanctum token. Send it as `Authorization: Bearer <token>`.
+    Tokens last until the customer signs out (`POST /auth/logout`, or `DELETE /me/tokens` for every device),
+    changes or resets their password, or is suspended by an admin.
+
+    **New accounts**: `POST /auth/register` emails a 6-digit code. The customer can sign in after
+    `POST /auth/verify-email`, or once an admin approves the account. Login with the right password
+    but an unverified email answers `403` with `code: "unverified"`.
+
+    **Prices** are stored in UGX. Every price object carries the UGX amount and its conversion into the
+    request currency: the `X-Currency` header (or `?currency=`), else the signed-in customer's saved
+    currency, else UGX. The response echoes the currency used in its `X-Currency` header.
+
+    **Lists** are paginated: `?page=`, `?per_page=` (max 50); responses have `data`, `links` and `meta`.
+    `sort` is one of `recommended`, `price_asc`, `price_desc`, `rating`, `name`.
+
+    **Errors**: `401` no or invalid token, `403` not allowed, `404` `{"message":"Not found."}`,
+    `409` conflict, `422` validation `{"message", "errors": {field: [messages]}}`, `429` too many requests
+    (sign-in and code endpoints allow 6 tries per minute per email; public forms 10 per minute; everything 120 per minute).
+
+    **Bookings** start `pending` until the provider confirms (`confirmed`) or declines (`declined`) them;
+    `provider_note` carries their message. Pending bookings can be cancelled.
+servers:
+  - url: /api/v1
+tags:
+  - name: Catalogue
+  - name: Stays
+  - name: Vehicles
+  - name: Experiences
+  - name: Forms
+  - name: Auth
+  - name: Account
+  - name: Bookings
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      description: Token from POST /auth/login (or /auth/verify-email with device_name).
+  parameters:
+    Currency:
+      name: X-Currency
+      in: header
+      required: false
+      schema: { type: string, example: USD }
+      description: Display currency code (see GET /meta). Unknown codes fall back to UGX.
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1 }
+    PerPage:
+      name: per_page
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 50, default: 12 }
+    Sort:
+      name: sort
+      in: query
+      schema: { type: string, enum: [recommended, price_asc, price_desc, rating, name] }
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    VehicleType:
+      name: type
+      in: path
+      required: true
+      schema: { type: string, enum: [car, taxi, ambulance] }
+    BookingType:
+      name: type
+      in: path
+      required: true
+      schema: { type: string, enum: [room, home-stay, car, taxi, ambulance, tour] }
+      description: |
+        What is being booked; `{id}` is then a room, home stay, rental car, airport taxi, ambulance or tour package id.
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+          example: { message: Not found. }
+    Unauthenticated:
+      description: Missing, invalid or revoked token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+          example: { message: Unauthenticated. }
+    ValidationError:
+      description: Invalid input
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationError' }
+    TooManyRequests:
+      description: Rate limit reached; retry after the `Retry-After` header.
+    Inactive:
+      description: The account was suspended by an admin.
+      content:
+        application/json:
+          example: { message: This account is not active., code: inactive }
+  schemas:
+    Message:
+      type: object
+      properties:
+        message: { type: string }
+    ValidationError:
+      type: object
+      properties:
+        message: { type: string }
+        errors:
+          type: object
+          additionalProperties: { type: array, items: { type: string } }
+      example:
+        message: The check out field must be a date after check in.
+        errors: { check_out: [The check out field must be a date after check in.] }
+    Price:
+      type: object
+      description: A price in UGX with its conversion into the request currency.
+      properties:
+        ugx: { type: number, example: 180000 }
+        amount: { type: number, example: 49 }
+        currency: { type: string, example: USD }
+        formatted: { type: string, example: USD 49 }
+    Feature:
+      type: object
+      properties:
+        label: { type: string, example: Free Wi-Fi }
+        available: { type: boolean }
+    PaginationLinks:
+      type: object
+      properties:
+        first: { type: [string, 'null'] }
+        last: { type: [string, 'null'] }
+        prev: { type: [string, 'null'] }
+        next: { type: [string, 'null'] }
+    PaginationMeta:
+      type: object
+      properties:
+        current_page: { type: integer }
+        last_page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        from: { type: [integer, 'null'] }
+        to: { type: [integer, 'null'] }
+    Stay:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: Nile Breeze Hotel }
+        type: { type: string, example: Hotel }
+        city: { type: string }
+        country: { type: string }
+        rating: { type: [number, 'null'], description: Stars, 1-5 }
+        price_from: { $ref: '#/components/schemas/Price' }
+        price_details: { type: [string, 'null'] }
+        summary: { type: [string, 'null'] }
+        photo: { type: string, format: uri }
+        featured: { type: boolean }
+        trending: { type: boolean }
+    PropertyDetails:
+      type: object
+      description: |
+        Amenities, policies and surroundings, keyed by section (popularamenities, roomswith, bathroom, bedroom,
+        houserules, nearbyplaces, topattractions, closestairport, publictransport, restaurantsonsite, …).
+        Only sections with content are present. `items` is a list of labels (amenity lists), of Feature objects
+        (Yes/No sections), of row objects (e.g. {place, distance}) or, for house rules, an object of text values.
+      additionalProperties:
+        type: object
+        properties:
+          label: { type: string, example: Nearby places }
+          tab: { type: string, enum: [overview, facilities, dining, policies, surroundings] }
+          items: {}
+    StayDetail:
+      allOf:
+        - $ref: '#/components/schemas/Stay'
+        - type: object
+          properties:
+            description: { type: [string, 'null'] }
+            address: { type: [string, 'null'] }
+            coordinates: { type: [object, 'null'], properties: { lat: { type: number }, lng: { type: number } } }
+            gallery: { type: array, items: { type: string, format: uri } }
+            policies:
+              type: object
+              properties:
+                taxes_included: { type: boolean }
+                prepayment_required: { type: boolean }
+                cards_accepted: { type: boolean }
+                breakfast_included: { type: boolean }
+                parking: { type: [string, 'null'], example: Free }
+            details: { $ref: '#/components/schemas/PropertyDetails' }
+            rooms: { type: array, items: { $ref: '#/components/schemas/Room' } }
+    Room:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: Deluxe Double }
+        stay: { type: object, properties: { id: { type: integer }, name: { type: string }, city: { type: string } } }
+        description: { type: [string, 'null'] }
+        price: { $ref: '#/components/schemas/Price' }
+        rooms_available: { type: integer, description: Maximum rooms in one booking }
+        breakfast: { type: [string, 'null'], example: Included }
+        breakfast_included: { type: boolean }
+        refund_policy: { type: [string, 'null'] }
+        available: { type: boolean }
+        on_offer: { type: boolean }
+        photo: { type: string, format: uri }
+        gallery: { type: array, items: { type: string, format: uri } }
+        size: { type: [string, 'null'], example: 30 m² }
+        features: { type: array, items: { $ref: '#/components/schemas/Feature' } }
+    HomeStay:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        city: { type: string }
+        area: { type: [string, 'null'] }
+        rating: { type: [number, 'null'] }
+        price_per_night: { $ref: '#/components/schemas/Price' }
+        rooms: { type: [integer, 'null'] }
+        available: { type: boolean }
+        on_offer: { type: boolean }
+        photo: { type: string, format: uri }
+    HomeStayDetail:
+      allOf:
+        - $ref: '#/components/schemas/HomeStay'
+        - type: object
+          properties:
+            description: { type: [string, 'null'] }
+            address: { type: [string, 'null'] }
+            coordinates: { type: [object, 'null'] }
+            gallery: { type: array, items: { type: string } }
+            policies: { type: object }
+            room_features: { type: array, items: { $ref: '#/components/schemas/Feature' } }
+            details: { $ref: '#/components/schemas/PropertyDetails' }
+    Vehicle:
+      type: object
+      description: Rental car, airport taxi or ambulance. Price fields depend on `type`.
+      properties:
+        id: { type: integer }
+        type: { type: string, enum: [car, taxi, ambulance] }
+        plate: { type: string, example: UBA 101A }
+        name: { type: string, example: Toyota Land Cruiser Prado }
+        category: { type: string, example: SUV }
+        provider: { type: [string, 'null'] }
+        location: { type: [string, 'null'] }
+        city: { type: [string, 'null'] }
+        rating: { type: [number, 'null'] }
+        available: { type: boolean }
+        on_offer: { type: boolean }
+        photo: { type: string, format: uri }
+        price_per_day: { $ref: '#/components/schemas/Price', description: car only (Kampala rate) }
+        price_per_day_upcountry: { $ref: '#/components/schemas/Price', description: car only }
+        price_from: { $ref: '#/components/schemas/Price', description: taxi only; the real fare depends on the route }
+        price: { description: 'ambulance only; null when charged on request', oneOf: [{ $ref: '#/components/schemas/Price' }, { type: 'null' }] }
+        model: { type: string, description: cars and taxis }
+        passengers: { type: [integer, 'null'] }
+        doors: { type: [integer, 'null'] }
+        luggage: { type: [integer, 'null'] }
+        automatic: { type: boolean }
+        min_driver_age: { type: [integer, 'null'], description: car only }
+    VehicleDetail:
+      allOf:
+        - $ref: '#/components/schemas/Vehicle'
+        - type: object
+          properties:
+            description: { type: [string, 'null'] }
+            gallery: { type: array, items: { type: string } }
+            extras: { type: array, items: { $ref: '#/components/schemas/Feature' }, description: Car extras or ambulance equipment }
+            notes: { type: [string, 'null'], description: Other ambulance equipment }
+    TourPackage:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        company: { type: string }
+        starts_in: { type: [string, 'null'] }
+        travel_date: { type: [string, 'null'], format: date }
+        days: { type: [integer, 'null'] }
+        departure: { type: [string, 'null'] }
+        price_per_traveller: { $ref: '#/components/schemas/Price' }
+        photo: { type: string }
+        destinations: { type: [string, 'null'], description: detail only }
+        included: { type: [string, 'null'], description: detail only }
+        activities: { type: [string, 'null'], description: detail only }
+        gallery: { type: array, items: { type: string }, description: detail only }
+    Experience:
+      type: object
+      description: A tourism site or an event.
+      properties:
+        id: { type: integer }
+        kind: { type: string, enum: [site, event] }
+        name: { type: string }
+        city: { type: [string, 'null'] }
+        country: { type: [string, 'null'] }
+        summary: { type: [string, 'null'] }
+        photo: { type: string }
+        starts_on: { type: [string, 'null'], format: date, description: events only }
+        ends_on: { type: [string, 'null'], format: date, description: events only }
+        description: { type: [string, 'null'], description: detail only }
+        gallery: { type: array, items: { type: string }, description: detail only }
+    BlogPost:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        date: { type: [string, 'null'], format: date }
+        summary: { type: [string, 'null'] }
+        photo: { type: string }
+        comments_count: { type: integer }
+        body: { type: string, description: detail only }
+        comments:
+          type: array
+          description: detail only; approved comments, newest first
+          items: { type: object, properties: { id: { type: integer }, name: { type: string }, comment: { type: string }, date: { type: [string, 'null'] } } }
+    Destination:
+      type: object
+      properties:
+        city: { type: string }
+        region: { type: [string, 'null'] }
+        country: { type: [string, 'null'] }
+        stays: { type: integer }
+        photo: { type: string }
+    Customer:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string, example: '+256700123456' }
+        currency: { type: string, example: UGX }
+        email_verified: { type: boolean }
+        member_since: { type: [string, 'null'], format: date }
+    Booking:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { type: string, enum: [room, home-stay, car, taxi, ambulance, tour] }
+        type_label: { type: string, example: Car Rental }
+        status: { type: string, enum: [pending, confirmed, declined] }
+        provider_note: { type: [string, 'null'], description: The provider's message when confirming or declining }
+        facility: { type: [string, 'null'], description: Hotel, company or operator }
+        item: { type: [string, 'null'], description: Room, plate or package }
+        quantity: { type: integer }
+        from: { type: [string, 'null'], description: 'Date, or "date HH:MM" for taxis and ambulances' }
+        to: { type: [string, 'null'] }
+        details: { type: [string, 'null'] }
+        cost: { oneOf: [{ $ref: '#/components/schemas/Price' }, { type: 'null' }], description: null when there is no charge }
+        charged: { type: [object, 'null'], properties: { amount: { type: number }, currency: { type: string } }, description: What the customer saw when booking }
+        can_cancel: { type: boolean }
+        requested_at: { type: [string, 'null'] }
+    Quote:
+      type: object
+      properties:
+        total: { $ref: '#/components/schemas/Price' }
+        nights: { type: integer, description: room, home-stay }
+        days: { type: integer, description: car }
+        rate: { type: number, description: UGX per unit }
+        unit: { type: string, example: per room per night }
+        fare_known: { type: boolean, description: 'taxi: false when the route has no fixed fare (total 0)' }
+    BookingInput:
+      description: Fields depend on the booking type (see GET /bookings/form/{type}/{id} for defaults).
+      oneOf:
+        - title: room
+          type: object
+          required: [check_in, check_out, rooms]
+          properties:
+            check_in: { type: string, format: date, description: today or later }
+            check_out: { type: string, format: date, description: after check_in }
+            rooms: { type: integer, minimum: 1, description: at most the room's rooms_available }
+            children: { type: integer, minimum: 0, maximum: 20 }
+        - title: home-stay
+          type: object
+          required: [check_in, check_out, notes]
+          properties:
+            check_in: { type: string, format: date }
+            check_out: { type: string, format: date }
+            children: { type: integer, minimum: 0, maximum: 20 }
+            notes: { type: string, minLength: 3, maxLength: 1000, description: Message for the host }
+        - title: car
+          type: object
+          required: [pickup_date, days, cars, driving_area, pickup_point]
+          properties:
+            pickup_date: { type: string, format: date }
+            days: { type: integer, minimum: 1, maximum: 90 }
+            cars: { type: integer, minimum: 1, maximum: 15 }
+            driving_area: { type: string, enum: [Kampala, Upcountry], description: Upcountry uses price_per_day_upcountry }
+            pickup_point: { type: string, maxLength: 200 }
+            notes: { type: string, maxLength: 1000 }
+        - title: taxi
+          type: object
+          required: [trip, airport, destination, passengers, date, time]
+          properties:
+            trip: { type: string, enum: [From Airport, To Airport] }
+            airport: { type: string, example: Entebbe }
+            destination: { type: string, description: One of GET /taxi-trips destinations; sets the fare }
+            passengers: { type: integer, minimum: 1, maximum: 14 }
+            date: { type: string, format: date }
+            time: { type: string, example: '09:30', description: HH:MM }
+            notes: { type: string, maxLength: 1000 }
+        - title: ambulance
+          type: object
+          required: [area, pickup_point, reason, date, time]
+          properties:
+            area: { type: string }
+            pickup_point: { type: string }
+            reason: { type: string, minLength: 10 }
+            date: { type: string, format: date }
+            time: { type: string, example: '23:00' }
+            notes: { type: string }
+        - title: tour
+          type: object
+          required: [travellers]
+          properties:
+            travellers: { type: integer, minimum: 1, maximum: 50 }
+
+paths:
+  /meta:
+    get:
+      tags: [Catalogue]
+      summary: Start-up data for pickers and filters
+      description: Currencies and rates, sort options, property types, stay and home-stay cities, vehicle categories per type, taxi airports, listing form options and links to the FAQ / help / terms / privacy pages.
+      responses:
+        '200': { description: OK }
+  /home:
+    get:
+      tags: [Catalogue]
+      summary: Home screen
+      description: Today's room offer, trending and featured stays, destinations, tourism sites, upcoming events, latest articles, testimonials and headline numbers.
+      parameters: [{ $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200': { description: OK }
+  /search:
+    get:
+      tags: [Catalogue]
+      summary: Search everything
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 120 } }
+        - { $ref: '#/components/parameters/PerPage' }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200':
+          description: 'Grouped results: stays, cars, taxis, ambulances, tour_packages, tourism_sites, events'
+  /regions:
+    get:
+      tags: [Catalogue]
+      summary: Regions by country, with their number of cities
+      responses:
+        '200': { description: OK }
+  /cities:
+    get:
+      tags: [Catalogue]
+      summary: Cities (destinations)
+      parameters:
+        - { name: region, in: query, schema: { type: string } }
+        - { name: country, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Destination' } } } }
+  /cities/{city}:
+    get:
+      tags: [Catalogue]
+      summary: What's on offer in a city
+      parameters:
+        - { name: city, in: path, required: true, schema: { type: string, example: Jinja } }
+        - { name: country, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200': { description: 'stays, cars, taxis and ambulances in the city' }
+
+  /stays:
+    get:
+      tags: [Stays]
+      summary: Hotels, lodges, apartments…
+      parameters:
+        - { name: city, in: query, schema: { type: string } }
+        - { name: type, in: query, schema: { type: string, example: Hotel }, description: Property type (plural accepted) }
+        - { name: q, in: query, schema: { type: string }, description: Free text (name, city, keywords) }
+        - { $ref: '#/components/parameters/Sort' }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PerPage' }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Stay' } }
+                  links: { $ref: '#/components/schemas/PaginationLinks' }
+                  meta: { $ref: '#/components/schemas/PaginationMeta' }
+  /stays/{id}:
+    get:
+      tags: [Stays]
+      summary: A stay with gallery, amenities, policies, surroundings and rooms
+      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/StayDetail' }
+                  related: { type: array, items: { $ref: '#/components/schemas/Stay' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /rooms/{id}:
+    get:
+      tags: [Stays]
+      summary: A room type
+      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { $ref: '#/components/schemas/Room' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /home-stays:
+    get:
+      tags: [Stays]
+      summary: Home stays (booked whole)
+      parameters:
+        - { name: city, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Sort' }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PerPage' }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/HomeStay' } }
+                  links: { $ref: '#/components/schemas/PaginationLinks' }
+                  meta: { $ref: '#/components/schemas/PaginationMeta' }
+  /home-stays/{id}:
+    get:
+      tags: [Stays]
+      summary: A home stay
+      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/HomeStayDetail' }
+                  related: { type: array, items: { $ref: '#/components/schemas/HomeStay' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /vehicles/{type}:
+    get:
+      tags: [Vehicles]
+      summary: Rental cars, airport taxis or ambulances
+      parameters:
+        - { $ref: '#/components/parameters/VehicleType' }
+        - { name: category, in: query, schema: { type: string, example: SUV } }
+        - { name: location, in: query, schema: { type: string }, description: Pick-up area (cars) }
+        - { name: destination, in: query, schema: { type: string }, description: 'Taxis serving a destination' }
+        - { name: q, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Sort' }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PerPage' }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Vehicle' } }
+                  links: { $ref: '#/components/schemas/PaginationLinks' }
+                  meta: { $ref: '#/components/schemas/PaginationMeta' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /vehicles/{type}/categories:
+    get:
+      tags: [Vehicles]
+      summary: Categories with counts and tile photos
+      parameters: [{ $ref: '#/components/parameters/VehicleType' }]
+      responses:
+        '200': { description: OK }
+  /vehicles/{type}/{id}:
+    get:
+      tags: [Vehicles]
+      summary: A vehicle with gallery, extras/equipment and related vehicles
+      parameters: [{ $ref: '#/components/parameters/VehicleType' }, { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/VehicleDetail' }
+                  related: { type: array, items: { $ref: '#/components/schemas/Vehicle' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /taxi-trips:
+    get:
+      tags: [Vehicles]
+      summary: Airport transfer destinations and fixed fares
+      parameters:
+        - { name: airport, in: query, schema: { type: string, example: Entebbe } }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200': { description: '`data`: [{id, airport, destination, fare}], `trips`: [From Airport, To Airport]' }
+
+  /tour-packages:
+    get:
+      tags: [Experiences]
+      summary: Upcoming tour packages (soonest first unless sorted)
+      parameters:
+        - { name: sort, in: query, schema: { type: string, enum: [recommended, price_asc, price_desc, name] } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PerPage' }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/TourPackage' } } } }
+  /tour-packages/{id}:
+    get:
+      tags: [Experiences]
+      summary: A tour package
+      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200': { description: '`data`: TourPackage with detail fields, `related`: more packages' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /tourism-sites:
+    get:
+      tags: [Experiences]
+      summary: Tourism sites
+      parameters:
+        - { name: city, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PerPage' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Experience' } } } }
+  /tourism-sites/{id}:
+    get:
+      tags: [Experiences]
+      summary: A tourism site
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /events:
+    get:
+      tags: [Experiences]
+      summary: Upcoming events
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PerPage' }
+      responses:
+        '200': { description: OK }
+  /events/{id}:
+    get:
+      tags: [Experiences]
+      summary: An event
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /blog:
+    get:
+      tags: [Experiences]
+      summary: Blog posts, newest first
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PerPage' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/BlogPost' } } } }
+  /blog/{id}:
+    get:
+      tags: [Experiences]
+      summary: A blog post with its approved comments
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: '`data`: BlogPost with body and comments, `related`: 3 more posts' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /blog/{id}/comments:
+    post:
+      tags: [Forms]
+      summary: Comment on a post (shown after approval)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, comment]
+              properties:
+                name: { type: string, minLength: 3, maxLength: 120 }
+                email: { type: string, format: email }
+                comment: { type: string, minLength: 20, maxLength: 3000 }
+      responses:
+        '201': { description: Received }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /contact:
+    post:
+      tags: [Forms]
+      summary: Send a message to Panobooking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, message]
+              properties:
+                name: { type: string, minLength: 3, maxLength: 120 }
+                email: { type: string, format: email }
+                message: { type: string, minLength: 20, maxLength: 5000 }
+      responses:
+        '201': { description: Received }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /testimonials:
+    post:
+      tags: [Forms]
+      summary: Share your experience (shown on the home screen after review)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, company, text]
+              properties:
+                name: { type: string, minLength: 3 }
+                email: { type: string, format: email }
+                job: { type: string }
+                company: { type: string }
+                text: { type: string, minLength: 20, maxLength: 2000 }
+      responses:
+        '201': { description: Received }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /listings/{kind}:
+    post:
+      tags: [Forms]
+      summary: List a property, rental car or ambulance (pending approval)
+      description: Same rules as the website's "list with us" forms. Send as multipart/form-data with a `photo` (JPEG/PNG/WebP, ≤ 5 MB). Car rates get the Panobooking commission (GET /meta → listing_options.car_commission) added.
+      parameters:
+        - { name: kind, in: path, required: true, schema: { type: string, enum: [property, car, ambulance] } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              oneOf:
+                - title: property
+                  type: object
+                  required: [name, type, country, region, city, address, lowest_price, price_details, taxes_included, prepayment, cards_accepted, breakfast_included, short_description, rating, phone, email, photo]
+                  properties:
+                    name: { type: string }
+                    type: { type: string, description: 'GET /meta → property_types' }
+                    country: { type: string }
+                    region: { type: string }
+                    city: { type: string }
+                    address: { type: string }
+                    lowest_price: { type: number, minimum: 1000, description: UGX per night }
+                    price_details: { type: string }
+                    taxes_included: { type: string, enum: ['Yes', 'No'] }
+                    prepayment: { type: string, enum: ['Yes', 'No'] }
+                    cards_accepted: { type: string, enum: ['Yes', 'No'] }
+                    breakfast_included: { type: string, enum: ['Yes', 'No'] }
+                    short_description: { type: string, maxLength: 300 }
+                    rating: { type: number, minimum: 1, maximum: 5 }
+                    phone: { type: string }
+                    email: { type: string, format: email }
+                    photo: { type: string, format: binary }
+                - title: car
+                  type: object
+                  required: [plate, category, model, company, location, kampala_rate, upcountry_rate, passengers, doors, automatic, luggage, min_driver_age, rating, description, payment_method, phone, email, driver_password, photo]
+                  properties:
+                    plate: { type: string }
+                    category: { type: string, description: 'GET /meta → listing_options.car_categories' }
+                    model: { type: string }
+                    company: { type: string }
+                    location: { type: string }
+                    kampala_rate: { type: number, description: UGX per day }
+                    upcountry_rate: { type: number }
+                    passengers: { type: integer }
+                    doors: { type: integer }
+                    automatic: { type: string, enum: ['Yes', 'No'] }
+                    luggage: { type: integer }
+                    min_driver_age: { type: integer }
+                    rating: { type: number }
+                    description: { type: string }
+                    payment_method: { type: string, example: Cash }
+                    phone: { type: string }
+                    email: { type: string, format: email }
+                    driver_password: { type: string, minLength: 8, description: For the separate driver app }
+                    photo: { type: string, format: binary }
+                - title: ambulance
+                  type: object
+                  required: [plate, category, operator, location, vehicle, payment_method, phone, email, driver_password, photo]
+                  properties:
+                    plate: { type: string }
+                    category: { type: string, description: 'GET /meta → listing_options.ambulance_categories' }
+                    operator: { type: string }
+                    location: { type: string }
+                    vehicle: { type: string }
+                    payment_method: { type: string }
+                    phone: { type: string }
+                    email: { type: string, format: email }
+                    driver_password: { type: string, minLength: 8 }
+                    photo: { type: string, format: binary }
+      responses:
+        '201': { description: 'Received: `data` = {id, kind, status: pending_approval}' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Create an account (emails a 6-digit verification code)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, phone_code, phone, password, password_confirmation]
+              properties:
+                name: { type: string, minLength: 3, maxLength: 120 }
+                email: { type: string, format: email }
+                phone_code: { type: string, example: '+256' }
+                phone: { type: string, example: '700 123456' }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+                currency: { type: string, example: USD }
+      responses:
+        '201':
+          description: Created; verify the email next.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Customer' }
+                  verification_required: { type: boolean }
+                  code_expires_in_minutes: { type: integer }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/verify-email:
+    post:
+      tags: [Auth]
+      summary: Verify the email with the emailed code
+      description: Five wrong codes void the code (ask for a new one). With `device_name`, also returns a token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string, example: '493027' }
+                device_name: { type: string, example: Pixel 8 }
+      responses:
+        '200':
+          description: Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Customer' }
+                  token: { type: string, description: only when device_name was sent }
+                  token_type: { type: string, example: Bearer }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/resend-verification:
+    post:
+      tags: [Auth]
+      summary: Email a new verification code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [email], properties: { email: { type: string, format: email } } }
+      responses:
+        '200': { description: Same answer whether or not the email has an account }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Sign in and get a token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, device_name]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                device_name: { type: string, example: Pixel 8, description: Shown when managing devices; one token per device }
+      responses:
+        '200':
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string, example: '1|vF3k…' }
+                  token_type: { type: string, example: Bearer }
+                  data: { $ref: '#/components/schemas/Customer' }
+        '403':
+          description: Right password, email not verified yet
+          content:
+            application/json:
+              example: { message: Please verify your email address first., code: unverified }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Email a password-reset code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [email], properties: { email: { type: string, format: email } } }
+      responses:
+        '200': { description: Same answer whether or not the email has an account }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Set a new password with the emailed code (signs out every device)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, code, password, password_confirmation]
+              properties:
+                email: { type: string, format: email }
+                code: { type: string }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+      responses:
+        '200': { description: Changed }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Sign out this device (revokes the token)
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: Signed out }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+
+  /me:
+    get:
+      tags: [Account]
+      summary: The signed-in customer
+      security: [{ bearer: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { $ref: '#/components/schemas/Customer' } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Inactive' }
+    patch:
+      tags: [Account]
+      summary: Update name, phone or display currency
+      security: [{ bearer: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                phone: { type: string, example: '+256700123456' }
+                currency: { type: string, example: EUR }
+      responses:
+        '200': { description: Updated customer }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /me/password:
+    put:
+      tags: [Account]
+      summary: Change password (other devices are signed out)
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password: { type: string }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+      responses:
+        '200': { description: Changed }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /me/tokens:
+    delete:
+      tags: [Account]
+      summary: Sign out on every device
+      security: [{ bearer: [] }]
+      responses:
+        '200': { description: Signed out everywhere }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+
+  /bookings:
+    get:
+      tags: [Bookings]
+      summary: My bookings
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [all, pending, history], default: all }, description: history = confirmed or declined }
+        - { name: q, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PerPage' }
+        - { $ref: '#/components/parameters/Currency' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Booking' } }
+                  links: { $ref: '#/components/schemas/PaginationLinks' }
+                  meta: { $ref: '#/components/schemas/PaginationMeta' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+  /bookings/{id}:
+    get:
+      tags: [Bookings]
+      summary: One of my bookings
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { $ref: '#/components/schemas/Booking' } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Bookings]
+      summary: Cancel a pending booking
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Cancelled }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Already confirmed or declined }
+  /bookings/form/{type}/{id}:
+    get:
+      tags: [Bookings]
+      summary: Booking form defaults, fields and starting price (no sign-in needed)
+      parameters: [{ $ref: '#/components/parameters/BookingType' }, { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      type: { type: string }
+                      defaults: { type: object }
+                      fields: { type: array, items: { type: string } }
+                      quote: { $ref: '#/components/schemas/Quote' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /bookings/quote/{type}/{id}:
+    post:
+      tags: [Bookings]
+      summary: Price a booking without placing it (no sign-in needed)
+      parameters: [{ $ref: '#/components/parameters/BookingType' }, { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookingInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { data: { $ref: '#/components/schemas/Quote' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /bookings/{type}/{id}:
+    post:
+      tags: [Bookings]
+      summary: Place a booking
+      description: The booking is stored as pending and the provider is notified. The price is recorded in UGX and in the request currency.
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: '#/components/parameters/BookingType' }, { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Currency' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookingInput' }
+            examples:
+              room: { value: { check_in: '2026-12-20', check_out: '2026-12-23', rooms: 1, children: 0 } }
+              car: { value: { pickup_date: '2026-12-20', days: 3, cars: 1, driving_area: Kampala, pickup_point: Entebbe Airport } }
+              taxi: { value: { trip: From Airport, airport: Entebbe, destination: Jinja, passengers: 2, date: '2026-12-20', time: '09:30' } }
+              tour: { value: { travellers: 2 } }
+      responses:
+        '201':
+          description: Booked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  data: { $ref: '#/components/schemas/Booking' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }

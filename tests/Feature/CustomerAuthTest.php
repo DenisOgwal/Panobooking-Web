@@ -58,9 +58,15 @@ class CustomerAuthTest extends TestCase
 
         $auth = app(CustomerAuth::class);
         $this->assertSame(CustomerAuth::RESULT_BAD_PASSWORD, $auth->attempt('amina@example.test', 'wrong-pass'));
-        $this->assertSame(CustomerAuth::RESULT_UNKNOWN, $auth->attempt('pending@example.test', 'secret-pass'));
+        // Right password but email never verified: tell them to verify. Wrong password: reveal nothing.
+        $this->assertSame(CustomerAuth::RESULT_UNVERIFIED, $auth->attempt('pending@example.test', 'secret-pass'));
+        $this->assertSame(CustomerAuth::RESULT_UNKNOWN, $auth->attempt('pending@example.test', 'wrong-pass'));
         $this->assertSame(CustomerAuth::RESULT_UNKNOWN, $auth->attempt('nobody@example.test', 'secret-pass'));
         $this->assertFalse($auth->check());
+
+        // Verified, then suspended by an admin.
+        DB::table('registration')->where('Email', 'pending@example.test')->update(['email_verified_at' => now()]);
+        $this->assertSame(CustomerAuth::RESULT_UNKNOWN, $auth->attempt('pending@example.test', 'secret-pass'));
     }
 
     public function test_session_holds_no_password(): void

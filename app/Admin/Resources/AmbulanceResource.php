@@ -66,6 +66,7 @@ class AmbulanceResource extends Resource
             Field::text('CurrentLocation', 'Current location'),
             Field::money('Price', 'Price')->help('UGX; 0 if charged on request'),
             Flags::rating('Ratings', 'Rating'),
+            Field::text('Repayments', 'Payment method')->rules(['max:60'])->suggest(['Cash', 'Mobile Money', 'Card', 'Bank transfer'])->span(3),
             Field::textarea('CarSpec', 'Description'),
             Field::textarea('SearchTerms', 'Search keywords'),
             Flags::availability(),

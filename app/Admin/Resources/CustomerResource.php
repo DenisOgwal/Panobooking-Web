@@ -11,6 +11,7 @@ use App\Models\UserRegistrationModel;
 use App\Support\CustomerAuth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
+use Laravel\Sanctum\PersonalAccessToken;
 
 /** Customer accounts of the public site (`registration`). New sign-ups wait for approval. */
 class CustomerResource extends Resource
@@ -34,6 +35,8 @@ class CustomerResource extends Resource
             Column::make('Telephone', 'Phone'),
             Column::make('SelectedCurrency', 'Currency'),
             Column::make('created_at', 'Joined')->date(),
+            Column::make('email_verified_at', 'Email verified')->badge()
+                ->using(fn ($r) => $r->email_verified_at ? 'Yes' : 'No'),
             Column::make('ApprovalStatus', 'Approval')->badge(),
         ];
     }
@@ -54,6 +57,31 @@ class CustomerResource extends Resource
     public static function uniqueRules(?Model $record): array
     {
         return ['Email' => [Rule::unique('registration', 'Email')->ignore($record?->getKey())]];
+    }
+
+    /** An admin approving a customer stands in for email verification. */
+    public static function afterSave(Model $record, array $before): void
+    {
+        if ($record->ApprovalStatus === Flags::APPROVED && ! $record->email_verified_at) {
+            $record->forceFill(['email_verified_at' => now()])->save();
+        }
+    }
+
+    public static function afterApprove(array $ids, bool $on): void
+    {
+        if ($on) {
+            UserRegistrationModel::whereKey($ids)->whereNull('email_verified_at')->update(['email_verified_at' => now()]);
+        } else {
+            PersonalAccessToken::where('tokenable_type', UserRegistrationModel::class)->whereIn('tokenable_id', $ids)->delete();
+        }
+    }
+
+    /** Suspending a customer signs them out of the app. */
+    public static function beforeSave(Model $record, array $data): void
+    {
+        if ($record->exists && $record->isDirty('ApprovalStatus') && $record->ApprovalStatus !== Flags::APPROVED) {
+            $record->tokens()->delete();
+        }
     }
 
     public static function links(Model $record): array

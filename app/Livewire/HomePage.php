@@ -10,7 +10,7 @@ use App\Models\HotelsModel;
 use App\Models\RentalCarModel;
 use App\Models\RoomsModel;
 use App\Models\TourismSite;
-use Illuminate\Support\Facades\Cache;
+use App\Support\HomeContent;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -50,26 +50,7 @@ class HomePage extends Component
     /** Page content changes rarely; cache it so form interactions don't re-run every query. */
     private function content(): array
     {
-        return Cache::remember('home.content', 300, function () {
-            $hotelCounts = HotelsModel::approved()->selectRaw('City, COUNT(*) as total')->groupBy('City')->pluck('total', 'City');
-
-            return [
-                'offer' => RoomsModel::offered()->with('hotel:IDs,Place,City')->orderByDesc('IDs')->first(),
-                'trending' => HotelsModel::approved()->trending()->orderBy('TrendRank')->limit(12)->get(),
-                'featured' => HotelsModel::approved()->featured()->orderBy('FaturedRank')->limit(12)->get(),
-                'destinations' => DestinationsModel::orderBy('DestinationID')->limit(8)->get()
-                    ->each(fn ($d) => $d->setAttribute('stays', (int) ($hotelCounts[$d->City] ?? 0))),
-                'sites' => TourismSite::orderBy('ID')->limit(8)->get(),
-                'events' => EventModel::upcoming()->orderBy('StartDate')->limit(6)->get(),
-                'articles' => BlogModel::withCount('approvedComments')->orderByDesc('id')->limit(3)->get(),
-                'testimonials' => FeedBackModel::approved()->orderByDesc('id')->limit(6)->get(),
-                'stats' => [
-                    'stays' => HotelsModel::approved()->count(),
-                    'cars' => RentalCarModel::approved()->count(),
-                    'cities' => $hotelCounts->count(),
-                ],
-            ];
-        });
+        return HomeContent::get();
     }
 
     public function render()

@@ -30,6 +30,14 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
+
+        // Mobile API (routes/api.php): stateless, bearer tokens (Sanctum), JSON only.
+        'api' => [
+            \App\Http\Middleware\ForceJsonResponse::class,
+            'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\ApiCurrency::class,
+        ],
     ];
 
     /**

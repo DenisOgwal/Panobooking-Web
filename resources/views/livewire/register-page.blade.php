@@ -8,8 +8,8 @@
                             <div class="success-panel">
                                 <div class="check"><i class="bi bi-envelope-check" aria-hidden="true"></i></div>
                                 <h1 class="h3">Thanks, {{ \Illuminate\Support\Str::of($name)->explode(' ')->first() }}!</h1>
-                                <p class="text-muted">Your account for <strong>{{ $email }}</strong> has been created. We review new accounts quickly, and you'll be able to sign in once it's approved.</p>
-                                <a class="btn btn-primary" href="/">Explore stays</a>
+                                <p class="text-muted">Your account for <strong>{{ $email }}</strong> has been created. We've emailed you a 6-digit code: enter it to verify your email, or click the link in that email. You can sign in as soon as it's verified.</p>
+                                <a class="btn btn-primary" href="{{ route('VerifyEmail') }}">Enter my code</a>
                             </div>
                         @else
                             <div class="text-center mb-4">

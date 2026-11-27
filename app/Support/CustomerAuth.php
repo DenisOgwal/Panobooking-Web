@@ -21,20 +21,52 @@ class CustomerAuth
     public const RESULT_OK = 'ok';
     public const RESULT_UNKNOWN = 'unknown';      // no approved account with that email
     public const RESULT_BAD_PASSWORD = 'password';
+    public const RESULT_UNVERIFIED = 'unverified'; // right password, email not verified yet
 
-    public function attempt(string $email, string $password): string
+    /** User-facing message for a failed result. */
+    public static function message(string $result): string
     {
-        $account = UserRegistrationModel::query()
-            ->where('Email', $email)
-            ->where('ApprovalStatus', 'Approved')
-            ->first();
+        return match ($result) {
+            self::RESULT_BAD_PASSWORD => 'That password is incorrect.',
+            self::RESULT_UNVERIFIED => 'Please verify your email address first. We sent you a code when you signed up.',
+            default => 'No approved account exists for that email address.',
+        };
+    }
+
+    /**
+     * Check credentials without touching the session (used by the website and the mobile API).
+     *
+     * RESULT_UNVERIFIED is only returned with the right password, so it never reveals which
+     * emails are registered; suspended accounts (verified, then unapproved by an admin) are UNKNOWN.
+     *
+     * @return array{0: string, 1: ?UserRegistrationModel}
+     */
+    public function verifyCredentials(string $email, string $password): array
+    {
+        $account = UserRegistrationModel::query()->where('Email', $email)->first();
 
         if (! $account) {
-            return self::RESULT_UNKNOWN;
+            return [self::RESULT_UNKNOWN, null];
         }
 
         if (! $this->passwordMatches($account, $password)) {
-            return self::RESULT_BAD_PASSWORD;
+            return [$account->isApproved() ? self::RESULT_BAD_PASSWORD : self::RESULT_UNKNOWN, null];
+        }
+
+        if (! $account->isApproved()) {
+            return [$account->isVerified() ? self::RESULT_UNKNOWN : self::RESULT_UNVERIFIED, null];
+        }
+
+        return [self::RESULT_OK, $account];
+    }
+
+    /** Website sign-in: check credentials and start the customer session. */
+    public function attempt(string $email, string $password): string
+    {
+        [$result, $account] = $this->verifyCredentials($email, $password);
+
+        if ($result !== self::RESULT_OK) {
+            return $result;
         }
 
         session()->regenerate();

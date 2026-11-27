@@ -2,16 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Listings\AmbulanceListing;
+use App\Listings\ListingForm;
 use App\Livewire\Concerns\RegistersListing;
-use App\Models\AmbulanceModel;
 use Livewire\Component;
 
-/** /RegisterAmbulance: list an ambulance (pending approval). */
+/** /RegisterAmbulance: list an ambulance (pending approval; rules: App\Listings\AmbulanceListing). */
 class RegisterAmbulance extends Component
 {
     use RegistersListing;
 
-    public const CATEGORIES = ['Advanced Life Support', 'Basic Life Support', 'Patient Transport', 'Neonatal', 'Air Ambulance'];
+    public const CATEGORIES = AmbulanceListing::CATEGORIES;
 
     public string $carname = '';
     public string $carcategory = 'Basic Life Support';
@@ -23,45 +24,21 @@ class RegisterAmbulance extends Component
     public string $email = '';
     public string $pswd = '';
 
-    protected function rules(): array
+    protected function listingForm(): ListingForm { return app(AmbulanceListing::class); }
+
+    protected function listingFields(): array
     {
         return [
-            'carname' => [...self::SAFE_NAME, 'unique:ambulances,TaxiNo'],
-            'carcategory' => 'required|in:' . implode(',', self::CATEGORIES),
-            'drivername' => 'required|string|max:120',
-            'Carlocation' => 'required|string|max:120',
-            'description' => 'required|string|max:200',
-            'paymentoption' => 'required|string|max:60',
-            'telphonenumber' => ['required', 'regex:/^\+?[0-9 ]{7,20}$/'],
-            'email' => 'required|email|max:190',
-            'pswd' => 'required|string|min:8|max:100',
-            'formFile' => self::PHOTO,
+            'plate' => 'carname', 'category' => 'carcategory', 'operator' => 'drivername', 'location' => 'Carlocation',
+            'vehicle' => 'description', 'payment_method' => 'paymentoption', 'phone' => 'telphonenumber', 'email' => 'email',
+            'driver_password' => 'pswd', 'photo' => 'formFile',
         ];
-    }
-
-    protected function validationAttributes(): array
-    {
-        return ['carname' => 'number plate', 'carcategory' => 'category', 'drivername' => 'operator name', 'Carlocation' => 'base location',
-            'description' => 'vehicle', 'paymentoption' => 'payment method', 'telphonenumber' => 'phone number', 'pswd' => 'password', 'formFile' => 'photo'];
     }
 
     public function submit(): void
     {
-        $this->validate();
-
-        AmbulanceModel::create([
-            'DriverName' => $this->drivername, 'TaxiNo' => $this->carname, 'AmbulanceCategory' => $this->carcategory,
-            'Repayments' => $this->paymentoption, 'CurrentLocation' => $this->Carlocation, 'City' => $this->Carlocation,
-            'CarSpec' => $this->description,
-            // Driver passwords are checked by the separate driver app, which uses MD5.
-            'Password' => md5($this->pswd),
-            'EmailAddress' => $this->email, 'TelephoneNumber' => $this->telphonenumber,
-            'SearchTerms' => trim("{$this->carcategory} ambulance {$this->Carlocation}"),
-        ]);
-        $this->storePhoto('AndroidDriver/FileUpload', $this->carname);
-
+        $this->submitListing();
         $this->reset('pswd');
-        $this->submitted = true;
     }
 
     public function render()

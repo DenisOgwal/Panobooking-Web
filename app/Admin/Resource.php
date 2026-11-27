@@ -97,6 +97,9 @@ abstract class Resource
      */
     public static function afterSave(Model $record, array $before): void {}
 
+    /** Runs after records were approved ($on) or unapproved from the list. */
+    public static function afterApprove(array $ids, bool $on): void {}
+
     /** Return a message to refuse the delete, or null to allow it. */
     public static function preventDelete(Model $record): ?string { return null; }
 

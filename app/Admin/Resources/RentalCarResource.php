@@ -75,6 +75,7 @@ class RentalCarResource extends Resource
             Field::number('Laggages', 'Bags')->rules(['integer', 'min:0', 'max:40'])->span(3),
             Field::number('DriverAge', 'Minimum driver age')->rules(['integer', 'min:16', 'max:99'])->span(3),
             Flags::rating('Ratings', 'Rating'),
+            Field::text('Repayments', 'Payment method')->rules(['max:60'])->suggest(['Cash', 'Mobile Money', 'Card', 'Bank transfer'])->span(3),
             Field::textarea('Description', 'Description'),
             Field::textarea('SearchTerms', 'Search keywords'),
             Flags::availability(),

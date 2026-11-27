@@ -92,8 +92,9 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        // Verification and password-reset emails need a sender; an empty/"null" env value falls back.
+        'address' => env('MAIL_FROM_ADDRESS') ?: 'no-reply@panobooking.com',
+        'name' => env('MAIL_FROM_NAME') ?: 'Panobooking',
     ],
 
     /*

@@ -41,8 +41,6 @@ trait SignsInInline
         }
 
         $this->reset('password');
-        $this->addError('clientemail', $result === CustomerAuth::RESULT_BAD_PASSWORD
-            ? 'That password is incorrect.'
-            : 'No approved account exists for that email address.');
+        $this->addError('clientemail', CustomerAuth::message($result));
     }
 }

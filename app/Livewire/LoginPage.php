@@ -20,6 +20,9 @@ class LoginPage extends Component
     #[Url(as: 'return', except: '')]
     public string $returnTo = '';
 
+    /** The last attempt had the right password but an unverified email. */
+    public bool $unverified = false;
+
     public function mount()
     {
         if (app(CustomerAuth::class)->check()) {
@@ -41,9 +44,11 @@ class LoginPage extends Component
         }
 
         $this->reset('password');
-        $this->addError('email', $result === CustomerAuth::RESULT_BAD_PASSWORD
-            ? 'That password is incorrect.'
-            : 'No approved account exists for that email address.');
+        if ($result === CustomerAuth::RESULT_UNVERIFIED) {
+            session()->put(VerifyEmailPage::SESSION_KEY, $this->email);
+        }
+        $this->unverified = $result === CustomerAuth::RESULT_UNVERIFIED;
+        $this->addError('email', CustomerAuth::message($result));
     }
 
     /** Only allow local paths, never another host. */

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminLogoutController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\VerifyEmailLinkController;
 use App\Livewire;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +62,10 @@ Route::get('/BookingSuccess', Livewire\BookingSuccess::class)->name('BookingSucc
 Route::get('/Login', Livewire\LoginPage::class)->name('Login');
 Route::get('/Register', Livewire\RegisterPage::class)->name('Register');
 Route::get('/clientlogout', LogoutController::class)->name('clientlogout');
+Route::get('/VerifyEmail', Livewire\VerifyEmailPage::class)->name('VerifyEmail');
+Route::get('/VerifyEmail/{id}/{hash}', VerifyEmailLinkController::class)
+    ->whereNumber('id')->middleware(['signed', 'throttle:12,1'])->name('verification.verify');
+Route::get('/ForgotPassword', Livewire\ForgotPasswordPage::class)->name('ForgotPassword');
 Route::get('/PendingBookings', Livewire\PendingBookings::class)->name('PendingBookings');
 Route::get('/Bookings', Livewire\Bookings::class)->name('Bookings');
 Route::get('/RegisterProperty', Livewire\RegisterProperty::class)->name('RegisterProperty');
@@ -72,6 +77,13 @@ Route::get('/privacypolicy', Livewire\PrivacyPolicyPage::class)->name('privacypo
 Route::get('/TermsAndConditions', Livewire\TermsAndConditionsComponent::class)->name('TermsAndConditions');
 Route::get('/Faqs', Livewire\Faqs::class)->name('Faqs');
 Route::get('/HelpCenter', Livewire\HelpCenter::class)->name('HelpCenter');
+
+// Mobile API documentation (the API itself is in routes/api.php, under /api/v1).
+Route::view('/api/docs', 'api-docs')->name('api.docs');
+Route::get('/api/openapi.yaml', fn () => response()->file(base_path('docs/openapi.yaml'), [
+    'Content-Type' => 'application/yaml; charset=utf-8',
+    'Cache-Control' => 'no-cache',
+]))->name('api.spec');
 
 // Admin backend (see App\Admin). Staff and admin accounts live in `users`; customers never get in.
 Route::prefix('admin')->name('admin.')->group(function () {

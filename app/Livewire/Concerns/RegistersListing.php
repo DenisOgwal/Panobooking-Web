@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Listings\ListingForm;
 use Livewire\WithFileUploads;
 
 /**
- * Shared bits of the "list with us" forms: photo upload and the submitted state.
+ * Shared bits of the "list with us" forms. Rules and saving live in App\Listings (shared with
+ * the mobile API); the page maps its property names onto the listing's field names.
  * New listings are saved without approval, so they stay hidden until an admin approves them.
  */
 trait RegistersListing
@@ -16,14 +18,31 @@ trait RegistersListing
 
     public bool $submitted = false;
 
-    /** Names end up in photo file names, so path characters are not allowed. */
-    protected const SAFE_NAME = ['required', 'string', 'min:2', 'max:120', 'not_regex:/[\/\\\\]|\.\./'];
+    /** @return array<string, string> listing field => component property (photo => formFile) */
+    abstract protected function listingFields(): array;
 
-    protected const PHOTO = ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'];
+    abstract protected function listingForm(): ListingForm;
 
-    protected function storePhoto(string $directory, string $baseName): void
+    protected function rules(): array
     {
-        $this->formFile->storeAs($directory, $baseName . '.jpg');
+        $rules = [];
+        foreach ($this->listingForm()->rules() as $field => $rule) {
+            $rules[$this->listingFields()[$field]] = $rule;
+        }
+
+        return $rules;
+    }
+
+    protected function validationAttributes(): array
+    {
+        $names = [];
+        foreach ($this->listingForm()->attributes() as $field => $label) {
+            if (isset($this->listingFields()[$field])) {
+                $names[$this->listingFields()[$field]] = $label;
+            }
+        }
+
+        return $names;
     }
 
     public function updated($field): void
@@ -31,5 +50,18 @@ trait RegistersListing
         if (array_key_exists($field, $this->rules())) {
             $this->validateOnly($field);
         }
+    }
+
+    protected function submitListing(): void
+    {
+        $this->validate();
+
+        $data = [];
+        foreach ($this->listingFields() as $field => $property) {
+            $data[$field] = $this->{$property};
+        }
+        $this->listingForm()->store($data, $this->formFile);
+
+        $this->submitted = true;
     }
 }

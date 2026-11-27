@@ -39,6 +39,36 @@ docker compose exec app php artisan panobooking:admin you@example.com --role=adm
 - Photos are written to the upload disk under the media host's paths (`App\Admin\MediaFiles`), and the photo-count column is kept in step.
 - Driver-app passwords for cars and ambulances are stored as MD5 (see Known limitations). Customer passwords use `CustomerAuth::hash()`.
 
+## Mobile API
+
+JSON API for the mobile app at **`/api/v1`**, covering everything the website does. Interactive docs are at http://localhost:8000/api/docs, served from `docs/openapi.yaml`; keep that file in step with `routes/api.php`, which `tests/Feature/Api/OpenApiSpecTest` checks.
+
+**Sign-in and accounts**
+- Sign-in uses Laravel Sanctum. `POST /auth/login` (email, password, device_name) returns a token, which the app sends as `Authorization: Bearer <token>`.
+- `POST /auth/register` emails a 6-digit code. The customer can sign in after `POST /auth/verify-email`, or once an admin approves them in Admin → Customers, which also marks them verified.
+- Unapproving a customer revokes their tokens.
+- Forgotten passwords are reset with an emailed code (`/auth/forgot-password`, `/auth/reset-password`).
+- The website uses the same flow: `/Register` → `/VerifyEmail` (code, or the one-click link in the email), and `/ForgotPassword`.
+
+**Using the API**
+- Currency: send `X-Currency: USD`, or `?currency=`. Every price comes back as `{ugx, amount, currency, formatted}`.
+- Bookings: `POST /bookings/{room|home-stay|car|taxi|ambulance|tour}/{id}`. `POST /bookings/quote/...` and `GET /bookings/form/...` work without signing in.
+- Rate limits: 120 requests/min overall; 6/min per email for sign-in and code endpoints; 10/min for public forms.
+
+**Where the shared logic lives**
+
+| What | Where |
+|------|-------|
+| Booking rules, prices and cart rows, used by both the website and the API | `app/Bookings/Types/*` and `App\Bookings\BookingService` |
+| "List with us" forms | `app/Listings/*` |
+| Sign-up, verification and password reset | `App\Support\CustomerAccounts` |
+| API controllers and JSON resources | `app/Http/Controllers/Api/V1/*`, `app/Http/Resources/V1/*` |
+
+**Email (needed for verification codes)**
+- Locally, `MAIL_MAILER=log`, so codes appear in `storage/logs/laravel.log`.
+- In production, set `MAIL_MAILER=smtp` plus `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` and `MAIL_FROM_NAME`.
+- `SANCTUM_EXPIRATION` (minutes) makes tokens expire. By default they last until sign-out.
+
 ## Tests
 
 ```bash

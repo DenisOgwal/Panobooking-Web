@@ -22,9 +22,23 @@ class Currency
     public const SESSION_KEY = 'currency';
     private const CACHE_TTL = 600;
 
+    /** Code chosen for this request only (the stateless mobile API), overriding the session. */
+    private ?string $override = null;
+
+    /** Use $code for the rest of this request (ignored if unknown). */
+    public function useForRequest(?string $code): void
+    {
+        $code = $code !== null ? strtoupper(trim($code)) : null;
+        $this->override = $this->isAvailable($code) ? $code : null;
+    }
+
     /** Currently selected code, falling back to UGX for unknown values. */
     public function code(): string
     {
+        if ($this->override !== null) {
+            return $this->override;
+        }
+
         $code = session(self::SESSION_KEY);
 
         if ($code === null && app(CustomerAuth::class)->check()) {
