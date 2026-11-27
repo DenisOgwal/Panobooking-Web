@@ -6,7 +6,7 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
                 <ul class="nav nav-pills">
                     <li class="nav-item"><a @class(['nav-link', 'active' => $pending]) href="/PendingBookings"><i class="bi bi-hourglass-split me-1"></i>Pending</a></li>
-                    <li class="nav-item"><a @class(['nav-link', 'active' => ! $pending]) href="/Bookings"><i class="bi bi-check2-circle me-1"></i>Confirmed</a></li>
+                    <li class="nav-item"><a @class(['nav-link', 'active' => ! $pending]) href="/Bookings"><i class="bi bi-check2-circle me-1"></i>History</a></li>
                 </ul>
                 <div class="input-icon">
                     <i class="bi bi-search" aria-hidden="true"></i>
@@ -33,7 +33,7 @@
                                 <span class="mx-1">·</span>Requested {{ $b->Date ? Carbon::parse($b->Date)->format('j M Y') : $b->created_at?->format('j M Y') }}
                             </div>
                             @if (filled($b->Descriptions))<div class="small mt-1">{{ Str::limit($b->Descriptions, 140) }}</div>@endif
-                            @if (! $pending && filled($b->ConfirmReason))<div class="small text-success mt-1"><i class="bi bi-chat-left-text me-1"></i>{{ $b->ConfirmReason }}</div>@endif
+                            @if (! $pending && filled($b->ConfirmReason))<div @class(['small mt-1', 'text-success' => $b->Confirmed !== \App\Models\CartModel::DECLINED, 'text-muted' => $b->Confirmed === \App\Models\CartModel::DECLINED])><i class="bi bi-chat-left-text me-1"></i>{{ $b->ConfirmReason }}</div>@endif
                         </div>
                         <div class="room-aside">
                             @if ((float) $b->Cost > 0)
@@ -45,13 +45,15 @@
                                 <span class="badge text-bg-warning">Awaiting confirmation</span>
                                 <button type="button" class="btn btn-outline-danger btn-sm" wire:click="cancel({{ $b->IDs }})"
                                         wire:confirm="Cancel this booking? This cannot be undone.">Cancel</button>
+                            @elseif ($b->Confirmed === \App\Models\CartModel::DECLINED)
+                                <span class="badge text-bg-secondary">Declined</span>
                             @else
                                 <span class="badge text-bg-success">Confirmed</span>
                             @endif
                         </div>
                     </article>
                 @empty
-                    <x-empty-state :icon="$pending ? 'bi-hourglass' : 'bi-clock-history'" :title="$search !== '' ? 'No bookings match “' . $search . '”' : ($pending ? 'No pending bookings' : 'No confirmed bookings yet')">
+                    <x-empty-state :icon="$pending ? 'bi-hourglass' : 'bi-clock-history'" :title="$search !== '' ? 'No bookings match “' . $search . '”' : ($pending ? 'No pending bookings' : 'No booking history yet')">
                         <a href="/">Find your next stay</a>
                     </x-empty-state>
                 @endforelse

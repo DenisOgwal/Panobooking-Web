@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminLogoutController;
 use App\Http\Controllers\LogoutController;
 use App\Livewire;
 use Illuminate\Support\Facades\Route;
@@ -71,3 +72,20 @@ Route::get('/privacypolicy', Livewire\PrivacyPolicyPage::class)->name('privacypo
 Route::get('/TermsAndConditions', Livewire\TermsAndConditionsComponent::class)->name('TermsAndConditions');
 Route::get('/Faqs', Livewire\Faqs::class)->name('Faqs');
 Route::get('/HelpCenter', Livewire\HelpCenter::class)->name('HelpCenter');
+
+// Admin backend (see App\Admin). Staff and admin accounts live in `users`; customers never get in.
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', Livewire\Admin\Login::class)->name('login');
+
+    Route::middleware('admin')->group(function () {
+        Route::post('/logout', AdminLogoutController::class)->name('logout');
+        Route::get('/', Livewire\Admin\Dashboard::class)->name('dashboard');
+        Route::get('/bookings', Livewire\Admin\Bookings::class)->name('bookings');
+        Route::get('/bookings/{id}', Livewire\Admin\BookingDetail::class)->whereNumber('id')->name('bookings.show');
+        Route::get('/properties/{type}/{id}/details', Livewire\Admin\PropertyDetails::class)
+            ->whereIn('type', ['hotel', 'guesthouse'])->whereNumber('id')->name('property-details');
+        Route::get('/r/{resource}', Livewire\Admin\ResourceIndex::class)->name('resources.index');
+        Route::get('/r/{resource}/create', Livewire\Admin\ResourceForm::class)->name('resources.create');
+        Route::get('/r/{resource}/{id}/edit', Livewire\Admin\ResourceForm::class)->whereNumber('id')->name('resources.edit');
+    });
+});

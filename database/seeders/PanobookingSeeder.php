@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Fictional sample data for local development.
@@ -303,5 +304,13 @@ class PanobookingSeeder extends Seeder
              'DatesTo' => now()->addDays(10)->toDateString(), 'BookingType' => 'Car Rental', 'Currency' => 'UGX', 'CurrencyAmount' => 750000,
              'Descriptions' => 'I will Pick the Car at Entebbe Airport.', 'Confirmed' => 'Pending'],
         ]));
+
+        // Admin backend (/admin/login): admin@panobooking.test (admin) and staff@panobooking.test (staff), password123.
+        foreach (['admin' => 'Demo Admin', 'staff' => 'Demo Staff'] as $role => $name) {
+            DB::table('users')->updateOrInsert(
+                ['email' => "{$role}@panobooking.test"],
+                ['name' => $name, 'password' => Hash::make('password123'), 'role' => $role, 'created_at' => $now, 'updated_at' => $now],
+            );
+        }
     }
 }

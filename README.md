@@ -19,6 +19,26 @@ docker compose exec app php artisan db:seed --force   # fictional sample data
 
 On start the container waits for MySQL, runs migrations and keeps `APP_KEY` stable across rebuilds (stored in the storage volume). The seeder empties the tables it fills, so re-running it resets the sample data.
 
+## Admin backend
+
+http://localhost:8000/admin, with a separate sign-in from customers. Seeded accounts: `admin@panobooking.test` and `staff@panobooking.test` (password `password123`). Create real accounts with:
+
+```bash
+docker compose exec app php artisan panobooking:admin you@example.com --role=admin   # asks for the password
+```
+
+| Role | Can |
+|------|-----|
+| `staff` | view, add and edit every record, approve listings, customers, comments and testimonials, confirm or decline bookings |
+| `admin` | all of that, plus delete records, manage currencies and admin users |
+
+- Every table the site reads is a **resource** in `app/Admin/Resources/*` (columns, form fields, filters, approval column, photo type, Yes/No feature table). `App\Admin\ResourceRegistry` lists them, and the generic `Livewire\Admin\ResourceIndex` / `ResourceForm` render any of them. To manage a new table, add a resource class and register it.
+- Amenities, policies and surroundings (about 30 tables keyed by `PropertyName`) are edited at `/admin/properties/{hotel|guesthouse}/{id}/details` (`App\Admin\PropertyDetailSections`).
+- Renaming a property, room, car or ambulance moves its name-keyed rows (rooms, amenities, `carincludes`, `ambulanceaccessories`) and its photo files with it.
+- Bookings: `/admin/bookings`. A booking is `Pending`, then `Confirmed` or `Declined`. The note is shown on the customer's booking history.
+- Photos are written to the upload disk under the media host's paths (`App\Admin\MediaFiles`), and the photo-count column is kept in step.
+- Driver-app passwords for cars and ambulances are stored as MD5 (see Known limitations). Customer passwords use `CustomerAuth::hash()`.
+
 ## Tests
 
 ```bash

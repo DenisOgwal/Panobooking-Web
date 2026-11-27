@@ -36,6 +36,7 @@ class Kernel extends HttpKernel
      * Middleware aliases.
      */
     protected $middlewareAliases = [
+        'admin' => \App\Http\Middleware\EnsureAdmin::class,
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,

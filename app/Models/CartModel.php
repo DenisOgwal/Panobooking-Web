@@ -11,6 +11,12 @@ class CartModel extends Model
 {
     use HasFactory;
 
+    /** Values of the `Confirmed` status column. */
+    public const PENDING = 'Pending';
+    public const CONFIRMED = 'Confirmed';
+    public const DECLINED = 'Declined';
+    public const STATUSES = [self::PENDING, self::CONFIRMED, self::DECLINED];
+
     protected $table = 'cart';
     protected $primaryKey = 'IDs';
 
@@ -32,6 +38,12 @@ class CartModel extends Model
     public function scopeConfirmed(Builder $query): Builder
     {
         return $query->where('Confirmed', 'Confirmed');
+    }
+
+    /** Bookings the provider has answered (confirmed or declined). */
+    public function scopeDecided(Builder $query): Builder
+    {
+        return $query->whereIn('Confirmed', [self::CONFIRMED, self::DECLINED]);
     }
 
     /** Free-text filter over what the customer sees in their bookings list. */

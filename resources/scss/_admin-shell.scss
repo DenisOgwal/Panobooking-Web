@@ -1,0 +1,284 @@
+// Admin backend layout: sidebar shell, cards, data tables, forms.
+
+$admin-sidebar-w: 16rem;
+
+.admin-body { background: $pb-canvas; min-height: 100vh; }
+
+.admin-shell { display: flex; min-height: 100vh; }
+
+// Sidebar: a fixed column from lg up, an offcanvas drawer below.
+.admin-sidebar {
+    background: $pb-navy;
+    color: rgba(255, 255, 255, .82);
+    width: $admin-sidebar-w;
+
+    @include media-breakpoint-up(lg) {
+        // Bootstrap's .offcanvas-lg forces a transparent background from lg up.
+        background-color: $pb-navy !important;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        flex: 0 0 $admin-sidebar-w;
+    }
+    &.offcanvas-lg { --bs-offcanvas-width: #{$admin-sidebar-w}; --bs-offcanvas-bg: #{$pb-navy}; }
+
+    .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+}
+
+.admin-brand {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+    img { height: 1.9rem; width: auto; background: #fff; border-radius: .4rem; padding: .15rem .35rem; }
+    .badge { font-weight: 600; letter-spacing: .02em; background: rgba(255, 255, 255, .12) !important; }
+}
+
+.admin-nav { padding: .75rem .75rem 2rem; display: flex; flex-direction: column; gap: .1rem; }
+
+.admin-nav-group {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: rgba(255, 255, 255, .45);
+    padding: 1rem .75rem .35rem;
+}
+
+.admin-nav-link {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .45rem .75rem;
+    border-radius: .55rem;
+    color: rgba(255, 255, 255, .82);
+    font-size: .9rem;
+    text-decoration: none;
+    .bi { font-size: 1rem; opacity: .75; }
+    &:hover { background: rgba(255, 255, 255, .07); color: #fff; text-decoration: none; }
+    &.active { background: $pb-blue; color: #fff; .bi { opacity: 1; } }
+}
+
+.admin-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+
+.admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem 1rem;
+    background: rgba(255, 255, 255, .94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid $pb-line;
+    @include media-breakpoint-up(md) { padding-inline: 2rem; }
+}
+
+.admin-content {
+    padding: 1.25rem 1rem 3rem;
+    @include media-breakpoint-up(md) { padding: 1.75rem 2rem 3rem; }
+}
+
+.admin-page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    .breadcrumb { --bs-breadcrumb-margin-bottom: .25rem; }
+}
+
+// Cards
+.admin-card {
+    background: $pb-surface;
+    border: 1px solid $pb-line;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow-sm;
+    overflow: hidden;
+}
+.admin-card-body { padding: 1.25rem; @include media-breakpoint-up(md) { padding: 1.5rem; } }
+.admin-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .9rem 1.25rem;
+    border-bottom: 1px solid $pb-line;
+}
+.admin-card-foot { padding: .75rem 1.25rem; border-top: 1px solid $pb-line; .pagination { margin: 0; } nav p { margin: 0; } }
+
+.admin-section-title {
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: .75rem;
+    color: $pb-muted;
+    margin-bottom: 1rem;
+}
+
+// List toolbar and table
+.admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    padding: .9rem 1rem;
+    border-bottom: 1px solid $pb-line;
+    .input-icon { min-width: min(100%, 16rem); }
+    .form-select, .form-control { min-height: 2.4rem; }
+    > div { max-width: 100%; }
+}
+
+.admin-bulkbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    padding: .6rem 1rem;
+    background: $pb-blue-50;
+    border-bottom: 1px solid $pb-line;
+    font-size: .9rem;
+}
+
+.admin-table {
+    --bs-table-bg: transparent;
+    font-size: .9rem;
+    th {
+        font-size: .75rem;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: $pb-muted;
+        font-weight: 600;
+        white-space: nowrap;
+        background: $pb-canvas;
+    }
+    td, th { padding: .65rem 1rem; }
+    tbody tr:hover { background: rgba($pb-blue, .03); }
+    .admin-check { width: 2.5rem; padding-right: 0; }
+    .dropdown-menu { font-size: .9rem; }
+}
+
+.admin-sort {
+    border: 0;
+    background: none;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    &:hover { color: $pb-ink; }
+}
+
+.admin-thumb-col { width: 4.5rem; }
+.admin-thumb {
+    width: 3.5rem;
+    height: 2.6rem;
+    object-fit: cover;
+    border-radius: .4rem;
+    background: $pb-canvas;
+    display: block;
+}
+
+// Forms
+.admin-checkgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: .45rem 1rem;
+}
+
+.admin-photos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: .75rem;
+}
+.admin-photo {
+    margin: 0;
+    img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: .5rem; background: $pb-canvas; display: block; }
+    figcaption { display: flex; align-items: center; gap: .5rem; margin-top: .3rem; font-size: .8rem; }
+}
+
+.admin-dl {
+    display: grid;
+    grid-template-columns: minmax(7rem, 10rem) 1fr;
+    gap: .55rem 1rem;
+    margin: 0;
+    dt { font-weight: 500; color: $pb-muted; }
+    dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+    @include media-breakpoint-down(sm) { grid-template-columns: 1fr; dt { margin-top: .4rem; } }
+}
+.admin-pre { white-space: pre-line; }
+
+// Property details editor
+.admin-tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; .nav-link { white-space: nowrap; } }
+.admin-detail-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: 1fr;
+    @include media-breakpoint-up(xxl) { grid-template-columns: 1fr 1fr; }
+    align-items: start;
+}
+.admin-rows { display: flex; flex-direction: column; gap: .5rem; }
+.admin-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    > .flex-grow-1 { min-width: 0; flex-basis: 0; }
+}
+.admin-row-new .form-control { border-style: dashed; }
+.admin-row-spacer { width: 2.15rem; flex: 0 0 auto; }
+
+// Dashboard
+.admin-stats {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+.admin-stat {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    padding: 1.1rem 1.25rem;
+    background: $pb-surface;
+    border: 1px solid $pb-line;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow-sm;
+    color: $pb-ink;
+    text-decoration: none;
+    &:is(a):hover { border-color: rgba($pb-blue, .5); text-decoration: none; }
+}
+.admin-stat-label { font-size: .85rem; color: $pb-muted; display: flex; align-items: center; gap: .45rem; }
+.admin-stat-value { font-size: 1.75rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; small { font-size: .9rem; color: $pb-muted; font-weight: 500; } }
+
+.admin-totals {
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+.admin-total {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .55rem .75rem;
+    border: 1px solid $pb-line;
+    border-radius: .55rem;
+    color: $pb-ink;
+    font-size: .9rem;
+    text-decoration: none;
+    .bi { color: $pb-muted; }
+    strong { margin-left: auto; font-variant-numeric: tabular-nums; }
+    &:hover { background: $pb-blue-50; text-decoration: none; }
+}
+
+// Sign-in page
+.admin-guest { display: flex; align-items: center; justify-content: center; padding: 1.5rem 1rem; }
+.admin-login { width: 100%; max-width: 25rem; }
+.admin-login-card {
+    background: $pb-surface;
+    border: 1px solid $pb-line;
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow;
+    padding: 2rem 1.5rem;
+    @include media-breakpoint-up(sm) { padding: 2.25rem 2rem; }
+}
+.admin-login-logo { height: 2.6rem; width: auto; }

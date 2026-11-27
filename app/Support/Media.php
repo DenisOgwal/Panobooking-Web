@@ -32,6 +32,30 @@ class Media
         ];
     }
 
+    /** Folder a listing type's photos live in, e.g. AndroidFiles/DestinationImages. */
+    public static function folder(string $type): string
+    {
+        return self::types()[$type][0];
+    }
+
+    /** File base name of a listing's photos ({base}.jpg, {base}2.jpg …). */
+    public static function baseName(string $type, Model $model): string
+    {
+        return (string) (self::types()[$type][1])($model);
+    }
+
+    /** Column holding the photo count, or null when the type has a single photo. */
+    public static function countColumn(string $type): ?string
+    {
+        return self::types()[$type][2];
+    }
+
+    /** Relative path of photo number $n (1-based) of a listing, as stored on disk and on the media host. */
+    public static function path(string $type, string $base, int $n): string
+    {
+        return self::folder($type) . '/' . $base . ($n === 1 ? '' : $n) . '.jpg';
+    }
+
     /** Main photo of a listing. */
     public static function image(string $type, Model $model): string
     {

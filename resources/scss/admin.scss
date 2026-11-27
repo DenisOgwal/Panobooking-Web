@@ -1,0 +1,7 @@
+// Panobooking admin backend: same tokens and Bootstrap build as the site, plus admin layout.
+
+@import 'tokens';
+@import 'bootstrap/scss/bootstrap';
+
+@import 'base';
+@import 'admin-shell';
