@@ -11,6 +11,11 @@ class CreateTopattractionsTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('topattractions')) {
+            return;
+        }
+
         Schema::create('topattractions', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Distance')->nullable();

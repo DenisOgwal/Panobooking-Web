@@ -11,6 +11,11 @@ class CreatePublictransportTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('publictransport')) {
+            return;
+        }
+
         Schema::create('publictransport', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Distance')->nullable();

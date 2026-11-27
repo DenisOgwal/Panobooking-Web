@@ -13,16 +13,29 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('registration', function (Blueprint $table) {
-            $table->timestamp('email_verified_at')->nullable()->after('Email');
-            $table->string('verification_code')->nullable();
-            $table->timestamp('verification_expires_at')->nullable();
-            $table->string('password_reset_code')->nullable();
-            $table->timestamp('password_reset_expires_at')->nullable();
-            $table->unsignedTinyInteger('code_attempts')->default(0);
-        });
+        // Idempotent: only missing columns are added; approved accounts are marked verified once.
+        $hadVerifiedColumn = Schema::hasColumn('registration', 'email_verified_at');
+        $columns = [
+            'email_verified_at' => fn (Blueprint $t) => $t->timestamp('email_verified_at')->nullable()->after('Email'),
+            'verification_code' => fn (Blueprint $t) => $t->string('verification_code')->nullable(),
+            'verification_expires_at' => fn (Blueprint $t) => $t->timestamp('verification_expires_at')->nullable(),
+            'password_reset_code' => fn (Blueprint $t) => $t->string('password_reset_code')->nullable(),
+            'password_reset_expires_at' => fn (Blueprint $t) => $t->timestamp('password_reset_expires_at')->nullable(),
+            'code_attempts' => fn (Blueprint $t) => $t->unsignedTinyInteger('code_attempts')->default(0),
+        ];
+        $missing = array_filter($columns, fn ($_, $name) => ! Schema::hasColumn('registration', $name), ARRAY_FILTER_USE_BOTH);
 
-        DB::table('registration')->where('ApprovalStatus', 'Approved')->update(['email_verified_at' => now()]);
+        if ($missing !== []) {
+            Schema::table('registration', function (Blueprint $table) use ($missing) {
+                foreach ($missing as $add) {
+                    $add($table);
+                }
+            });
+        }
+
+        if (! $hadVerifiedColumn) {
+            DB::table('registration')->where('ApprovalStatus', 'Approved')->update(['email_verified_at' => now()]);
+        }
     }
 
     public function down(): void

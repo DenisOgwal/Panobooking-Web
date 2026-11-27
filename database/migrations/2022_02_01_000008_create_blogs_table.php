@@ -11,6 +11,11 @@ class CreateBlogsTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('blogs')) {
+            return;
+        }
+
         Schema::create('blogs', function (Blueprint $table) {
             $table->increments('id');
             $table->text('BlogShortDescription')->nullable();

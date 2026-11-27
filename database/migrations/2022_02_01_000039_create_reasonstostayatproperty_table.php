@@ -11,6 +11,11 @@ class CreateReasonstostayatpropertyTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('reasonstostayatproperty')) {
+            return;
+        }
+
         Schema::create('reasonstostayatproperty', function (Blueprint $table) {
             $table->increments('id');
             $table->string('PropertyName')->nullable();

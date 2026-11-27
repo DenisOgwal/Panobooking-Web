@@ -18,5 +18,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('admin.access', fn (User $user) => $user->canAccessAdmin());
         // …only admins can delete records and manage admin users and currencies.
         Gate::define('admin.manage', fn (User $user) => $user->isAdmin());
+        // …and only developers can use the system tools (database migrations).
+        Gate::define('admin.develop', fn (User $user) => $user->isDeveloper());
     }
 }

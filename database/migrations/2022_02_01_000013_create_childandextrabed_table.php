@@ -11,6 +11,11 @@ class CreateChildandextrabedTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('childandextrabed')) {
+            return;
+        }
+
         Schema::create('childandextrabed', function (Blueprint $table) {
             $table->increments('id');
             $table->text('ExtraCondition')->nullable();

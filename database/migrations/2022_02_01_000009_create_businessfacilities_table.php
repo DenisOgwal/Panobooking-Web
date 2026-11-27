@@ -11,6 +11,11 @@ class CreateBusinessfacilitiesTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('businessfacilities')) {
+            return;
+        }
+
         Schema::create('businessfacilities', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Amenity')->nullable();

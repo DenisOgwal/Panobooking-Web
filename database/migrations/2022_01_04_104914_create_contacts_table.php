@@ -13,6 +13,11 @@ class CreateContactsTable extends Migration
      */
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('contacts')) {
+            return;
+        }
+
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
             $table->timestamps();

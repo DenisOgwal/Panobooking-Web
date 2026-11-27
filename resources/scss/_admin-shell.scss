@@ -282,3 +282,15 @@ $admin-sidebar-w: 16rem;
     @include media-breakpoint-up(sm) { padding: 2.25rem 2rem; }
 }
 .admin-login-logo { height: 2.6rem; width: auto; }
+
+// Command output (developer tools)
+.admin-console {
+    background: $pb-navy;
+    color: #d7e3f4;
+    border-radius: .5rem;
+    padding: 1rem;
+    font-size: .8125rem;
+    max-height: 24rem;
+    overflow: auto;
+    white-space: pre-wrap;
+}

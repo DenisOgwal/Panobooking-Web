@@ -43,6 +43,12 @@
                         </a>
                     @endforeach
                 @endforeach
+                @can('admin.develop')
+                    <div class="admin-nav-group">Developer</div>
+                    <a href="{{ route('admin.migrations') }}" @class(['admin-nav-link', 'active' => request()->routeIs('admin.migrations')])>
+                        <i class="bi bi-database-gear" aria-hidden="true"></i>Database migrations
+                    </a>
+                @endcan
             </nav>
         </aside>
 

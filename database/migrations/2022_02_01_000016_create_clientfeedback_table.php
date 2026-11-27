@@ -11,6 +11,11 @@ class CreateClientfeedbackTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('clientfeedback')) {
+            return;
+        }
+
         Schema::create('clientfeedback', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Approved')->nullable();

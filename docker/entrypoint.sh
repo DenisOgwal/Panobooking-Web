@@ -19,6 +19,8 @@ until php -r 'try { new PDO("mysql:host=".getenv("DB_HOST").";port=".getenv("DB_
 done
 
 php artisan migrate --force
+# The administrator and developer accounts (ADMIN_* / DEVELOPER_* env vars); safe to repeat.
+php artisan db:seed --class=AdminAccountsSeeder --force
 php artisan storage:link 2>/dev/null || true
 php artisan config:clear
 chown -R www-data:www-data storage bootstrap/cache files livewire-tmp .env

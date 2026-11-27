@@ -10,16 +10,18 @@ use Illuminate\Notifications\Notifiable;
  * Admin backend accounts (`/admin`). Customers of the public site live in the
  * `registration` table instead (see App\Models\UserRegistrationModel).
  *
- * `role` is `admin` (full access), `staff` (no deletes, no admin users or currencies) or null (no access).
+ * `role` is `developer` (everything, plus system tools such as migrations), `admin` (full access),
+ * `staff` (no deletes, no admin users or currencies) or null (no access).
  */
 class User extends Authenticatable
 {
     use HasFactory;
     use Notifiable;
 
+    public const ROLE_DEVELOPER = 'developer';
     public const ROLE_ADMIN = 'admin';
     public const ROLE_STAFF = 'staff';
-    public const ROLES = [self::ROLE_ADMIN => 'Administrator', self::ROLE_STAFF => 'Staff'];
+    public const ROLES = [self::ROLE_DEVELOPER => 'Developer', self::ROLE_ADMIN => 'Administrator', self::ROLE_STAFF => 'Staff'];
 
     protected $fillable = ['name', 'email', 'password'];
 
@@ -33,9 +35,16 @@ class User extends Authenticatable
         ];
     }
 
+    /** Administrators and developers (developers can do everything an admin can). */
     public function isAdmin(): bool
     {
-        return $this->role === self::ROLE_ADMIN;
+        return $this->role === self::ROLE_ADMIN || $this->isDeveloper();
+    }
+
+    /** Developers also get the system tools (e.g. running migrations). */
+    public function isDeveloper(): bool
+    {
+        return $this->role === self::ROLE_DEVELOPER;
     }
 
     public function isStaff(): bool

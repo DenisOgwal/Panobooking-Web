@@ -11,6 +11,11 @@ class CreateRoomfeaturesTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('roomfeatures')) {
+            return;
+        }
+
         Schema::create('roomfeatures', function (Blueprint $table) {
             $table->increments('id');
             $table->string('AirConditioning')->nullable();

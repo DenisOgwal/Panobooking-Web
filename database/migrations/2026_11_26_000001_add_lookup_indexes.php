@@ -57,9 +57,21 @@ return new class extends Migration
         return strtolower('idx_' . $table . '_' . implode('_', $columns));
     }
 
+    /**
+     * Idempotent: an index that already exists is skipped, and so is one whose table or columns
+     * are missing (the production schema may differ from the reconstructed one).
+     */
     public function up(): void
     {
         foreach ($this->indexes() as $table => $sets) {
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+            $sets = array_values(array_filter($sets, fn (array $columns) => Schema::hasColumns($table, $columns)
+                && ! Schema::hasIndex($table, $this->name($table, $columns))));
+            if ($sets === []) {
+                continue;
+            }
             Schema::table($table, function (Blueprint $t) use ($table, $sets) {
                 foreach ($sets as $columns) {
                     $t->index($columns, $this->name($table, $columns));
@@ -71,6 +83,13 @@ return new class extends Migration
     public function down(): void
     {
         foreach ($this->indexes() as $table => $sets) {
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+            $sets = array_values(array_filter($sets, fn (array $columns) => Schema::hasIndex($table, $this->name($table, $columns))));
+            if ($sets === []) {
+                continue;
+            }
             Schema::table($table, function (Blueprint $t) use ($table, $sets) {
                 foreach ($sets as $columns) {
                     $t->dropIndex($this->name($table, $columns));

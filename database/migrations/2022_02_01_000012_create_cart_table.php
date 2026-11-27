@@ -11,6 +11,11 @@ class CreateCartTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('cart')) {
+            return;
+        }
+
         Schema::create('cart', function (Blueprint $table) {
             $table->increments('IDs');
             $table->string('BookingType')->nullable();

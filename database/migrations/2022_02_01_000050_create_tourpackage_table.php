@@ -11,6 +11,11 @@ class CreateTourpackageTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('tourpackage')) {
+            return;
+        }
+
         Schema::create('tourpackage', function (Blueprint $table) {
             $table->increments('IDs');
             $table->string('City')->nullable();

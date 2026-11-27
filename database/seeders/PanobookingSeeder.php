@@ -305,8 +305,9 @@ class PanobookingSeeder extends Seeder
              'Descriptions' => 'I will Pick the Car at Entebbe Airport.', 'Confirmed' => 'Pending'],
         ]));
 
-        // Admin backend (/admin/login): admin@panobooking.test (admin) and staff@panobooking.test (staff), password123.
-        foreach (['admin' => 'Demo Admin', 'staff' => 'Demo Staff'] as $role => $name) {
+        // Admin backend (/admin/login), sample data only: developer@, admin@ and staff@panobooking.test, password123.
+        // Real deployments get their accounts from AdminAccountsSeeder (ADMIN_* / DEVELOPER_* env vars).
+        foreach (['developer' => 'Demo Developer', 'admin' => 'Demo Admin', 'staff' => 'Demo Staff'] as $role => $name) {
             DB::table('users')->updateOrInsert(
                 ['email' => "{$role}@panobooking.test"],
                 ['name' => $name, 'password' => Hash::make('password123'), 'role' => $role, 'created_at' => $now, 'updated_at' => $now],

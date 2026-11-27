@@ -18,6 +18,11 @@ services:
       MAIL_MAILER: log
       # Never call the live panobooking.com notification scripts from local Docker.
       PROVIDER_NOTIFICATIONS: "false"
+      # Admin backend accounts seeded on start (local defaults; override in your shell or .env).
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@panobooking.test}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-password123}
+      DEVELOPER_EMAIL: ${DEVELOPER_EMAIL:-developer@panobooking.test}
+      DEVELOPER_PASSWORD: ${DEVELOPER_PASSWORD:-password123}
     volumes:
       - app-storage:/var/www/html/storage/app
       - app-uploads:/var/www/html/files

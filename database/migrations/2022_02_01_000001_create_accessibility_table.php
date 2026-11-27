@@ -11,6 +11,11 @@ class CreateAccessibilityTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('accessibility')) {
+            return;
+        }
+
         Schema::create('accessibility', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Amenity')->nullable();

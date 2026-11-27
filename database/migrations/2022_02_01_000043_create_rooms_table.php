@@ -11,6 +11,11 @@ class CreateRoomsTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('rooms')) {
+            return;
+        }
+
         Schema::create('rooms', function (Blueprint $table) {
             $table->increments('IDs');
             $table->string('Availability')->nullable();

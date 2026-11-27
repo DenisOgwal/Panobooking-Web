@@ -11,6 +11,11 @@ class CreateEventsTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('events')) {
+            return;
+        }
+
         Schema::create('events', function (Blueprint $table) {
             $table->increments('id');
             $table->string('City')->nullable();

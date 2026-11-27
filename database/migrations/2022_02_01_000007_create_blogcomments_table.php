@@ -11,6 +11,11 @@ class CreateBlogcommentsTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('blogcomments')) {
+            return;
+        }
+
         Schema::create('blogcomments', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Approval')->nullable();

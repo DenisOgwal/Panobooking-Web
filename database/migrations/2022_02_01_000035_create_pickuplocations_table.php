@@ -11,6 +11,11 @@ class CreatePickuplocationsTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('pickuplocations')) {
+            return;
+        }
+
         Schema::create('pickuplocations', function (Blueprint $table) {
             $table->increments('IDs');
             $table->string('Approved')->nullable();

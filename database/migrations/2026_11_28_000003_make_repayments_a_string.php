@@ -14,6 +14,11 @@ return new class extends Migration
     public function up(): void
     {
         foreach (['carrentals', 'ambulances'] as $table) {
+            // Idempotent: skip when the column is missing or already text.
+            if (! Schema::hasColumn($table, 'Repayments')
+                || in_array(Schema::getColumnType($table, 'Repayments'), ['varchar', 'char', 'text', 'string'], true)) {
+                continue;
+            }
             Schema::table($table, function (Blueprint $t) {
                 $t->string('Repayments', 60)->nullable()->change();
             });

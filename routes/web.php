@@ -100,6 +100,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/bookings/{id}', Livewire\Admin\BookingDetail::class)->whereNumber('id')->name('bookings.show');
         Route::get('/properties/{type}/{id}/details', Livewire\Admin\PropertyDetails::class)
             ->whereIn('type', ['hotel', 'guesthouse'])->whereNumber('id')->name('property-details');
+        Route::get('/system/migrations', Livewire\Admin\Migrations::class)->middleware('can:admin.develop')->name('migrations');
         Route::get('/r/{resource}', Livewire\Admin\ResourceIndex::class)->name('resources.index');
         Route::get('/r/{resource}/create', Livewire\Admin\ResourceForm::class)->name('resources.create');
         Route::get('/r/{resource}/{id}/edit', Livewire\Admin\ResourceForm::class)->whereNumber('id')->name('resources.edit');

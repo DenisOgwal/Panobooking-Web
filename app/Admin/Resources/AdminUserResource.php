@@ -47,8 +47,8 @@ class AdminUserResource extends Resource
         return [
             Field::text('name', 'Name')->required(),
             Field::email('email', 'Email')->required(),
-            Field::select('role', 'Role', User::ROLES)->required()->default(User::ROLE_STAFF)
-                ->help('Staff can view, add, edit and approve. Only administrators can delete and change settings.'),
+            Field::select('role', 'Role', fn () => self::assignableRoles())->required()->default(User::ROLE_STAFF)
+                ->help('Staff can view, add, edit and approve. Administrators can also delete and change settings. Developers can also run database migrations.'),
             // The model's `hashed` cast hashes the password with bcrypt.
             Field::password('password', 'Password')->required(),
         ];
@@ -59,15 +59,31 @@ class AdminUserResource extends Resource
         return ['email' => [Rule::unique('users', 'email')->ignore($record?->getKey())]];
     }
 
+    /** Only developers can hand out (or hold on to) the developer role. */
+    private static function assignableRoles(): array
+    {
+        return Auth::user()?->isDeveloper() ? User::ROLES : array_diff_key(User::ROLES, [User::ROLE_DEVELOPER => true]);
+    }
+
     public static function beforeSave(Model $record, array $data): void
     {
-        if ($record->exists && $record->is(Auth::user()) && $record->role !== User::ROLE_ADMIN) {
-            throw ValidationException::withMessages(['data.role' => 'You cannot remove your own administrator role.']);
+        $me = Auth::user();
+        $before = $record->exists ? $record->getOriginal('role') : null;
+
+        if ($record->exists && $record->is($me) && $record->role !== $before) {
+            throw ValidationException::withMessages(['data.role' => 'You cannot change your own role.']);
+        }
+        if (! $me?->isDeveloper() && ($before === User::ROLE_DEVELOPER || $record->role === User::ROLE_DEVELOPER)) {
+            throw ValidationException::withMessages(['data.role' => 'Only a developer can create or change developer accounts.']);
         }
     }
 
     public static function preventDelete(Model $record): ?string
     {
-        return $record->is(Auth::user()) ? 'You cannot delete your own account.' : null;
+        if ($record->is(Auth::user())) {
+            return 'You cannot delete your own account.';
+        }
+
+        return $record->isDeveloper() && ! Auth::user()?->isDeveloper() ? 'Only a developer can delete a developer account.' : null;
     }
 }

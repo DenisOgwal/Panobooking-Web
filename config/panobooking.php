@@ -15,6 +15,24 @@ return [
     'media_disk' => env('PANOBOOKING_MEDIA_DISK', 'media'),
 
     /*
+    | Admin backend accounts created at deployment by AdminAccountsSeeder (docker/entrypoint.sh).
+    | Each is created once if its email doesn't exist; existing accounts keep their password.
+    | Leave an email or password empty to skip that account.
+    */
+    'accounts' => [
+        'admin' => [
+            'name' => env('ADMIN_NAME') ?: 'Administrator',
+            'email' => env('ADMIN_EMAIL'),
+            'password' => env('ADMIN_PASSWORD'),
+        ],
+        'developer' => [
+            'name' => env('DEVELOPER_NAME') ?: 'Developer',
+            'email' => env('DEVELOPER_EMAIL'),
+            'password' => env('DEVELOPER_PASSWORD'),
+        ],
+    ],
+
+    /*
     | Customer password hashing.
     |
     | Customer passwords have historically been stored as unsalted MD5. Login accepts both

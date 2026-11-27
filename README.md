@@ -21,7 +21,20 @@ On start the container waits for MySQL, runs migrations and keeps `APP_KEY` stab
 
 ## Admin backend
 
-http://localhost:8000/admin, with a separate sign-in from customers. Seeded accounts: `admin@panobooking.test` and `staff@panobooking.test` (password `password123`). Create real accounts with:
+http://localhost:8000/admin, with a separate sign-in from customers. Sample data accounts: `developer@`, `admin@` and `staff@panobooking.test` (password `password123`).
+
+**Deployment accounts.** Every container start runs `AdminAccountsSeeder` after the migrations. It creates an administrator and a developer from these variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` (optional `ADMIN_NAME`) | the administrator account |
+| `DEVELOPER_EMAIL`, `DEVELOPER_PASSWORD` (optional `DEVELOPER_NAME`) | the developer account |
+
+- It is safe to repeat: an account is created only when its email is new, and an existing account keeps its password.
+- An account whose variables are missing is skipped, never created with a default password.
+- `docker-compose.yml` sets local defaults (`admin@` / `developer@panobooking.test`, `password123`). Set real values in production.
+
+Create or update other accounts, or reset a password:
 
 ```bash
 docker compose exec app php artisan panobooking:admin you@example.com --role=admin   # asks for the password
@@ -30,7 +43,12 @@ docker compose exec app php artisan panobooking:admin you@example.com --role=adm
 | Role | Can |
 |------|-----|
 | `staff` | view, add and edit every record, approve listings, customers, comments and testimonials, confirm or decline bookings |
-| `admin` | all of that, plus delete records, manage currencies and admin users |
+| `admin` | all of that, plus delete records, manage currencies and admin users (except developer accounts) |
+| `developer` | all of that, plus **Developer → Database migrations**, and creating or editing developer accounts |
+
+**Migrations are idempotent.** Each migration checks what already exists (tables, columns, indexes) and skips it. You can run them repeatedly, or against a database that already has the tables, such as production, where they are simply recorded as run.
+
+Developers can run them from the admin (Database migrations page: status, SQL preview, run pending) or with `php artisan migrate --force`. The container runs them on every start.
 
 - Every table the site reads is a **resource** in `app/Admin/Resources/*` (columns, form fields, filters, approval column, photo type, Yes/No feature table). `App\Admin\ResourceRegistry` lists them, and the generic `Livewire\Admin\ResourceIndex` / `ResourceForm` render any of them. To manage a new table, add a resource class and register it.
 - Amenities, policies and surroundings (about 30 tables keyed by `PropertyName`) are edited at `/admin/properties/{hotel|guesthouse}/{id}/details` (`App\Admin\PropertyDetailSections`).
@@ -114,7 +132,9 @@ npm run build   # production assets into public/build (the Docker image builds t
 
 ## Known limitations
 
-- The database schema was not in the original repository; migrations `2022_02_01_*` were reconstructed from how the code uses each table. Compare them with production before running them there.
+- The database schema was not in the original repository; migrations `2022_02_01_*` were reconstructed from how the code uses each table.
+  - On a database that already has a table, its migration skips it, so production tables are never recreated or altered.
+  - Columns the code expects but production lacks are not added by those create migrations. Compare the schemas once.
 - Provider notifications are GET requests with booking details (including the customer's name) in the query string, because the existing scripts only accept GET.
 - Driver passwords for cars and ambulances are still MD5, because the separate driver app checks them.
 - Photo uploads (admin, "list with us" forms, API) go to the `media` disk, `storage/app/media` by default (`PANOBOOKING_MEDIA_ROOT`), under the same paths the media host uses (`AndroidFiles/…`, `AndroidDriver/…`).

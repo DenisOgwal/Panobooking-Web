@@ -11,6 +11,11 @@ class CreateNearbysupermarketsTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('nearbysupermarkets')) {
+            return;
+        }
+
         Schema::create('nearbysupermarkets', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Distance')->nullable();

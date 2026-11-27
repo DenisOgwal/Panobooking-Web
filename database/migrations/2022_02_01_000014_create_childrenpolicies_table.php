@@ -11,6 +11,11 @@ class CreateChildrenpoliciesTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('childrenpolicies')) {
+            return;
+        }
+
         Schema::create('childrenpolicies', function (Blueprint $table) {
             $table->increments('id');
             $table->text('Policy')->nullable();

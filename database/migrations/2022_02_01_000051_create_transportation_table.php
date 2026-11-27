@@ -11,6 +11,11 @@ class CreateTransportationTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('transportation')) {
+            return;
+        }
+
         Schema::create('transportation', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Amenity')->nullable();

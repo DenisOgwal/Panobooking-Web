@@ -11,6 +11,11 @@ class CreateCarincludesTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('carincludes')) {
+            return;
+        }
+
         Schema::create('carincludes', function (Blueprint $table) {
             $table->increments('id');
             $table->string('AllDegreeCamera')->nullable();

@@ -11,6 +11,11 @@ class CreateTaxitripTable extends Migration
 {
     public function up()
     {
+        // Idempotent: an existing table (e.g. the production database) is left as it is.
+        if (Schema::hasTable('taxitrip')) {
+            return;
+        }
+
         Schema::create('taxitrip', function (Blueprint $table) {
             $table->increments('id');
             $table->string('Froms')->nullable();
