@@ -28,7 +28,7 @@ class RecordsTest extends AdminTestCase
 
     public function test_staff_create_a_car_that_appears_on_the_site_only_once_approved(): void
     {
-        Storage::fake('local');
+        Storage::fake('media');
         $this->asStaff();
 
         $form = Livewire::test(ResourceForm::class, ['resource' => 'rental-cars']);
@@ -44,8 +44,8 @@ class RecordsTest extends AdminTestCase
         $this->assertSame('Not Approved', $car->Approved);
         $this->assertSame(md5('driver-secret'), $car->Password, 'the driver app expects MD5');
         $this->assertSame(2, (int) $car->PhotoUri);
-        Storage::disk('local')->assertExists('AndroidDriver/FileUpload/Test HireUBZ 999Z.jpg');
-        Storage::disk('local')->assertExists('AndroidDriver/FileUpload/Test HireUBZ 999Z2.jpg');
+        Storage::disk('media')->assertExists('AndroidDriver/FileUpload/Test HireUBZ 999Z.jpg');
+        Storage::disk('media')->assertExists('AndroidDriver/FileUpload/Test HireUBZ 999Z2.jpg');
         $this->assertDatabaseHas('carincludes', ['Car' => 'UBZ 999Z', 'Company' => 'Test Hire', 'Bluetooth' => 'Yes', 'TV' => 'No']);
 
         session()->forget('alert'); // the 'created' toast flashed by the form names the car

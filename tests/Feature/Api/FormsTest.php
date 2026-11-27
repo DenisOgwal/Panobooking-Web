@@ -28,7 +28,7 @@ class FormsTest extends ApiTestCase
 
     public function test_listings_are_saved_unapproved_with_their_photo(): void
     {
-        Storage::fake('local');
+        Storage::fake('media');
 
         $this->post($this->api('listings/car'), [
             'plate' => 'UBX 777X', 'category' => 'SUV', 'model' => 'Toyota Rav4', 'company' => 'App Hire', 'location' => 'Kampala',
@@ -39,7 +39,7 @@ class FormsTest extends ApiTestCase
         ])->assertCreated()->assertJsonPath('data.status', 'pending_approval');
 
         $this->assertDatabaseHas('carrentals', ['TaxiNo' => 'UBX 777X', 'Approved' => null, 'Price' => 105000, 'Password' => md5('driver-pass')]);
-        Storage::disk('local')->assertExists('AndroidDriver/FileUpload/App HireUBX 777X.jpg');
+        Storage::disk('media')->assertExists('AndroidDriver/FileUpload/App HireUBX 777X.jpg');
         $this->assertNotContains('UBX 777X', array_column($this->getJson($this->api('vehicles/car?per_page=50'))->json('data'), 'plate'));
 
         $this->postJson($this->api('listings/property'), ['name' => '../etc'])->assertUnprocessable()

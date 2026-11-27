@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminLogoutController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\VerifyEmailLinkController;
 use App\Livewire;
 use Illuminate\Support\Facades\Route;
@@ -77,6 +78,9 @@ Route::get('/privacypolicy', Livewire\PrivacyPolicyPage::class)->name('privacypo
 Route::get('/TermsAndConditions', Livewire\TermsAndConditionsComponent::class)->name('TermsAndConditions');
 Route::get('/Faqs', Livewire\Faqs::class)->name('Faqs');
 Route::get('/HelpCenter', Livewire\HelpCenter::class)->name('HelpCenter');
+
+// Photos uploaded on this site (others load from the media host; see App\Support\Media).
+Route::get('/media/{path}', MediaController::class)->where('path', '.*')->name('media');
 
 // Mobile API documentation (the API itself is in routes/api.php, under /api/v1).
 Route::view('/api/docs', 'api-docs')->name('api.docs');

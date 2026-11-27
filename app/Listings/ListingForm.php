@@ -41,7 +41,7 @@ abstract class ListingForm
 
     protected function storePhoto(UploadedFile $photo, string $directory, string $baseName): void
     {
-        $photo->storeAs($directory, $baseName . '.jpg');
+        $photo->storeAs($directory, $baseName . '.jpg', config('panobooking.media_disk', 'media'));
     }
 
     /** @return array<string, class-string<ListingForm>> */

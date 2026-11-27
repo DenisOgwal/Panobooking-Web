@@ -4,7 +4,6 @@ namespace App\Admin;
 
 use App\Support\Media;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * Photo files of a listing on the upload disk, named the way App\Support\Media serves them:
@@ -14,7 +13,7 @@ final class MediaFiles
 {
     private static function disk()
     {
-        return Storage::disk(config('filesystems.default'));
+        return Media::disk();
     }
 
     public static function count(string $type, Model $record): int
@@ -34,7 +33,7 @@ final class MediaFiles
         foreach ($uploads as $upload) {
             $n = $column ? $n + 1 : 1;
             $path = Media::path($type, $base, $n);
-            $upload->storeAs(dirname($path), basename($path), config('filesystems.default'));
+            $upload->storeAs(dirname($path), basename($path), config('panobooking.media_disk', 'media'));
         }
 
         if ($column) {

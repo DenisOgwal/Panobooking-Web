@@ -113,7 +113,7 @@ class AccountTest extends TestCase
 
     public function test_property_submissions_are_unapproved_and_store_the_photo(): void
     {
-        Storage::fake('local');
+        Storage::fake('media');
 
         Livewire::test(RegisterProperty::class)
             ->set('place', 'Sunset Test Lodge')->set('region', 'Eastern')->set('city', 'Jinja')
@@ -127,7 +127,7 @@ class AccountTest extends TestCase
 
         $row = DB::table('pickuplocations')->where('Place', 'Sunset Test Lodge')->first();
         $this->assertNull($row->Approved);
-        Storage::disk('local')->assertExists('AndroidFiles/DestinationImages/Sunset Test Lodge.jpg');
+        Storage::disk('media')->assertExists('AndroidFiles/DestinationImages/Sunset Test Lodge.jpg');
         $this->get('/DestinationsList?destinationslug=Jinja')->assertDontSee('Sunset Test Lodge');
     }
 

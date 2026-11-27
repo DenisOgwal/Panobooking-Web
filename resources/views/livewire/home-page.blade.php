@@ -68,26 +68,28 @@
     </section>
 
     {{-- Destinations ------------------------------------------------------ --}}
+    {{-- The original Panobooking mosaic: five cities, the blue "Most Popular Destinations" tile, five more. --}}
     @if ($destinations->isNotEmpty())
-        <section class="section">
-            <div class="container-xl">
-                <x-section-heading eyebrow="Destinations" title="Where will you go next?" subtitle="From the shores of Lake Victoria to the Rwenzori foothills.">
-                    <x-slot:actions><a class="btn btn-soft" href="/DestinationsList">All destinations</a></x-slot:actions>
-                </x-section-heading>
-                <div class="row g-3 row-cols-2 row-cols-md-4">
-                    @foreach ($destinations as $destination)
-                        <div class="col">
-                            <a class="destination-tile" href="{{ route('DestinationsList', ['destinationslug' => $destination->City]) }}">
-                                <img src="{{ Media::city($destination->City) }}" alt="" loading="lazy" onerror="this.remove()">
-                                <div class="tile-body">
-                                    <h3>{{ $destination->City }}</h3>
-                                    <span>{{ $destination->stays }} {{ \Illuminate\Support\Str::plural('stay', $destination->stays) }} · {{ $destination->Region }}</span>
-                                </div>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+        <section class="district-mosaic" aria-labelledby="districts-title">
+            <ul class="district-grid">
+                @foreach ([$destinations->take(5), null, $destinations->slice(5)] as $group)
+                    @if ($group === null)
+                        <li class="district-title">
+                            <h2 id="districts-title">Most Popular Destinations</h2>
+                            <a href="/DestinationsList">View all destinations</a>
+                        </li>
+                    @else
+                        @foreach ($group as $destination)
+                            <li>
+                                <a class="district-tile" href="{{ route('DestinationsList', ['destinationslug' => $destination->City]) }}">
+                                    <img src="{{ Media::city($destination->City) }}" alt="" loading="lazy" onerror="this.remove()">
+                                    <span class="district-name">{{ $destination->City }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    @endif
+                @endforeach
+            </ul>
         </section>
     @endif
 

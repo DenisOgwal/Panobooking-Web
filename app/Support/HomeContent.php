@@ -26,7 +26,7 @@ final class HomeContent
                 'offer' => RoomsModel::offered()->with('hotel:IDs,Place,City')->orderByDesc('IDs')->first(),
                 'trending' => HotelsModel::approved()->trending()->orderBy('TrendRank')->limit(12)->get(),
                 'featured' => HotelsModel::approved()->featured()->orderBy('FaturedRank')->limit(12)->get(),
-                'destinations' => DestinationsModel::orderBy('DestinationID')->limit(8)->get()
+                'destinations' => DestinationsModel::orderBy('DestinationID')->limit(10)->get()
                     ->each(fn ($d) => $d->setAttribute('stays', (int) ($hotelCounts[$d->City] ?? 0))),
                 'sites' => TourismSite::orderBy('ID')->limit(8)->get(),
                 'events' => EventModel::upcoming()->orderBy('StartDate')->limit(6)->get(),

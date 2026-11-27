@@ -35,6 +35,16 @@ return [
             'root' => base_path('/'),
         ],
 
+        // Listing photos uploaded here (admin backend, "list with us" forms, API), under the same
+        // relative paths as the media host (AndroidFiles/…, AndroidDriver/…). Photos found here are
+        // served by the site itself (/media/…); others still load from PANOBOOKING_MEDIA_URL.
+        // Default lives in storage/app, which the Docker setup keeps in a volume.
+        'media' => [
+            'driver' => 'local',
+            'root' => env('PANOBOOKING_MEDIA_ROOT', storage_path('app/media')),
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => base_path('/'),

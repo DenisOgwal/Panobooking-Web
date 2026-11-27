@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Builds photo URLs for listings.
@@ -10,6 +11,10 @@ use Illuminate\Database\Eloquent\Model;
  * Photos live on the media host (config('panobooking.media_url')) and are named after the
  * listing, e.g. AndroidFiles/DestinationImages/{Place}.jpg. A gallery of N photos is
  * {name}.jpg, {name}2.jpg … {name}N.jpg, where N is the listing's PhotoUrl / PhotoUri count.
+ *
+ * Photos uploaded on this site (admin, listing forms, API) are stored on the media disk under the
+ * same paths; when a photo exists there it is served by the site (/media/…), otherwise it is
+ * loaded from the media host.
  */
 class Media
 {
@@ -29,7 +34,16 @@ class Media
             'site'       => ['AndroidFiles/TourismSiteThumbnail', fn ($m) => $m->SiteName, 'PhotoUri'],
             'event'      => ['AndroidFiles/EventsThumbnail', fn ($m) => $m->EventName, 'PhotoUri'],
             'tour'       => ['AndroidFiles/TourPackages', fn ($m) => $m->TravelCompany . $m->PackageName, 'PhotoUri'],
+            'city'       => ['AndroidFiles/CityImages', fn ($m) => $m->City, null],
         ];
+    }
+
+    /** Top-level folders photos may live in (also what /media/… is allowed to serve). */
+    public const FOLDERS = ['AndroidFiles', 'AndroidDriver'];
+
+    public static function disk()
+    {
+        return Storage::disk(config('panobooking.media_disk', 'media'));
     }
 
     /** Folder a listing type's photos live in, e.g. AndroidFiles/DestinationImages. */
@@ -103,6 +117,14 @@ class Media
 
     private static function url(string $folder, string $file): string
     {
+        $path = $folder . '/' . $file;
+        $disk = self::disk();
+
+        if ($disk->exists($path)) {
+            // Cache-busting version, so a replaced photo shows up straight away.
+            return url('/media/' . implode('/', array_map('rawurlencode', explode('/', $path)))) . '?v=' . $disk->lastModified($path);
+        }
+
         return config('panobooking.media_url') . '/' . $folder . '/' . rawurlencode($file);
     }
 }

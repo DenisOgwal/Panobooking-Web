@@ -9,6 +9,12 @@ return [
     'media_url' => rtrim(env('PANOBOOKING_MEDIA_URL', 'https://panobooking.com'), '/'),
 
     /*
+    | Disk that uploaded photos are written to (config/filesystems.php → disks.media).
+    | A photo present on this disk is served locally and takes precedence over media_url.
+    */
+    'media_disk' => env('PANOBOOKING_MEDIA_DISK', 'media'),
+
+    /*
     | Customer password hashing.
     |
     | Customer passwords have historically been stored as unsalted MD5. Login accepts both

@@ -117,4 +117,7 @@ npm run build   # production assets into public/build (the Docker image builds t
 - The database schema was not in the original repository; migrations `2022_02_01_*` were reconstructed from how the code uses each table. Compare them with production before running them there.
 - Provider notifications are GET requests with booking details (including the customer's name) in the query string, because the existing scripts only accept GET.
 - Driver passwords for cars and ambulances are still MD5, because the separate driver app checks them.
-- Photo uploads are written to the local disk (`config/filesystems.php`), under the same paths the media host serves.
+- Photo uploads (admin, "list with us" forms, API) go to the `media` disk, `storage/app/media` by default (`PANOBOOKING_MEDIA_ROOT`), under the same paths the media host uses (`AndroidFiles/…`, `AndroidDriver/…`).
+  - A photo found there is served by the site at `/media/…` and takes precedence.
+  - Anything else still loads from `PANOBOOKING_MEDIA_URL`.
+  - Destination (city) photos for the home page mosaic are uploaded in Admin → Destinations. Until a city has one, its tile shows a colour gradient.
