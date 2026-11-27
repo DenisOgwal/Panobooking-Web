@@ -1,0 +1,184 @@
+# Deploy to Hostinger web/cloud hosting (hPanel) over SSH. Manual only: Actions → "Deploy to
+# Hostinger" → Run workflow. Setup (SSH key, secrets, the server .env): docs/DEPLOY-HOSTINGER.md.
+name: Deploy to Hostinger
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to deploy
+        required: true
+        default: master
+      run_tests:
+        description: Run the test suite first (the deploy stops if it fails)
+        type: boolean
+        default: true
+      run_migrations:
+        description: Run database migrations (idempotent, safe to repeat)
+        type: boolean
+        default: true
+      seed_accounts:
+        description: Create the administrator and developer accounts if missing
+        type: boolean
+        default: true
+
+# One deploy at a time; a second run waits instead of overlapping.
+concurrency:
+  group: deploy-hostinger
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PHP_VERSION: '8.4'
+  NODE_VERSION: '22'
+  PHP_EXTENSIONS: pdo_mysql, mbstring, gd, zip, exif, bcmath, intl
+
+jobs:
+  test:
+    name: Tests
+    if: ${{ inputs.run_tests }}
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: panobooking_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: panobooking_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+          npm run build
+
+      - name: Run tests
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan test
+
+  deploy:
+    name: Deploy
+    needs: test
+    # Runs when the tests passed, or when they were switched off for this run.
+    if: ${{ always() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+      SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT || '65002' }}
+      SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+      DEPLOY_PATH: ${{ vars.HOSTINGER_DEPLOY_PATH }}
+      PUBLIC_HTML: ${{ vars.HOSTINGER_PUBLIC_HTML }}
+      PHP_BIN: ${{ vars.HOSTINGER_PHP || 'php' }}
+    steps:
+      - name: Check configuration
+        env:
+          SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+        run: |
+          missing=()
+          [ -n "$SSH_HOST" ] || missing+=("secret HOSTINGER_SSH_HOST")
+          [ -n "$SSH_USER" ] || missing+=("secret HOSTINGER_SSH_USER")
+          [ -n "$SSH_KEY" ] || missing+=("secret HOSTINGER_SSH_KEY")
+          [ -n "$DEPLOY_PATH" ] || missing+=("variable HOSTINGER_DEPLOY_PATH")
+          [ -n "$PUBLIC_HTML" ] || missing+=("variable HOSTINGER_PUBLIC_HTML")
+          if [ ${#missing[@]} -gt 0 ]; then
+            printf '::error::Missing in the "production" environment: %s\n' "${missing[@]}"
+            echo "See docs/DEPLOY-HOSTINGER.md"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Build the release
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist --no-progress --optimize-autoloader
+          npm ci
+          npm run build
+          rm -rf node_modules bootstrap/cache/*.php
+          RELEASE="$(date -u +%Y%m%d%H%M%S)-$(git rev-parse --short HEAD)"
+          echo "RELEASE=$RELEASE" >> "$GITHUB_ENV"
+          tar -czf "$RUNNER_TEMP/release.tgz" \
+            --exclude='./.git' --exclude='./.github' --exclude='./tests' --exclude='./docker' \
+            --exclude='./storage/logs/*.log' --exclude='./storage/framework/sessions/*' \
+            --exclude='./storage/framework/views/*.php' --exclude='./livewire-tmp/*' \
+            --exclude='./files/livewire-tmp/*' --exclude='./.env' \
+            .
+          ls -lh "$RUNNER_TEMP/release.tgz"
+
+      - name: Set up SSH
+        env:
+          SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/hostinger
+          chmod 600 ~/.ssh/hostinger
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::HOSTINGER_SSH_KNOWN_HOSTS is not set; trusting the host key found now (see docs/DEPLOY-HOSTINGER.md)."
+            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" > ~/.ssh/known_hosts
+          fi
+          printf 'Host hostinger\n  HostName %s\n  Port %s\n  User %s\n  IdentityFile ~/.ssh/hostinger\n  IdentitiesOnly yes\n  ServerAliveInterval 30\n' \
+            "$SSH_HOST" "$SSH_PORT" "$SSH_USER" > ~/.ssh/config
+
+      - name: Upload
+        run: |
+          scp -q "$RUNNER_TEMP/release.tgz" "hostinger:panobooking-release-$RELEASE.tgz"
+          scp -q scripts/hostinger-deploy.sh "hostinger:panobooking-deploy-$RELEASE.sh"
+
+      - name: Install on the server
+        env:
+          RUN_MIGRATIONS: ${{ inputs.run_migrations }}
+          SEED_ACCOUNTS: ${{ inputs.seed_accounts }}
+        run: |
+          remote="DEPLOY_PATH=$(printf %q "$DEPLOY_PATH") PUBLIC_HTML=$(printf %q "$PUBLIC_HTML") PHP_BIN=$(printf %q "$PHP_BIN")"
+          remote="$remote RELEASE=$RELEASE ARCHIVE=\$HOME/panobooking-release-$RELEASE.tgz"
+          remote="$remote RUN_MIGRATIONS=$RUN_MIGRATIONS SEED_ACCOUNTS=$SEED_ACCOUNTS"
+          ssh hostinger "$remote bash \$HOME/panobooking-deploy-$RELEASE.sh; rc=\$?; rm -f \$HOME/panobooking-deploy-$RELEASE.sh; exit \$rc" < /dev/null
+
+      - name: Clean up
+        if: always()
+        run: rm -f ~/.ssh/hostinger "$RUNNER_TEMP/release.tgz"

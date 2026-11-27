@@ -57,6 +57,10 @@ Developers can run them from the admin (Database migrations page: status, SQL pr
 - Photos are written to the upload disk under the media host's paths (`App\Admin\MediaFiles`), and the photo-count column is kept in step.
 - Driver-app passwords for cars and ambulances are stored as MD5 (see Known limitations). Customer passwords use `CustomerAuth::hash()`.
 
+## Deploying to Hostinger
+
+Deploys are manual: GitHub **Actions → Deploy to Hostinger → Run workflow** (`.github/workflows/deploy-hostinger.yml`). Each run tests, builds and uploads over SSH, then runs the idempotent migrations and creates the admin and developer accounts. Setup, including the SSH key, GitHub secrets and the server `.env`, and rollback steps are in [docs/DEPLOY-HOSTINGER.md](docs/DEPLOY-HOSTINGER.md).
+
 ## Mobile API
 
 JSON API for the mobile app at **`/api/v1`**, covering everything the website does. Interactive docs are at http://localhost:8000/api/docs, served from `docs/openapi.yaml`; keep that file in step with `routes/api.php`, which `tests/Feature/Api/OpenApiSpecTest` checks.

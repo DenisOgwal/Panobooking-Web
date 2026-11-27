@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminLogoutController;
+use App\Http\Controllers\ApiSpecController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\VerifyEmailLinkController;
@@ -84,10 +85,7 @@ Route::get('/media/{path}', MediaController::class)->where('path', '.*')->name('
 
 // Mobile API documentation (the API itself is in routes/api.php, under /api/v1).
 Route::view('/api/docs', 'api-docs')->name('api.docs');
-Route::get('/api/openapi.yaml', fn () => response()->file(base_path('docs/openapi.yaml'), [
-    'Content-Type' => 'application/yaml; charset=utf-8',
-    'Cache-Control' => 'no-cache',
-]))->name('api.spec');
+Route::get('/api/openapi.yaml', ApiSpecController::class)->name('api.spec');
 
 // Admin backend (see App\Admin). Staff and admin accounts live in `users`; customers never get in.
 Route::prefix('admin')->name('admin.')->group(function () {
